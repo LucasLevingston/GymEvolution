@@ -9,6 +9,17 @@ module.exports = {
    ],
    prefix: "",
    theme: {
+      colors: {
+         mainColor: '#0073CF',
+         branco: '#fff',
+         preto: '#000',
+         cinza: '#212121',
+         transparent: 'transparent',
+         vermelho: '#FF0000',
+         azulClaro: '#B8CAD4',
+         verde: '#5EE617',
+
+      },
       container: {
          center: true,
          padding: "2rem",
