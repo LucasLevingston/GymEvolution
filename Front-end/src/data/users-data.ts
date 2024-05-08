@@ -15,10 +15,10 @@ const usersData: UserType[] = [
           id: 1,
           grupo: "Peito",
           exercicios: [
-            { nome: "Supino inclinado", repeticoes: 10, series: 4, variacao: "Drop na Ultima série" },
-            { nome: "Supino reto", repeticoes: 10, series: 4 },
-            { nome: "Voador", repeticoes: 10, series: 4 },
-            { nome: "CrossOver", repeticoes: 10, series: 4 },
+            { nome: "Supino inclinado", repeticoes: 10, quantidadeSeries: 4, variacao: "Drop na Ultima série", feito: false },
+            { nome: "Supino reto", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Voador", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "CrossOver", repeticoes: 10, quantidadeSeries: 4, feito: false },
 
           ]
         },
@@ -26,20 +26,20 @@ const usersData: UserType[] = [
           id: 2,
           grupo: "Costas",
           exercicios: [
-            { nome: "Puxada frontal", repeticoes: 10, series: 4 },
-            { nome: "Remada baixa neutra", repeticoes: 10, series: 4 },
-            { nome: "Cavalinho", repeticoes: 10, series: 4 },
-            { nome: "Remada baixa pronada", repeticoes: 10, series: 4 },
+            { nome: "Puxada frontal", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Remada baixa neutra", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Cavalinho", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Remada baixa pronada", repeticoes: 10, quantidadeSeries: 4, feito: false },
           ]
         },
         {
           id: 3,
           grupo: "Pernas",
           exercicios: [
-            { nome: "Agachamento Livre", repeticoes: 10, series: 4 },
-            { nome: "Leg press", repeticoes: 10, series: 4 },
-            { nome: "Cadeira extensora", repeticoes: 10, series: 4 },
-            { nome: "Cadeira Flexora", repeticoes: 10, series: 4 },
+            { nome: "Agachamento Livre", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Leg press", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Cadeira extensora", repeticoes: 10, quantidadeSeries: 4, feito: false },
+            { nome: "Cadeira Flexora", repeticoes: 10, quantidadeSeries: 4, feito: false },
           ]
         }
       ]
@@ -54,13 +54,13 @@ const usersData: UserType[] = [
               id: 4,
               grupo: "Pernas",
               exercicios: [
-                { nome: "Agachamento", repeticoes: 10, series: 4 },
-                { nome: "Leg press", repeticoes: 10, series: 4 },
+                { nome: "Agachamento", repeticoes: 10, quantidadeSeries: 4, feito: false },
+                { nome: "Leg press", repeticoes: 10, quantidadeSeries: 4, feito: false },
               ]
             }
           ]
         },
-        resultado: {
+        serie: {
           repeticoes: 10,
           carga: 80
         }
