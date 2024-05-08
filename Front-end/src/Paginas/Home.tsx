@@ -1,7 +1,14 @@
-import Header from '@/components/Header'
+import Container from '@/components/Container'
+import TreinoDaSemana from './TreinoDaSemana'
 
 export default function Home() {
+
    return (
-      <div><Header /></div>
+      <div>
+         <Container>
+            Treino da semana
+            <TreinoDaSemana />
+         </Container>
+      </div>
    )
 }

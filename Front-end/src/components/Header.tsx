@@ -9,20 +9,24 @@ import {
    DropdownMenuSeparator,
    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { LogOut, Plus, Users } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { MdHome } from 'react-icons/md';
 
 export default function Header() {
    return (
-      <div className='bg-slate-300 w-full h-20 flex justify-between px-5 bg-branco'>
-         <div className='flex items-center'>
-            <img src={logoDivisao} className='w-22' />Divisão
-            de treinos
-         </div>
-         <div className='items-center flex'>
-            <p>
+      <div className='w-full h-20 flex justify-between px-5 bg-branco'>
+         <button onClick={() => { window.location.href = "/" }}>
+            <div className='flex items-center gap-2'>
+               <img src={logoDivisao} className='w-16' />
+               <p className='font-saira-stencil text-xl'>
 
+                  GymEvolution
+               </p>
+            </div>
+         </button>
+         <div className='items-center flex'>
+            <p className='font-saira'>
                Inicio
             </p>
          </div>

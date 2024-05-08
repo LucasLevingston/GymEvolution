@@ -73,11 +73,6 @@
 
   body {
     @apply bg-background text-foreground;
+    background: #212121;
   }
-}
-
-body,
-html,
-root {
-  background-color: #212121;
 }
