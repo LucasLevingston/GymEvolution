@@ -7,6 +7,9 @@ export interface TreinoType {
 export interface DiaDeTreinoType {
    id: number,
    grupo: string,
+   diaDaSemana: string,
+   feito: boolean,
+   observacoes?: string,
    exercicios: ExercicioType[]
 }
 export interface ExercicioType {

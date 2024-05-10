@@ -12,6 +12,8 @@ import {
 import { LogOut } from 'lucide-react';
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { MdHome } from 'react-icons/md';
+import { CgGym } from 'react-icons/cg';
+import { IoArrowBack, IoChevronBack } from 'react-icons/io5';
 
 export default function Header() {
    return (
@@ -20,7 +22,6 @@ export default function Header() {
             <div className='flex items-center gap-2'>
                <img src={logoDivisao} className='w-16' />
                <p className='font-saira-stencil text-xl'>
-
                   GymEvolution
                </p>
             </div>
@@ -30,7 +31,7 @@ export default function Header() {
                Inicio
             </p>
          </div>
-         <div className="flex w-[6%] items-center space-x-2  border-l-[1px] border-l-cinza ">
+         <div className="flex w-[5%] items-center space-x-2  border-l-[1px] border-l-cinza ">
             <Link to="/" className="flex items-center">
                <MdHome className="ml-8 text-xl text-cinza" />
             </Link>
@@ -45,14 +46,20 @@ export default function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                      <DropdownMenuItem>
-                        <Link to="/" className="flex items-center">
-                           {/* <Users className="mr-2 h-4 w-4" /> */}
-                           <span>Ver treino da semana</span>
+                        <Link to="/" className="flex items-center gap-2">
+                           <CgGym />
+                           <span>Treino da semana</span>
+                        </Link>
+                     </DropdownMenuItem>
+                     <DropdownMenuItem>
+                        <Link to="/" className="flex items-center gap-2">
+                           <IoChevronBack />
+                           <CgGym />
+                           <span>Treinos passados</span>
                         </Link>
                      </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-
                   <DropdownMenuItem>
                      <Link to="/login" className="flex items-center">
                         <LogOut className="mr-2 h-4 w-4" />
