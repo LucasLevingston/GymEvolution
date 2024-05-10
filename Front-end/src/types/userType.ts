@@ -1,4 +1,5 @@
-import { TreinoType, serieType } from './treinoType';
+import { TreinoAntigoType, TreinoType } from './treinoType';
+
 export interface UserType {
    id: number,
    nome: string,
@@ -7,11 +8,7 @@ export interface UserType {
    pesoAtual: number,
    pesos: pesoType[],
    TreinoDaSemana?: TreinoType,
-   TreinosAntigos?: {
-      semana: number,
-      treino: TreinoType,
-      serie: serieType
-   }[]
+   TreinosAntigos?: TreinoAntigoType[]
 }
 
 export interface pesoType {

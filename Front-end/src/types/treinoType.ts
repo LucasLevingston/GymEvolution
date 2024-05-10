@@ -26,3 +26,9 @@ export interface serieType {
    carga?: number,
    serie?: number
 }
+
+export interface TreinoAntigoType {
+   semana: number,
+   treino: TreinoType,
+   serie: serieType
+}

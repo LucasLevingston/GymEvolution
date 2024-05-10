@@ -13,7 +13,7 @@ import { LogOut } from 'lucide-react';
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { MdHome } from 'react-icons/md';
 import { CgGym } from 'react-icons/cg';
-import { IoArrowBack, IoChevronBack } from 'react-icons/io5';
+import { IoAnalytics, IoArrowBack, IoChevronBack } from 'react-icons/io5';
 
 export default function Header() {
    return (
@@ -52,10 +52,16 @@ export default function Header() {
                         </Link>
                      </DropdownMenuItem>
                      <DropdownMenuItem>
-                        <Link to="/" className="flex items-center gap-2">
+                        <Link to="/treinos-passados" className="flex items-center gap-2">
                            <IoChevronBack />
                            <CgGym />
                            <span>Treinos passados</span>
+                        </Link>
+                     </DropdownMenuItem>
+                     <DropdownMenuItem>
+                        <Link to="/evolucao" className="flex items-center gap-2">
+                           <IoAnalytics />
+                           <span>Evolução</span>
                         </Link>
                      </DropdownMenuItem>
                   </DropdownMenuGroup>

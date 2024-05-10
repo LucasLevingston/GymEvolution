@@ -2,6 +2,7 @@ import React from 'react';
 import Header from './Header';
 import { Toaster } from 'sonner';
 import { Button } from './ui/button';
+import { IoIosArrowBack } from 'react-icons/io';
 
 interface ContainerProps {
    children: React.ReactNode;
@@ -12,10 +13,10 @@ export default function Container({ children, className }: ContainerProps): JSX.
    return (
       <div>
          <Header />
-         <div className={`text-branco px-20 pt-5 w-full h-full ${className}`}>
-            <div>
+         <div className={`text-branco px-20 py-5 w-full h-full ${className}`}>
+            <div className='pb-2'>
                <Button className='bg-branco text-preto hover:bg-white/70' variant='outline' onClick={() => { window.history.back() }}>
-                  Voltar
+                  <IoIosArrowBack />
                </Button>
             </div>
             {children}

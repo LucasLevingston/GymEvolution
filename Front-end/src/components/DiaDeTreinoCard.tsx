@@ -16,10 +16,8 @@ interface ExerciciosCardProps {
    diaDeTreino: DiaDeTreinoType;
 }
 export const ExerciciosCard: React.FC<ExerciciosCardProps> = ({ diaDeTreino }) => {
-   const [position, setPosition] = React.useState("bottom")
-
    return (
-      <div className='border p-2 flex flex-col gap-5 bg-cinza rounded w-full'>
+      <div className='border p-2 flex flex-col gap-3 bg-cinza rounded w-full'>
          {diaDeTreino.exercicios.map((exercicio, i) => (
             <div className='text-preto' key={i}>
                <p>Exercício <span className='text-vermelho font-bold'>{i + 1}</span>: </p>

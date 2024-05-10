@@ -6,7 +6,9 @@ export default function Home() {
    return (
       <div>
          <Container>
-            Treino da semana
+            <p className='text-2xl'>
+               Treino da semana
+            </p>
             <TreinoDaSemana />
          </Container>
       </div>
