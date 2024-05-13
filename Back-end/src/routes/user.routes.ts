@@ -14,7 +14,4 @@ export async function userRoutes(fastify: FastifyInstance) {
          reply.send(error)
       }
    })
-   fastify.get('/', (req, reply) => {
-      reply.send({ hello: "world" })
-   })
 }
