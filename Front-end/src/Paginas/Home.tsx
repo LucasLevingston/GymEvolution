@@ -1,5 +1,5 @@
 import Container from '@/components/Container'
-import TreinoDaSemana from './TreinoDaSemana'
+import { TreinoDaSemana } from './TreinoDaSemana'
 
 export default function Home() {
 

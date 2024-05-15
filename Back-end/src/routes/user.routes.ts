@@ -14,15 +14,15 @@ export async function userRoutes(fastify: FastifyInstance) {
          reply.send(error)
       }
    })
-   fastify.get<{
-      Querystring: { email: string; senha: string };
-   }>('/', async (req, reply) => {
-      const { email, senha } = req.query;
+   fastify.post<{
+      Body: { email: string; senha: string };
+   }>('/login', async (req, reply) => {
+      const { email, senha } = req.body;
       try {
-         const data = userUseCase.login(email, senha)
-         return reply.send(data)
+         const data = await userUseCase.login(email, senha);
+         return reply.send(data);
       } catch (error) {
-         reply.send(error)
+         reply.send(error);
       }
-   })
+   });
 }

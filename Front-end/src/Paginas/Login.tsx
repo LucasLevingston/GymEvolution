@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import {
@@ -14,8 +13,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
 import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
-import { Toaster, toast } from 'sonner';
+import { Link, } from 'react-router-dom';
+import { toast } from 'sonner';
+import useUser from '@/hooks/user-hooks';
+import Container from '@/components/Container';
 
 export default function Login() {
    const [senhaVisivel, setSenhaVisivel] = useState(false);
@@ -24,12 +25,15 @@ export default function Login() {
    };
    const [email, setEmail] = useState('');
    const [senha, setSenha] = useState('');
+   const { login } = useUser()
+
+   // if (user) {
+   //    window.location.href = "/"
+   // }
 
 
    return (
-      <div>
-         <Toaster richColors position="top-right" />
-         <Header />
+      <Container>
          <div className="flex h-full w-full items-center justify-center pt-10">
             <Tabs defaultValue="account" className="w-[400px]">
                <TabsList className="grid w-full bg-cinzaEscuro">
@@ -41,70 +45,69 @@ export default function Login() {
                         <CardTitle>Login</CardTitle>
                         <CardDescription></CardDescription>
                      </CardHeader>
-                     <CardContent className="space-y-2">
-                        <div className="space-y-1">
-                           <Label htmlFor="email">Email</Label>
-                           <Input
-                              id="email"
-                              required
-                              onChange={(e) => setEmail(e.target.value)}
-                           />
-                        </div>
-                        <div className="space-y-1">
-                           <Label htmlFor="senha">Senha</Label>
-                           <div className="flex">
+                     <form>
+                        <CardContent className="space-y-2">
+                           <div className="space-y-1">
+                              <Label htmlFor="email">Email</Label>
                               <Input
-                                 id="senha1"
-                                 type={senhaVisivel ? 'text' : 'password'}
+                                 id="email"
                                  required
-                                 minLength={8}
-                                 onChange={(e) => setSenha(e.target.value)}
+                                 autoComplete='email'
+                                 onChange={(e) => setEmail(e.target.value)}
                               />
-                              <button
-                                 id="senha2"
-                                 onClick={toggleShowPassword}
-                                 className="pl-3"
-                                 type="button"
-                              >
-                                 {senhaVisivel ? (
-                                    <IoEyeOutline className="h-7 w-7" />
-                                 ) : (
-                                    <IoEyeSharp className="h-7 w-7" />
-                                 )}
-                              </button>
                            </div>
-                        </div>
-                     </CardContent>
+                           <div className="space-y-1">
+                              <Label htmlFor="senha">Senha</Label>
+                              <div className="flex">
+                                 <Input
+                                    type={senhaVisivel ? 'text' : 'password'}
+                                    required
+                                    autoComplete="current-password"
+                                    minLength={8}
+                                    onChange={(e) => setSenha(e.target.value)}
+                                 />
+                                 <button
+                                    onClick={toggleShowPassword}
+                                    className="pl-3"
+                                    type="button"
+                                 >
+                                    {senhaVisivel ? (
+                                       <IoEyeOutline className="h-7 w-7" />
+                                    ) : (
+                                       <IoEyeSharp className="h-7 w-7" />
+                                    )}
+                                 </button>
+                              </div>
+                           </div>
+                        </CardContent>
+                     </form>
                      <CardFooter className="flex flex-col items-center justify-center">
-                        {/* {carregando ? (
-                           <Button disabled>
-                              <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-                              Carregando...
-                           </Button>
-                        ) : !error ? (
-                           <Button
-                              variant="outline"
-                              onClick={async () => {
-                                 if (await loginComEmailESenha(email, senha)) {
-                                    toast.success('Login efetuado com sucesso!');
-                                    setTimeout(() => {
-                                       window.location.href = '/';
-                                    }, 2000);
-                                 } else {
-                                    toast.error('Email ou senha inválidos');
-                                    setTimeout(() => {
-                                       window.location.href = '/';
-                                    }, 2000);
-                                 }
-                              }}
-                           >
-                              Entrar
-                           </Button>
-                        ) : (
-                           <Button variant="destructive" disabled>
-                              {error.message}
-                           </Button>
-                        )} */}
+                        {
+                           // loading ? (
+                           //    <Button disabled>
+                           //       <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                           //       Carregando...
+                           //    </Button>
+                           // )
+                           //  :
+                           (
+                              <Button
+                                 variant="outline"
+                                 onClick={async () => {
+                                    if (await login(email, senha)) {
+                                       toast.success('Login efetuado com sucesso!');
+                                       setTimeout(() => {
+                                          window.location.href = '/';
+                                       }, 2000);
+                                    } else {
+                                       toast.error('Email ou senha inválidos');
+
+                                    }
+                                 }}
+                              >
+                                 Entrar
+                              </Button>
+                           )}
                         <br />
                         <Link
                            to="/redefinir-senha"
@@ -126,6 +129,6 @@ export default function Login() {
                </TabsContent>
             </Tabs>
          </div>
-      </div>
+      </Container>
    );
 }

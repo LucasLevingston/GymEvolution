@@ -20,5 +20,13 @@ class UserRepositoryPrisma implements UserRepository {
       });
       return result || null;
    }
+   async login(email: string, senha: string): Promise<User | null> {
+      const user = await this.findByEmail(email)
+      if (user) {
+         return user.senha === senha ? user : null
+      }
+      return null
+   }
+
 }
 export { UserRepositoryPrisma };

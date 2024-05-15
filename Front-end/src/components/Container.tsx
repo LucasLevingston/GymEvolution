@@ -15,7 +15,8 @@ export default function Container({ children, className }: ContainerProps): JSX.
          <Header />
          <div className={`text-branco px-20 py-5 w-full h-full ${className}`}>
             <div className='pb-2'>
-               <Button className='bg-branco text-preto hover:bg-white/70' variant='outline' onClick={() => { window.history.back() }}>
+               <Button className='bg-branco text-preto hover:bg-white/70' variant='outline'
+                  onClick={() => { window.history.back() }}>
                   <IoIosArrowBack />
                </Button>
             </div>

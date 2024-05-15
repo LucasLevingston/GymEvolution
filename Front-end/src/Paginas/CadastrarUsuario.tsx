@@ -15,8 +15,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 
 import { ReloadIcon } from '@radix-ui/react-icons';
-import { Toaster, toast } from 'sonner';
-import Container from '@/components/Container';
+import { toast } from 'sonner';
 import Header from '@/components/Header';
 import useUser from '@/hooks/user-hooks';
 
@@ -27,7 +26,9 @@ export default function CadastroUsuario() {
    const [senha, setSenha] = useState('');
    const [confirmarSenha, setConfirmarSenha] = useState('');
    const [senhaTocada, setSenhaTocada] = useState(false);
+
    const { criarUsuario } = useUser()
+
    const alterarSenhaVisivel = () => {
       setSenhaVisivel(!senhaVisisvel);
    };
@@ -84,80 +85,86 @@ export default function CadastroUsuario() {
                         <CardTitle>Cadastro</CardTitle>
                         <CardDescription></CardDescription>
                      </CardHeader>
-                     <CardContent className="space-y-2">
-                        <div className="space-y-1">
-                           <Label htmlFor="email">Email</Label>
-                           <Input
-                              id="email"
-                              type="email"
-                              required
-                              defaultValue=""
-                              onChange={(e) => setEmail(e.target.value)}
-                           />
-                        </div>
-                        <div className="space-y-1">
-                           <Label htmlFor="senha">Senha</Label>
-                           <div className="flex">
+                     <form>
+
+                        <CardContent className="space-y-2">
+                           <div className="space-y-1">
+                              <Label htmlFor="email">Email</Label>
                               <Input
-                                 id="senha"
-                                 type={senhaVisisvel ? 'text' : 'password'}
+                                 id="email"
+                                 type="email"
                                  required
-                                 minLength={8}
-                                 value={senha}
-                                 onChange={(e) => {
-                                    setSenha(e.target.value);
-                                    setSenhaTocada(true);
-                                 }}
-                                 onBlur={() => setSenhaTocada(true)}
+                                 autoComplete='email'
+                                 defaultValue=""
+                                 onChange={(e) => setEmail(e.target.value)}
                               />
-                              <button
-                                 onClick={alterarSenhaVisivel}
-                                 className="pl-3"
-                                 type="button"
-                              >
-                                 {senhaVisisvel ? (
-                                    <IoEyeOutline className="h-7 w-7" />
-                                 ) : (
-                                    <IoEyeSharp className="h-7 w-7" />
-                                 )}
-                              </button>
                            </div>
-                        </div>
-                        <div className="space-y-1">
-                           <Label htmlFor="senha">Confirmar senha</Label>
-                           <div className="flex">
-                              <Input
-                                 id="confirmarSenha"
-                                 type={senhaVisisvel ? 'text' : 'password'}
-                                 required
-                                 minLength={8}
-                                 value={confirmarSenha}
-                                 onChange={(e) => {
-                                    setConfirmarSenha(e.target.value);
-                                    setSenhaTocada(true);
-                                 }}
-                                 onBlur={() => setSenhaTocada(true)}
-                              />
-                              <button
-                                 onClick={alterarSenhaVisivel}
-                                 className="pl-3"
-                                 type="button"
-                              >
-                                 {senhaVisisvel ? (
-                                    <IoEyeOutline className="h-7 w-7" />
-                                 ) : (
-                                    <IoEyeSharp className="h-7 w-7" />
-                                 )}
-                              </button>
+                           <div className="space-y-1">
+                              <Label htmlFor="senha">Senha</Label>
+                              <div className="flex">
+                                 <Input
+                                    id="senha"
+                                    type={senhaVisisvel ? 'text' : 'password'}
+                                    required
+                                    minLength={8}
+                                    value={senha}
+                                    autoComplete='new-password'
+                                    onChange={(e) => {
+                                       setSenha(e.target.value);
+                                       setSenhaTocada(true);
+                                    }}
+                                    onBlur={() => setSenhaTocada(true)}
+                                 />
+                                 <button
+                                    onClick={alterarSenhaVisivel}
+                                    className="pl-3"
+                                    type="button"
+                                 >
+                                    {senhaVisisvel ? (
+                                       <IoEyeOutline className="h-7 w-7" />
+                                    ) : (
+                                       <IoEyeSharp className="h-7 w-7" />
+                                    )}
+                                 </button>
+                              </div>
                            </div>
-                           {!validarSenha() && (
-                              <p className="text-xs text-vermelho">
-                                 As senhas devem ser iguais e ter no mínimo 8 caracteres,
-                                 sendo uma maiúscula e uma especial.
-                              </p>
-                           )}
-                        </div>
-                     </CardContent>
+                           <div className="space-y-1">
+                              <Label htmlFor="senha">Confirmar senha</Label>
+                              <div className="flex">
+                                 <Input
+                                    id="confirmarSenha"
+                                    type={senhaVisisvel ? 'text' : 'password'}
+                                    required
+                                    autoComplete='new-password'
+                                    minLength={8}
+                                    value={confirmarSenha}
+                                    onChange={(e) => {
+                                       setConfirmarSenha(e.target.value);
+                                       setSenhaTocada(true);
+                                    }}
+                                    onBlur={() => setSenhaTocada(true)}
+                                 />
+                                 <button
+                                    onClick={alterarSenhaVisivel}
+                                    className="pl-3"
+                                    type="button"
+                                 >
+                                    {senhaVisisvel ? (
+                                       <IoEyeOutline className="h-7 w-7" />
+                                    ) : (
+                                       <IoEyeSharp className="h-7 w-7" />
+                                    )}
+                                 </button>
+                              </div>
+                              {!validarSenha() && (
+                                 <p className="text-xs text-vermelho">
+                                    As senhas devem ser iguais e ter no mínimo 8 caracteres,
+                                    sendo uma maiúscula e uma especial.
+                                 </p>
+                              )}
+                           </div>
+                        </CardContent>
+                     </form>
                      <CardFooter className="flex flex-col items-center justify-center">
                         {carregando ? (
                            <Button disabled>

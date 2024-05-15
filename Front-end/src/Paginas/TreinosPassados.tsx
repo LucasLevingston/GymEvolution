@@ -1,16 +1,29 @@
 import Container from '@/components/Container';
 import { ExerciciosCard } from '@/components/DiaDeTreinoCard';
 import { Button } from '@/components/ui/button';
-import usersData from '@/data/users-data';
+import useUser from '@/hooks/user-hooks';
+import { DiaDeTreinoType } from '@/types/treinoType';
+import { UserType } from '@/types/userType';
 import { useEffect, useState } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
-export default function TreinosPassados() {
-   const user = usersData[0];
-   const treinos = user.TreinosAntigos || [];
+export const TreinosPassados: React.FC = () => {
+   const { getUser } = useUser();
+   const [user, setUser] = useState<UserType | null>(null);
+
+   useEffect(() => {
+      const fetchUser = async () => {
+         const fetchedUser = await getUser();
+         setUser(fetchedUser);
+      };
+
+      fetchUser();
+   }, [getUser]);
+
+   const treinos = user?.TreinosAntigos || [];
+
    const [treinoIdex, setTreinoIndex] = useState(0)
    const [treinoAntigoAtual, setTreinoAntigoAtual] = useState(treinos[treinoIdex])
-
    useEffect(() => {
       setTreinoAntigoAtual(treinos[treinoIdex])
    }, [treinoIdex])
@@ -41,7 +54,7 @@ export default function TreinosPassados() {
 
                </div>
                <div className="flex flex-wrap gap-3">
-                  {treinoAntigoAtual.treino.diaDeTreino.map((diaDeTreino, index) => (
+                  {treinoAntigoAtual.treino.diaDeTreino.map((diaDeTreino: DiaDeTreinoType, index: number) => (
                      <div key={index} className="bg-branco border border-preto w-[320px] h-full text-preto p-3 rounded-md ">
                         <div className="space-y-3">
                            <p>

@@ -1,12 +1,24 @@
 import { TreinoAntigoType, TreinoType } from './treinoType';
 
 export interface UserType {
-   id: number,
-   nome: string,
    email: string,
-   idade: string,
-   pesoAtual: number,
-   pesos: pesoType[],
+   senha: string,
+   id: string,
+   nome?: string,
+   sexo?: string;
+   rua?: string;
+   numero?: string;
+   cep?: string;
+   cidade?: string;
+   estado?: string;
+   nascimento?: string,
+   telefone?: string;
+   pesoAtual?: number,
+   historico?: {
+      ocorrido: string;
+      data: string;
+   }[];
+   pesos?: pesoType[],
    TreinoDaSemana?: TreinoType,
    TreinosAntigos?: TreinoAntigoType[]
 }

@@ -1,8 +1,8 @@
 import Container from '@/components/Container'
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import usersData from '@/data/users-data';
-import { ExercicioType, serieType } from '@/types/treinoType';
+import useUser from '@/hooks/user-hooks';
+import { DiaDeTreinoType, ExercicioType, serieType } from '@/types/treinoType';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -12,10 +12,21 @@ interface SerieAtualType {
    indexSerieAtual: number,
 }
 
-export default function Treinando() {
-   const { idParams } = useParams();
-   const user = usersData[0];
-   const treino = user.TreinoDaSemana?.diaDeTreino.find((diaDeTreino) => Number(idParams) === Number(diaDeTreino.id));
+
+export const Treinando: React.FC = () => {
+   const { getUser } = useUser();
+   const [user, setUser] = useState<any>(null);
+
+   useEffect(() => {
+      const fetchUser = async () => {
+         const fetchedUser = await getUser();
+         setUser(fetchedUser);
+      };
+
+      fetchUser();
+   }, [getUser]);
+   const treinoId = useParams()
+   const treino = user?.TreinoDaSemana?.diaDeTreino.find((diaDeTreino: DiaDeTreinoType) => Number(treinoId) === Number(diaDeTreino.id));
    const [treinoAtual, setTreinoAtual] = useState(treino)
    const [fazendoExercicio, setFazendoExercicio] = useState(false)
    const [serieAtual, setSerieAtual] = useState<SerieAtualType>({
@@ -54,7 +65,7 @@ export default function Treinando() {
          if (serieAtual.indexSerieAtual === quantidadeSeries) {
             console.log(seriesFeitas)
             setSerieAtual({ indexSerieAtual: 0, indexExercicioAtual: serieAtual.indexExercicioAtual })
-            const exercicioIndex = treinoAtual?.exercicios.findIndex((exercicio) => exercicio.nome === nome);
+            const exercicioIndex = treinoAtual?.exercicios.findIndex((exercicio: ExercicioType) => exercicio.nome === nome);
             if (exercicioIndex !== undefined && exercicioIndex !== -1 && treinoAtual) {
                const novoExercicio = [...treinoAtual?.exercicios];
                novoExercicio[exercicioIndex] = {
@@ -83,7 +94,7 @@ export default function Treinando() {
          {treinoAtual ?
             <div className='p-2'>
                <div className='flex flex-wrap gap-3'>
-                  {treinoAtual.exercicios.map((exercicio, i) => (
+                  {treinoAtual.exercicios.map((exercicio: ExercicioType, i: number) => (
                      <div className='space-y-5 text-preto bg-branco p-3 rounded w-[300px] h-[350px]' key={i}>
                         <div className='' >
                            <p className='text-lg font-bold'>Exercício <span className='text-'>{i + 1}</span>: </p>

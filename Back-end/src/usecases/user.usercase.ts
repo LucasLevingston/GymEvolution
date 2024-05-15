@@ -1,5 +1,8 @@
 import { User, UserCreate, UserRepository } from "../interfaces/user.interface";
 import { UserRepositoryPrisma } from "../repositories/user.repository";
+export function verifyPassword(user: User, password: string) {
+   return user.senha === password
+}
 
 class UserUseCase {
    private userRepository: UserRepository;
@@ -24,10 +27,10 @@ class UserUseCase {
          throw new Error("User not found");
       }
 
-      // const isPasswordCorrect = await this.userRepository.verifyPassword(user.id, password);
-      // if (!isPasswordCorrect) {
-      //    throw new Error("Invalid password");
-      // }
+      const isPasswordCorrect = user.senha === senha
+      if (!isPasswordCorrect) {
+         throw new Error("Invalid password");
+      }
 
       return user;
    }
