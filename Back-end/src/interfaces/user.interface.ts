@@ -1,14 +1,12 @@
 export interface User {
    id: string,
    email: string;
-   name: string;
-   createdAt: Date
-   updatedAt: Date
+   senha: string;
 }
 
 export interface UserCreate {
-   email: string,
-   name: string
+   email: string
+   senha: string,
 }
 
 export interface UserRepository {

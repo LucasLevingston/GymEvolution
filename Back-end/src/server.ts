@@ -1,16 +1,18 @@
 import fastify, { FastifyInstance } from "fastify"
 import { userRoutes } from "./routes/user.routes"
-import { contactsRoutes } from "./routes/contacts.routes"
+import fastifyCors from "@fastify/cors";
 
 const app: FastifyInstance = fastify({ logger: false })
+
+app.register(fastifyCors, {
+   origin: '*'
+})
+
 
 app.register(userRoutes, {
    prefix: '/users'
 })
 
-app.register(contactsRoutes, {
-   prefix: '/contacts'
-})
 
 app.listen({
    port: 3100

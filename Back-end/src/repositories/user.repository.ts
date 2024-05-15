@@ -5,19 +5,20 @@ class UserRepositoryPrisma implements UserRepository {
    async create(data: UserCreate): Promise<User> {
       const result = await prisma.user.create({
          data: {
-            name: data.name,
             email: data.email,
+            senha: data.senha,
          }
-      })
-      return result
+      });
+      return result;
    }
+
    async findByEmail(email: string): Promise<User | null> {
       const result = await prisma.user.findFirst({
          where: {
             email
          }
-      })
-      return result || null
+      });
+      return result || null;
    }
 }
-export { UserRepositoryPrisma }
+export { UserRepositoryPrisma };
