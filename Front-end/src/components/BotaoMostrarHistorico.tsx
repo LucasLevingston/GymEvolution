@@ -28,10 +28,10 @@ export default function BotaoMostrarHistorico() {
    }, [getUser]);
 
    return (
-      <div className="rounded-lg bg-white">
+      <div className="rounded-lg bg-cinza">
          {user &&
             <Sheet>
-               <SheetTrigger className="text-xm flex items-center justify-center space-x-2 p-2 px-3 text-cinzaEscuro ">
+               <SheetTrigger className="text-xm flex items-center justify-center space-x-2 p-2 px-3 text-preto ">
                   <div>Ver Histórico</div>
                   <BsJournalText />
                </SheetTrigger>

@@ -11,9 +11,86 @@ datasource db {
 }
 
 model User {
-  id    String @id @default(uuid())
-  email String @unique
-  senha String
+  id              String           @id @default(uuid())
+  email           String           @unique
+  senha           String
+  nome            String?
+  sexo            String?
+  rua             String?
+  numero          String?
+  cep             String?
+  cidade          String?
+  estado          String?
+  nascimento      String?
+  telefone        String?
+  pesoAtual       Float?
+  historico       Historico[]
+  pesosAntigos    Peso[]
+  SemanasDeTreino SemanaDeTreino[]
 
   @@map("users")
+}
+
+model SemanaDeTreino {
+  id           String        @id @default(uuid())
+  NumeroSemana Int
+  treino       DiaDeTreino[]
+  atual        Boolean
+  informacoes  String?
+  feito        Boolean
+  User         User          @relation(fields: [userId], references: [id])
+  userId       String
+
+  @@map("semanaDeTreino")
+}
+
+model Historico {
+  id       String @id @default(uuid())
+  ocorrido String
+  data     String
+  userId   String
+  user     User   @relation(fields: [userId], references: [id])
+}
+
+model Peso {
+  id     String @id @default(uuid())
+  peso   Float
+  data   String
+  bf     Float
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("pesosAntigos")
+}
+
+model DiaDeTreino {
+  id               String         @id @default(uuid())
+  grupo            String
+  diaDaSemana      String
+  feito            Boolean
+  observacoes      String?
+  exercicios       Exercicio[]
+  semanaDoTreino   SemanaDeTreino @relation(fields: [semanaDeTreinoId], references: [id], onDelete: Cascade)
+  semanaDeTreinoId String
+}
+
+model Exercicio {
+  id               String       @id @default(uuid())
+  nome             String
+  variacao         String?
+  repeticoes       Int
+  quantidadeSeries Int
+  feito            Boolean
+  resultado        Serie[]
+  DiaDeTreino      DiaDeTreino? @relation(fields: [diaDeTreinoId], references: [id])
+  diaDeTreinoId    String
+}
+
+model Serie {
+  id          String    @id @default(uuid())
+  serieIndex  Int?
+  repeticoes  Int?
+  carga       Int?
+  Exercicio   Exercicio @relation(fields: [exercicioId], references: [id])
+  exercicioId String
 }

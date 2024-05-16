@@ -56,12 +56,12 @@ export const DadosPessoais: React.FC = () => {
       <Container>
          {user ? (
             <div className="flex w-full flex-col items-center justify-center pb-3  ">
-               <div className="w-[70%] space-y-8 rounded-3xl border-[4px] border-branco text-preto p-5">
-                  <div className="flex items-center justify-between  ">
+               <div className="w-[70%] space-y-8 rounded-3xl border-[4px] bg-branco border-preto text-preto p-5">
+                  <div className="flex items-center w-[65%]  justify-between ">
                      <div className="flex items-center space-x-2">
                         <BotaoMostrarHistorico />
                      </div>
-                     <div className="p-3 pb-3 text-[40px] font-bold text-branco">
+                     <div className="p-3 pb-3 text-[40px] font-bold text-preto">
                         Dados do Usuário
                      </div>
                   </div>
@@ -73,7 +73,7 @@ export const DadosPessoais: React.FC = () => {
                         <div className="flex">
                            <div className="flex w-[50%] flex-col">
                               <div className="w-full space-y-5">
-                                 <div className="h-13 w-[90%]  bg-branco p-2 ">
+                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Nome</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.nome}</h2>
@@ -86,7 +86,7 @@ export const DadosPessoais: React.FC = () => {
                                        />
                                     </div>{' '}
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-branco p-2 ">
+                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Email</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.email}</h2>
@@ -101,7 +101,7 @@ export const DadosPessoais: React.FC = () => {
                                  </div>
                                  <div className="flex w-[90%]">
                                     <div className="w-[70%]">
-                                       <div className="h-13 w-[90%]  bg-branco p-2 ">
+                                       <div className="h-13 w-[90%]  bg-cinza p-2 ">
                                           <h1 className="text-xs font-bold">Rua</h1>
 
                                           <div className="flex items-center justify-between">
@@ -117,7 +117,7 @@ export const DadosPessoais: React.FC = () => {
                                        </div>
                                     </div>
                                     <div className="w-[30%]">
-                                       <div className="h-13 bg-branco p-2 ">
+                                       <div className="h-13 bg-cinza p-2 ">
                                           <h1 className="text-xs font-bold">Número</h1>
                                           <div className="flex items-center justify-between">
                                              <h2 className="text-lg">
@@ -134,7 +134,7 @@ export const DadosPessoais: React.FC = () => {
                                        </div>
                                     </div>
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-branco p-2 ">
+                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">CEP</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.cep}</h2>
@@ -148,7 +148,7 @@ export const DadosPessoais: React.FC = () => {
                                     </div>
                                  </div>
                                  <div className="flex w-[90%] justify-between">
-                                    <div className="h-13 w-[50%] bg-branco p-2 ">
+                                    <div className="h-13 w-[50%] bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">Cidade</h1>
                                        <div className="flex items-center justify-between">
                                           <h2 className="text-lg">{user.cidade}</h2>
@@ -161,7 +161,7 @@ export const DadosPessoais: React.FC = () => {
                                           />
                                        </div>
                                     </div>
-                                    <div className="h-13 w-[45%]  bg-branco p-2 ">
+                                    <div className="h-13 w-[45%]  bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">Estado</h1>
                                        <div className="flex items-center justify-between">
                                           <h2 className="text-lg">{user.estado}</h2>
@@ -179,14 +179,14 @@ export const DadosPessoais: React.FC = () => {
                            </div>
                            <div className="flex w-[50%] flex-col ">
                               <div className="w-full space-y-5 ">
-                                 <div className="flex w-[90%] justify-between space-x-4 bg-branco p-2">
+                                 <div className="flex w-[90%] justify-between space-x-4 bg-cinza p-2">
                                     <div className="flex space-x-4">
                                        <div className="flex flex-col  space-x-2">
                                           <h1 className="py-2 pl-2 text-xs font-bold">
                                              Foto de Perfil
                                           </h1>
                                           <Avatar
-                                             className={`${formato}  w-48 border-[4px]  border-branco`}
+                                             className={`${formato}  w-48 border-[4px]  border-cinzabg-cinza`}
                                           >
                                              {/* <AvatarImage
                                                 className="h-full w-full"
@@ -216,7 +216,7 @@ export const DadosPessoais: React.FC = () => {
                                        antigoValor={user.fotoPerfilUrl}
                                     /> */}
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-branco p-2 ">
+                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Sexo</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.sexo}</h2>
@@ -230,7 +230,7 @@ export const DadosPessoais: React.FC = () => {
                                     </div>{' '}
                                  </div>
                                  <div className="flex w-[90%] justify-between">
-                                    <div className="h-13 w-[50%]  bg-branco p-2 ">
+                                    <div className="h-13 w-[50%]  bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">
                                           Número de Celular
                                        </h1>
@@ -247,7 +247,7 @@ export const DadosPessoais: React.FC = () => {
                                           />
                                        </div>
                                     </div>
-                                    <div className="h-13 w-[45%]  bg-branco p-2 ">
+                                    <div className="h-13 w-[45%]  bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">
                                           Data de Aniversário
                                        </h1>

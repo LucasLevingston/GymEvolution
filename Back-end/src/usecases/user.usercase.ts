@@ -11,7 +11,7 @@ class UserUseCase {
       this.userRepository = new UserRepositoryPrisma();
    }
 
-   async create({ senha, email }: UserCreate): Promise<User> {
+   async create({ senha, email }: UserCreate): Promise<UserCreate> {
       const verifyIfUserExists = await this.userRepository.findByEmail(email);
       if (verifyIfUserExists) {
          throw new Error("User already exists");
@@ -34,6 +34,15 @@ class UserUseCase {
 
       return user;
    }
+   async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string } | null> {
+      const user = await this.userRepository.findByEmail(email)
+      if (!user) {
+         throw new Error("Usuário não encontrado")
+      }
+      await this.userRepository.alterarDado(email, field, novoDado);
+      return { field, novoDado };
+   }
+
 }
 
 export { UserUseCase };

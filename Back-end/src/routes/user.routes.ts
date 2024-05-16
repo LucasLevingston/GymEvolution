@@ -25,4 +25,14 @@ export async function userRoutes(fastify: FastifyInstance) {
          reply.send(error);
       }
    });
+   fastify.put<{
+      Body: { email: string, field: string, novoDado: string }
+   }>("/update", async (req, reply) => {
+      const { email, field, novoDado } = req.body
+      try {
+         const result = await userUseCase.alterarDado(email, field, novoDado)
+      } catch (error) {
+         reply.send(error)
+      }
+   })
 }
