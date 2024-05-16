@@ -1,3 +1,4 @@
+import { Historico } from './../interfaces/user.interface';
 import { prisma } from "../database/prisma.client";
 import { User, UserCreate, UserRepository } from "../interfaces/user.interface";
 
@@ -28,17 +29,75 @@ class UserRepositoryPrisma implements UserRepository {
       }
       return null
    }
-   async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string } | null> {
+   async alterarDado(email: string, field: string, novoDado: string | Historico): Promise<{ field: string, novoDado: string | object } | null> {
       const user = await this.findByEmail(email);
       if (!user) {
          throw new Error("Usuário não encontrado");
       }
+      if (field && novoDado) {
+         if (field === 'nascimento' && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { nascimento: novoDado },
+            })
+         } else if (field === "sexo" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { sexo: novoDado },
+            })
+         } else if (field === "rua" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { rua: novoDado },
+            })
+         } else if (field === "numero" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { numero: novoDado },
+            })
+         } else if (field === "sexo" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { sexo: novoDado },
+            })
+         } else if (field === "rua" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { rua: novoDado },
+            })
+         } else if (field === "cidade" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { cidade: novoDado },
+            })
+         } else if (field === "estado" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { estado: novoDado },
+            })
+         } else if (field === "telefone" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { telefone: novoDado },
+            })
+         } else if (field === "pesoAtual" && typeof novoDado === 'string') {
+            await prisma.user.update({
+               where: { email },
+               data: { pesoAtual: novoDado },
+            })
+         } else if (field === "historico" && typeof novoDado === 'object') {
+            await prisma.user.update({
+               where: { email },
+               data: {
+                  historico: {
+                     create: novoDado
+                  }
+               }
+            });
+         }
 
-      if (field === 'nascimento') {
-         await prisma.user.update({
-            where: { email },
-            data: { nascimento: novoDado },
-         });
+
+
          return { field, novoDado };
       }
 

@@ -23,7 +23,7 @@ model User {
   estado          String?
   nascimento      String?
   telefone        String?
-  pesoAtual       Float?
+  pesoAtual       String?
   historico       Historico[]
   pesosAntigos    Peso[]
   SemanasDeTreino SemanaDeTreino[]
@@ -54,9 +54,9 @@ model Historico {
 
 model Peso {
   id     String @id @default(uuid())
-  peso   Float
+  peso   String
   data   String
-  bf     Float
+  bf     String
   userId String
   user   User   @relation(fields: [userId], references: [id])
 

@@ -34,7 +34,7 @@ class UserUseCase {
 
       return user;
    }
-   async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string } | null> {
+   async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string | object } | null> {
       const user = await this.userRepository.findByEmail(email)
       if (!user) {
          throw new Error("Usuário não encontrado")

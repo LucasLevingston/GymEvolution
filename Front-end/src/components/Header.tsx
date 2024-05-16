@@ -1,5 +1,5 @@
 import logoDivisao from '../assets/logo.png'
-import { Link } from 'react-router-dom'
+import { Link, Navigate } from 'react-router-dom'
 import {
    DropdownMenu,
    DropdownMenuContent,
@@ -49,10 +49,12 @@ export default function Header() {
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                      <DropdownMenuItem>
-                        <button className="flex items-center gap-2" onClick={() => { window.location.href = "/dados-pessoais" }}>
-                           <User className='w-4' />
-                           <span>Dados pessoais</span>
-                        </button>
+                        <Link to={"/dados-pessoais"} >
+                           <button className="flex items-center gap-2" >
+                              <User className='w-4' />
+                              <span>Dados pessoais</span>
+                           </button>
+                        </Link>
                      </DropdownMenuItem>
                      <DropdownMenuItem>
                         <Link to="/" className="flex items-center gap-2">

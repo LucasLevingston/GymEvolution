@@ -1,34 +1,44 @@
-export interface TreinoType {
-   diaDeTreino: DiaDeTreinoType[]
-   semana: number,
-   informacoes?: string
+import { UserType } from "./userType";
+
+export interface SemanaDeTreinoType {
+   id: string;
+   NumeroSemana: number;
+   treino: DiaDeTreinoType[];
+   atual: boolean;
+   informacoes?: string;
+   feito: boolean;
+   User: UserType;
+   userId: string;
 }
 
 export interface DiaDeTreinoType {
-   id: number,
-   grupo: string,
-   diaDaSemana: string,
-   feito: boolean,
-   observacoes?: string,
-   exercicios: ExercicioType[]
+   id: string;
+   grupo: string;
+   diaDaSemana: string;
+   feito: boolean;
+   observacoes?: string;
+   exercicios: ExercicioType[];
+   semanaDoTreino: SemanaDeTreinoType;
+   semanaDeTreinoId: string;
 }
+
 export interface ExercicioType {
-   nome: string,
-   variacao?: string,
-   repeticoes: number,
+   id: string;
+   nome: string;
+   variacao?: string;
+   repeticoes: number;
    quantidadeSeries: number;
-   feito: boolean
-   resultado?: serieType[]
+   feito: boolean;
+   resultado: SerieType[];
+   DiaDeTreino?: DiaDeTreinoType;
+   diaDeTreinoId?: string;
 }
 
-export interface serieType {
-   repeticoes?: number,
-   carga?: number,
-   serie?: number
-}
-
-export interface TreinoAntigoType {
-   semana: number,
-   treino: TreinoType,
-   serie: serieType
+export interface SerieType {
+   id: string;
+   serieIndex?: number;
+   repeticoes?: number;
+   carga?: number;
+   Exercicio: ExercicioType;
+   exercicioId: string;
 }
