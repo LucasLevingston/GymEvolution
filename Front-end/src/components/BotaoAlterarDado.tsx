@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
    AlertDialog,
    AlertDialogCancel,
@@ -38,24 +38,42 @@ import {
 } from './ui/command';
 import { IMaskInput } from 'react-imask';
 // import {  toast } from 'sonner';
-import { UserType } from '@/types/userType';
+import { Historico, Peso, UserType } from '@/types/userType';
+import useUser from '@/hooks/user-hooks';
+import { toast } from 'sonner';
+import { SemanaDeTreinoType } from '@/types/treinoType';
 // import useUser from '@/hooks/user-hooks';
 
 export default function BotaoAlterarDado({
-   user,
+
    field,
    novoValor,
    antigoValor,
    handleChange,
 }: {
-   user: UserType;
+
    field: string;
-   novoValor: string | File | number;
+   novoValor: string | Historico | Peso | SemanaDeTreinoType;
    antigoValor?: string | number;
-   handleChange: (field: string, value: string | File | number) => void;
+   handleChange: (field: string, value: string | Historico | Peso | SemanaDeTreinoType) => void;
 }) {
    const [isOpen, setIsOpen] = useState(false);
-   // const { alterarDados } = useUser()
+   const { getUser, alterarDados } = useUser();
+   const [user, setUser] = useState<UserType | null>(null);
+   const [error, setError] = useState<string | null>(null);
+
+   useEffect(() => {
+      const fetchUser = async () => {
+         try {
+            const fetchedUser = await getUser();
+            setUser(fetchedUser);
+         } catch (error) {
+            setError("Erro ao buscar o usuário");
+         }
+      };
+
+      fetchUser();
+   }, [getUser]);
    const handleOpenDialog = () => {
       setIsOpen(true);
    };
@@ -63,24 +81,28 @@ export default function BotaoAlterarDado({
    const handleCloseDialog = () => {
       setIsOpen(false);
    };
+
    const handleContinue = async () => {
       handleChange(field, novoValor);
       handleCloseDialog();
-      // if (user.id) {
-      //    if (user.id && field && novoValor) {
-      //       if (await alterarDados(user.id, field, novoValor)) {
-      //          toast.success('Funcionário Atualizado');
-      //          setTimeout(() => {
-      //             window.location.href = '/';
-      //          }, 2000);
-      //       } else {
-      //          toast.error('Erro ao atualizar funcionário');
-      //          setTimeout(() => {
-      //             window.location.href = '/';
-      //          }, 2000);
-      //       }
-      //    }
-      // }
+      if (user && user.id) {
+         if (user.id && field && novoValor) {
+            const result = await alterarDados(user.email, field, novoValor)
+            if (result) {
+
+
+               setTimeout(() => {
+                  window.location.reload;
+               }, 2000);
+            }
+         } else {
+            toast.error('Erro ao atualizar funcionário');
+            // setTimeout(() => {
+            //    window.location.href = '/';
+            // }, 2000);
+
+         }
+      }
    };
    function opcoesSelecionar(field: string) {
       if (field === 'sexo') return sexoOpcoes;

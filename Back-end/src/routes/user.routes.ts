@@ -31,8 +31,28 @@ export async function userRoutes(fastify: FastifyInstance) {
       const { email, field, novoDado } = req.body
       try {
          const result = await userUseCase.alterarDado(email, field, novoDado)
+         return result
       } catch (error) {
          reply.send(error)
       }
    })
+   fastify.get('/getUser/:email', async (req, reply) => {
+      const params = req.params;
+      if (typeof params === "object" && params && "email" in params) {
+         const email = params.email;
+         try {
+            const data = await userUseCase.getUser(String(email));
+            reply.send(data);
+         } catch (error) {
+            reply.status(500).send({
+               error: 'Internal Server Error',
+            });
+         }
+      } else {
+         reply.status(400).send({
+            error: 'Bad Request',
+            message: 'Invalid params object or missing email property',
+         });
+      }
+   });
 }

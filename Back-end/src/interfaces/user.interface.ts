@@ -29,9 +29,9 @@ export interface Historico {
 
 export interface Peso {
    id: string;
-   peso: number;
+   peso: string;
    data: string;
-   bf: number;
+   bf: string;
    userId: string;
    user: User;
 }
@@ -44,6 +44,7 @@ export interface UserCreate {
 export interface UserRepository {
    create(data: UserCreate): Promise<UserCreate>
    findByEmail(email: string): Promise<User | null>
+   getUser(email: string): Promise<User | null>
    login(email: string, senha: string): Promise<User | null>
    alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string | object } | null>
 }

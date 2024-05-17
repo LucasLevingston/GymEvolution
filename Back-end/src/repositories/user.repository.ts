@@ -1,6 +1,7 @@
-import { Historico } from './../interfaces/user.interface';
+import { Historico, Peso } from './../interfaces/user.interface';
 import { prisma } from "../database/prisma.client";
 import { User, UserCreate, UserRepository } from "../interfaces/user.interface";
+import { SemanaDeTreino } from '../interfaces/treino.interface';
 
 class UserRepositoryPrisma implements UserRepository {
    async create(data: UserCreate): Promise<UserCreate> {
@@ -29,7 +30,12 @@ class UserRepositoryPrisma implements UserRepository {
       }
       return null
    }
-   async alterarDado(email: string, field: string, novoDado: string | Historico): Promise<{ field: string, novoDado: string | object } | null> {
+   async getUser(email: string): Promise<User | null> {
+      const user = await this.findByEmail(email)
+
+      return user
+   }
+   async alterarDado(email: string, field: string, novoDado: string | Historico | Peso | SemanaDeTreino): Promise<{ field: string, novoDado: string | object } | null> {
       const user = await this.findByEmail(email);
       if (!user) {
          throw new Error("Usuário não encontrado");
@@ -80,26 +86,57 @@ class UserRepositoryPrisma implements UserRepository {
                where: { email },
                data: { telefone: novoDado },
             })
-         } else if (field === "pesoAtual" && typeof novoDado === 'string') {
+         } else if (field === 'peso' && typeof novoDado === 'object') {
+            // Adiciona novo peso ao array de pesos antigos
+            const updatedUser = await prisma.user.update({
+               where: { email },
+               data: {
+                  pesosAntigos: {
+                     create: {
+                        peso: (novoDado as Peso).peso,
+                        data: (novoDado as Peso).data,
+                        bf: (novoDado as Peso).bf,
+                     }
+                  }
+               },
+               include: {
+                  pesosAntigos: true
+               }
+            });
+
+            // Atualiza o peso atual para o último peso adicionado
             await prisma.user.update({
                where: { email },
-               data: { pesoAtual: novoDado },
-            })
-         } else if (field === "historico" && typeof novoDado === 'object') {
+               data: {
+                  pesoAtual: updatedUser.pesosAntigos[updatedUser.pesosAntigos.length - 1].peso
+               },
+            });
+
+         } else if (field === "historico" && typeof novoDado === "object") {
             await prisma.user.update({
                where: { email },
                data: {
                   historico: {
-                     create: novoDado
+                     create: novoDado as Historico
                   }
                }
             });
          }
-
-
-
+      } else if (field === "semanaDeTreino" && typeof novoDado === 'object') {
+         await prisma.user.update({
+            where: { email },
+            data: {
+               SemanasDeTreino: {
+                  create: novoDado as SemanaDeTreino
+               }
+            }
+         });
          return { field, novoDado };
       }
+
+
+
+
 
       return null;
    }

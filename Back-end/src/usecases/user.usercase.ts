@@ -34,6 +34,11 @@ class UserUseCase {
 
       return user;
    }
+   async getUser(email: string): Promise<User | null> {
+      const result = await this.userRepository.findByEmail(email)
+
+      return result
+   }
    async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string | object } | null> {
       const user = await this.userRepository.findByEmail(email)
       if (!user) {

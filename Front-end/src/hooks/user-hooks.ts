@@ -1,7 +1,8 @@
 import { useState, } from 'react';
 import axios from 'axios'
 import { toast } from 'sonner';
-import { UserType } from '@/types/userType';
+import { Historico, Peso, UserType } from '@/types/userType';
+import { SemanaDeTreinoType } from '@/types/treinoType';
 
 export const useUser = () => {
    const [user, setUser] = useState(null);
@@ -45,8 +46,13 @@ export const useUser = () => {
    // }, []);
    const getUser = async () => {
       const userString = await localStorage.getItem("token");
-      const user: UserType = userString ? await JSON.parse(userString) : null;
-      return user
+      const user: UserType | null = userString ? JSON.parse(userString) : null;
+      if (!user) {
+         throw new Error("Usuário não encontrado no localStorage");
+      }
+      const email = user.email;
+      const response = await axios.get(baseUrl + `/getUser/${email}`);
+      return response.data;
    }
 
 
@@ -96,10 +102,27 @@ export const useUser = () => {
          throw new Error(`Erro ao cadastrar usuário: ${error}`);
       }
    };
-   const alterarDados = async (id: string,
+   const alterarDados = async (
+      email: string,
       campo: string,
-      novoValor: string | File | number) => {
-   }
+      novoValor: string | Historico | Peso | SemanaDeTreinoType
+   ) => {
+      try {
+         if (typeof novoValor === "string") {
+            const data = {
+               email,
+               campo,
+               novoValor
+            }
+            const result = await axios.put(baseUrl + "/update", data);
+            return result
+         }
+      } catch (error) {
+         console.error("Erro ao alterar os dados:",);
+      }
+   };
+
+
    const logout = () => {
       localStorage.removeItem('token');
       setUser(null);

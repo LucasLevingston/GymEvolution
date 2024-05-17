@@ -8,18 +8,24 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { DataFormatada, formatarTelefone } from "@/estatico";
 import useUser from "@/hooks/user-hooks";
-import { UserType } from "@/types/userType";
+import { SemanaDeTreinoType } from "@/types/treinoType";
+import { Historico, Peso, UserType } from "@/types/userType";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export const DadosPessoais: React.FC = () => {
    const { getUser } = useUser();
    const [user, setUser] = useState<UserType | null>(null);
+   const [error, setError] = useState<string | null>(null);
 
    useEffect(() => {
       const fetchUser = async () => {
-         const fetchedUser = await getUser();
-         setUser(fetchedUser);
+         try {
+            const fetchedUser = await getUser();
+            setUser(fetchedUser);
+         } catch (error) {
+            setError("Erro ao buscar o usuário");
+         }
       };
 
       fetchUser();
@@ -29,7 +35,7 @@ export const DadosPessoais: React.FC = () => {
    const [pagina, setPagina] = useState(1);
    const [dadosAlterados, setDadosAlterados] = useState<{
       campo: string;
-      novoValor: string | File | number;
+      novoValor: string | Historico | Peso | SemanaDeTreinoType;
    }>({ campo: '', novoValor: '' });
 
 
@@ -45,7 +51,7 @@ export const DadosPessoais: React.FC = () => {
       }
    }
 
-   const handleChange = async (campo: string, valor: string | File | number) => {
+   const handleChange = async (campo: string, valor: string | Historico | Peso | SemanaDeTreinoType) => {
       setDadosAlterados({
          campo: campo,
          novoValor: valor,
@@ -78,7 +84,6 @@ export const DadosPessoais: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.nome}</h2>
                                        <BotaoAlterarDado
-                                          user={user}
                                           field="nome"
                                           novoValor={dadosAlterados.novoValor as string}
                                           handleChange={handleChange}
@@ -91,7 +96,7 @@ export const DadosPessoais: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.email}</h2>
                                        <BotaoAlterarDado
-                                          user={user}
+
                                           field="email"
                                           novoValor={dadosAlterados.novoValor as string}
                                           handleChange={handleChange}
@@ -107,7 +112,7 @@ export const DadosPessoais: React.FC = () => {
                                           <div className="flex items-center justify-between">
                                              <h2 className="text-lg">{user.rua}</h2>
                                              <BotaoAlterarDado
-                                                user={user}
+
                                                 field="rua"
                                                 novoValor={dadosAlterados.novoValor as string}
                                                 handleChange={handleChange}
@@ -124,7 +129,7 @@ export const DadosPessoais: React.FC = () => {
                                                 {user.numero}
                                              </h2>
                                              <BotaoAlterarDado
-                                                user={user}
+
                                                 field="numero"
                                                 novoValor={dadosAlterados.novoValor as string}
                                                 handleChange={handleChange}
@@ -139,7 +144,7 @@ export const DadosPessoais: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.cep}</h2>
                                        <BotaoAlterarDado
-                                          user={user}
+
                                           field="cep"
                                           novoValor={dadosAlterados.novoValor as string}
                                           handleChange={handleChange}
@@ -153,7 +158,7 @@ export const DadosPessoais: React.FC = () => {
                                        <div className="flex items-center justify-between">
                                           <h2 className="text-lg">{user.cidade}</h2>
                                           <BotaoAlterarDado
-                                             user={user}
+
                                              field="cidade"
                                              novoValor={dadosAlterados.novoValor as string}
                                              handleChange={handleChange}
@@ -166,7 +171,7 @@ export const DadosPessoais: React.FC = () => {
                                        <div className="flex items-center justify-between">
                                           <h2 className="text-lg">{user.estado}</h2>
                                           <BotaoAlterarDado
-                                             user={user}
+
                                              field="estado"
                                              novoValor={dadosAlterados.novoValor as string}
                                              handleChange={handleChange}
@@ -209,7 +214,7 @@ export const DadosPessoais: React.FC = () => {
                                        </div>
                                     </div>
                                     {/* <BotaoAlterarDado
-                                       user={user}
+                                     
                                        field="fotoPerfil"
                                        novoValor={dadosAlterados.novoValor as File}
                                        handleChange={handleChange}
@@ -221,7 +226,7 @@ export const DadosPessoais: React.FC = () => {
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.sexo}</h2>
                                        <BotaoAlterarDado
-                                          user={user}
+
                                           field="sexo"
                                           novoValor={dadosAlterados.novoValor as string}
                                           handleChange={handleChange}
@@ -239,7 +244,7 @@ export const DadosPessoais: React.FC = () => {
                                              {formatarTelefone(user.telefone ?? '')}
                                           </h2>
                                           <BotaoAlterarDado
-                                             user={user}
+
                                              field="telefone"
                                              novoValor={dadosAlterados.novoValor as string}
                                              handleChange={handleChange}
@@ -256,7 +261,7 @@ export const DadosPessoais: React.FC = () => {
                                              {DataFormatada(user.nascimento ?? '')}
                                           </h2>
                                           <BotaoAlterarDado
-                                             user={user}
+
                                              field="nascimento"
                                              novoValor={dadosAlterados.novoValor as string}
                                              handleChange={handleChange}
