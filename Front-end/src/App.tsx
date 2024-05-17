@@ -10,6 +10,7 @@ import Container from "./components/Container"
 import { useEffect } from "react"
 import { DadosPessoais } from "./Paginas/DadosPessoais"
 import Evolucao from "./Paginas/Evolucao"
+import NovoTreino from "./Paginas/NovoTreino"
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
             <Route path={`/`} element={<Home />} />
             <Route path={`/login`} element={<Login />} />
             <Route path={`/evolucao`} element={<Evolucao />} />
+            <Route path={`/novo-treino`} element={<NovoTreino />} />
             <Route path={`/dados-pessoais`} element={<DadosPessoais />} />
             <Route path={`/cadastro-usuario`} element={<CadastroUsuario />} />
             <Route path={`/treinando/:treinoId`} element={<Treinando />} />

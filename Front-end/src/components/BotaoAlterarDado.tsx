@@ -37,12 +37,10 @@ import {
    CommandList,
 } from './ui/command';
 import { IMaskInput } from 'react-imask';
-// import {  toast } from 'sonner';
 import { Historico, Peso, UserType } from '@/types/userType';
 import useUser from '@/hooks/user-hooks';
 import { toast } from 'sonner';
 import { SemanaDeTreinoType } from '@/types/treinoType';
-// import useUser from '@/hooks/user-hooks';
 
 export default function BotaoAlterarDado({
 

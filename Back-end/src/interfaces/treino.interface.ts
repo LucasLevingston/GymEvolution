@@ -42,3 +42,26 @@ export interface Serie {
    Exercicio: Exercicio;
    exercicioId: string;
 }
+
+export interface SemanaDeTreinoCreate {
+   informacoes?: string,
+   feito: boolean,
+   treino: {
+      grupo: string,
+      diaDaSemana: string,
+      feito: boolean,
+      observacoes: boolean,
+      exercicios: {
+         nome: string,
+         variacao?: string,
+         repeticoes: string,
+         quantidadeDeSeries: string,
+         feito: boolean
+         resultado: {
+            serieIndex: string,
+            repeticoes: string,
+            carga: string
+         }[]
+      }[]
+   }[]
+}
