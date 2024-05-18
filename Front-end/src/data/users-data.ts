@@ -103,7 +103,7 @@ const usersData: UserType[] = [
       nascimento: "28102002",
       senha: "Teste123!",
       pesoAtual: 96,
-      pesos: [{ peso: 96, data: "20210-05-01", bf: 25 }],
+      pesosAntigos: [{ peso: 96, data: "20210-05-01", bf: 25 }],
       TreinoDaSemana: {
          semana: 1,
          diaDeTreino: [

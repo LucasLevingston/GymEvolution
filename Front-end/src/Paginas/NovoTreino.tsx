@@ -60,21 +60,63 @@ export default function NovoTreino() {
       };
 
    const handleAddExercicio = (treinoIndex: number) => {
+      setSemanaDeTreino((diasDeTreino) => {
+         const novaSemanaDeTreino = {
+            ...diasDeTreino,
+            treino: diasDeTreino.treino.map((treino, index) => {
+               if (index === treinoIndex) {
+                  return {
+                     ...treino,
+                     exercicios: [
+                        ...treino.exercicios,
+                        {
+                           nome: '',
+                           variacao: '',
+                           repeticoes: '',
+                           quantidadeDeSeries: '',
+                           feito: false,
+                           resultado: [
+                              {
+                                 serieIndex: '',
+                                 repeticoes: '',
+                                 carga: ''
+                              }
+                           ]
+                        }
+                     ]
+                  };
+               }
+               return treino;
+            })
+         };
+         return novaSemanaDeTreino;
+      });
+   };
+
+   const handleAddTreino = () => {
       setSemanaDeTreino((prevTreino) => {
-         const updatedTreino = { ...prevTreino };
-         updatedTreino.treino[treinoIndex].exercicios.push({
-            nome: '',
-            variacao: '',
-            repeticoes: '',
-            quantidadeDeSeries: '',
+         const novoTreino = {
+            grupo: '',
+            diaDaSemana: '',
             feito: false,
-            resultado: [{
-               serieIndex: '',
+            observacoes: '',
+            exercicios: [{
+               nome: '',
+               variacao: '',
                repeticoes: '',
-               carga: ''
+               quantidadeDeSeries: '',
+               feito: false,
+               resultado: [{
+                  serieIndex: '',
+                  repeticoes: '',
+                  carga: ''
+               }]
             }]
-         });
-         return updatedTreino;
+         };
+         return {
+            ...prevTreino,
+            treino: [...prevTreino.treino, novoTreino]
+         };
       });
    };
 
@@ -82,8 +124,14 @@ export default function NovoTreino() {
       console.log('Treino data:', semanaDeTreino);
    };
 
+   const numeroDaSemana = () => {
+      if (user?.SemanasDeTreino === undefined) return 0
+      return user?.SemanasDeTreino?.length + 1
+   }
+
    return (
       <Container>
+         Semana: {numeroDaSemana()}
          {user && (
             <div className='w-full h-screen text-preto space-y-3'>
                <Input
@@ -94,57 +142,80 @@ export default function NovoTreino() {
                   onChange={(e) => handleInputChange(e, 0)}
                />
                {semanaDeTreino.treino.map((treino, treinoIndex) => (
-                  <div key={treinoIndex} className='border bg-branco flex  flex-wrap w-[100%] space-y-3 p-2 rounded'>
-                     Dia {treinoIndex + 1} ({treino.diaDaSemana})
-                     <Input
-                        value={treino.grupo}
-                        name="grupo"
-                        placeholder='Grupo muscular'
-                        onChange={(e) => handleInputChange(e, treinoIndex)}
-                     />
-                     <Input
-                        value={treino.diaDaSemana}
-                        name="diaDaSemana"
-                        placeholder='Dia da Semana'
-                        onChange={(e) => handleInputChange(e, treinoIndex)}
-                     />
-                     {treino.exercicios.map((exercicio, exercicioIndex) => (
-                        <div key={exercicioIndex} className='p-2 bg-preto space-y-3'>
-                           <Input
-                              value={exercicio.nome}
-                              name="nome"
-                              placeholder='Nome do Exercício'
-                              onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
-                           />
-                           <Input
-                              value={exercicio.variacao}
-                              name="variacao"
-                              placeholder='Variação'
-                              onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
-                           />
-                           <Input
-                              value={exercicio.repeticoes}
-                              name="repeticoes"
-                              placeholder='Repetições'
-                              onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
-                           />
-                           <Input
-                              value={exercicio.quantidadeDeSeries}
-                              name="quantidadeDeSeries"
-                              placeholder='Quantidade de Séries'
-                              onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
-                           />
+                  <div className='bg-branco p-2' key={treinoIndex}>
+                     <div className='flex flex-wrap w-[100%] space-y-3 rounded'>
+                        Dia {treinoIndex + 1} ({treino.diaDaSemana})
+                        <Input
+                           value={treino.grupo}
+                           name="grupo"
+                           placeholder='Grupo muscular'
+                           onChange={(e) => handleInputChange(e, treinoIndex)}
+                        />
+                        <Input
+                           value={treino.diaDaSemana}
+                           name="diaDaSemana"
+                           placeholder='Dia da Semana'
+                           onChange={(e) => handleInputChange(e, treinoIndex)}
+                        />
+                        <div className='flex flex-wrap gap-3'>
+                           {treino.exercicios.map((exercicio, exercicioIndex) => (
+                              <div key={exercicioIndex} className='space-y-3 w-[400px] bg-cinzaEscuro rounded p-3'>
+                                 <p className='text-branco'>Exercício {exercicioIndex + 1}</p>
+                                 <div>
+                                    <p className='text-branco text-sm pb-1'>Nome do exercicio</p>
+                                    <Input
+                                       value={exercicio.nome}
+                                       name="nome"
+                                       placeholder='Nome do Exercício'
+                                       onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
+                                    />
+                                 </div>
+                                 <div>
+                                    <p className='text-branco text-sm pb-1'>Repetições</p>
+                                    <Input
+                                       value={exercicio.repeticoes}
+                                       name="repeticoes"
+                                       placeholder='Repetições'
+                                       onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
+                                    />
+                                 </div>
+                                 <div>
+                                    <p className='text-branco text-sm pb-1'>Quantidade de séries</p>
+                                    <Input
+                                       value={exercicio.quantidadeDeSeries}
+                                       name="quantidadeDeSeries"
+                                       placeholder='Quantidade de Séries'
+                                       onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
+                                    />
+                                 </div>
+                                 <div>
+                                    <p className='text-branco text-sm pb-1'>Variação</p>
+                                    <Input
+                                       value={exercicio.variacao}
+                                       name="variacao"
+                                       placeholder='Variação (opcional)'
+                                       onChange={(e) => handleInputChange(e, treinoIndex, exercicioIndex)}
+                                    />
+                                 </div>
+                              </div>
+                           ))}
                         </div>
-                     ))}
+                     </div>
+                     <div className='text-right'>
+                        <Button onClick={() => handleAddExercicio(treinoIndex)} className='w-[200px]'>
+                           Adicionar Exercício
+                        </Button>
+                     </div>
                   </div>
                ))}
-               <Button onClick={() => handleAddExercicio(treinoIndex)}>
-                  Adicionar Exercício
+               <Button onClick={handleAddTreino} className='w-full mt-4'>
+                  Adicionar Dia de Treino
                </Button>
-               <Button onClick={handleSubmit}>Salvar Treino</Button>
+               <Button onClick={handleSubmit} className='w-full mt-4'>
+                  Salvar Treino
+               </Button>
             </div>
          )}
       </Container>
    );
 }
-
