@@ -47,6 +47,7 @@ export const useUser = () => {
    const getUser = async () => {
       const userString = await localStorage.getItem("token");
       const user: UserType | null = userString ? JSON.parse(userString) : null;
+
       if (!user) {
          throw new Error("Usuário não encontrado no localStorage");
       }
@@ -104,14 +105,15 @@ export const useUser = () => {
    };
    const alterarDados = async (
       email: string,
-      campo: string,
+      field: string,
       novoValor: string | Historico | Peso | SemanaDeTreinoType
    ) => {
       try {
+         console.log("aqui")
          if (typeof novoValor === "string") {
             const data = {
                email,
-               campo,
+               field,
                novoValor
             }
             const result = await axios.put(baseUrl + "/update", data);

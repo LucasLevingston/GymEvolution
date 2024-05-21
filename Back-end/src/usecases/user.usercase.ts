@@ -39,13 +39,13 @@ class UserUseCase {
 
       return result
    }
-   async alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string | object } | null> {
+   async alterarDado(email: string, field: string, novoValor: string): Promise<{ field: string, novoValor: string | object } | null> {
       const user = await this.userRepository.findByEmail(email)
       if (!user) {
          throw new Error("Usuário não encontrado")
       }
-      await this.userRepository.alterarDado(email, field, novoDado);
-      return { field, novoDado };
+      await this.userRepository.alterarDado(email, field, novoValor);
+      return { field, novoValor };
    }
 
 }

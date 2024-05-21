@@ -46,5 +46,5 @@ export interface UserRepository {
    findByEmail(email: string): Promise<User | null>
    getUser(email: string): Promise<User | null>
    login(email: string, senha: string): Promise<User | null>
-   alterarDado(email: string, field: string, novoDado: string): Promise<{ field: string, novoDado: string | object } | null>
+   alterarDado(email: string, field: string, novoValor: string): Promise<{ field: string, novoValor: string | object } | null>
 }

@@ -35,26 +35,31 @@ class UserRepositoryPrisma implements UserRepository {
 
       return user
    }
-   async alterarDado(email: string, field: string, novoDado: string | Historico | Peso | SemanaDeTreinoCreate): Promise<{ field: string, novoDado: string | object } | null> {
+   async alterarDado(email: string, field: string, novoValor: string | object | Peso | SemanaDeTreinoCreate): Promise<{ field: string, novoValor: string | object } | null> {
       const user = await this.findByEmail(email);
       if (!user) {
          throw new Error("Usuário não encontrado");
       }
-      if (field && novoDado) {
-         if (typeof novoDado === 'string') {
+      if (field && novoValor) {
+         if (typeof novoValor === 'string') {
+            this.alterarDado(email, "historico", {
+               id: user.id,
+               ocorrido: `O campo '${field} foi alterado para '${novoValor}'`,
+               data: Date(),
+            })
             await prisma.user.update({
                where: { email },
-               data: { [field]: novoDado },
+               data: { [field]: novoValor },
             })
-         } else if (field === 'peso' && typeof novoDado === 'object') {
+         } else if (field === 'peso' && typeof novoValor === 'object') {
             const updatedUser = await prisma.user.update({
                where: { email },
                data: {
                   pesosAntigos: {
                      create: {
-                        peso: (novoDado as Peso).peso,
-                        data: (novoDado as Peso).data,
-                        bf: (novoDado as Peso).bf,
+                        peso: (novoValor as Peso).peso,
+                        data: (novoValor as Peso).data,
+                        bf: (novoValor as Peso).bf,
                      }
                   }
                },
@@ -62,6 +67,13 @@ class UserRepositoryPrisma implements UserRepository {
                   pesosAntigos: true
                }
             });
+            this.alterarDado(email, "historico", {
+               id: user.id,
+               ocorrido: `O campo '${field} foi alterado para '${novoValor}'`,
+               data: Date(),
+               userId: user.id,
+               user: user
+            })
             await prisma.user.update({
                where: { email },
                data: {
@@ -69,21 +81,21 @@ class UserRepositoryPrisma implements UserRepository {
                },
             });
 
-         } else if (field === "historico" && typeof novoDado === "object") {
+         } else if (field === "historico" && typeof novoValor === "object") {
             await prisma.user.update({
                where: { email },
                data: {
                   historico: {
-                     create: novoDado as Historico
+                     create: novoValor as Historico
                   }
                }
             });
          }
-      } else if (field === "semanaDeTreino" && typeof novoDado === 'object') {
+      } else if (field === "semanaDeTreino" && typeof novoValor === 'object') {
          let novaSemana: SemanaDeTreino;
 
-         if ('treino' in novoDado && Array.isArray(novoDado.treino)) {
-            novaSemana = novoDado;
+         if ('treino' in novoValor && Array.isArray(novoValor.treino)) {
+            novaSemana = novoValor;
          } else {
             throw new Error("O tipo de dado fornecido não é válido para uma nova semana de treino");
          }
@@ -106,7 +118,7 @@ class UserRepositoryPrisma implements UserRepository {
             }
          });
       }
-      return { field, novoDado };
+      return { field, novoValor };
    }
 
 
