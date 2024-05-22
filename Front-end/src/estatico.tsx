@@ -8,7 +8,17 @@ export const sexoOpcoes = [
       opcao: 'Feminino',
    },
 ];
+export function formatarData(data: string): string {
+   const dataObj = new Date(data);
+   const dia = dataObj.getDate().toString().padStart(2, '0');
+   const mes = (dataObj.getMonth() + 1).toString().padStart(2, '0'); // Mês começa de 0, então somamos 1
+   const ano = dataObj.getFullYear();
+   const horas = dataObj.getHours().toString().padStart(2, '0');
+   const minutos = dataObj.getMinutes().toString().padStart(2, '0');
+   const segundos = dataObj.getSeconds().toString().padStart(2, '0');
 
+   return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
+}
 export const estadosBrasileiros = [
    { label: 'Acre', value: 'AC' },
    { label: 'Alagoas', value: 'AL' },

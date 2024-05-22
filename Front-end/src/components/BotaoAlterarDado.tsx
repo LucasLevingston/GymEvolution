@@ -79,7 +79,6 @@ export default function BotaoAlterarDado({
    const handleCloseDialog = () => {
       setIsOpen(false);
    };
-
    const handleContinue = async () => {
       handleChange(field, novoValor);
       handleCloseDialog();
@@ -87,26 +86,18 @@ export default function BotaoAlterarDado({
          if (user.id && field && novoValor) {
             const result = await alterarDados(user.email, field, novoValor)
             if (result) {
-
-
-               setTimeout(() => {
-                  window.location.reload;
-               }, 2000);
+               toast.success("Atualizado")
             }
          } else {
-            toast.error('Erro ao atualizar funcionário');
-            // setTimeout(() => {
-            //    window.location.href = '/';
-            // }, 2000);
-
+            toast.error('Erro ao atualizar');
          }
       }
    };
    function opcoesSelecionar(field: string) {
       if (field === 'sexo') return sexoOpcoes;
    }
-   const [open, setOpen] = React.useState(false);
-   const [value, setValue] = React.useState('');
+   const [open, setOpen] = useState(false);
+   const [value, setValue] = useState('');
 
    return (
       <>

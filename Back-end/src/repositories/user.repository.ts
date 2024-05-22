@@ -32,66 +32,84 @@ class UserRepositoryPrisma implements UserRepository {
    }
    async getUser(email: string): Promise<User | null> {
       const user = await this.findByEmail(email)
-
       return user
    }
+   // async adicionarAoHistorico(email: string, field: string, novoValor: string | object) {
+   //    const user = await this.findByEmail(email);
+   //    try {
+   //       if (!user) {
+   //          throw new Error("Usuário não encontrado");
+   //       }
+   //       await prisma.user.update({
+   //          where: { email },
+   //          data: {
+   //             historico: {
+   //                create: {
+   //                   id: user.id,
+   //                   ocorrido: `O campo '${field} foi alterado para '${novoValor}'`,
+   //                   data: Date(),
+   //                }
+   //             }
+   //          }
+   //       }
+   //       )
+   //    } catch (error) {
+   //       throw new Error("Erro ao cadastrar no historico")
+   //    }
+   // }
    async alterarDado(email: string, field: string, novoValor: string | object | Peso | SemanaDeTreinoCreate): Promise<{ field: string, novoValor: string | object } | null> {
       const user = await this.findByEmail(email);
-      if (!user) {
+      if (!user || !field || !novoValor) {
          throw new Error("Usuário não encontrado");
       }
-      if (field && novoValor) {
-         if (typeof novoValor === 'string') {
-            this.alterarDado(email, "historico", {
-               id: user.id,
-               ocorrido: `O campo '${field} foi alterado para '${novoValor}'`,
-               data: Date(),
-            })
-            await prisma.user.update({
-               where: { email },
-               data: { [field]: novoValor },
-            })
-         } else if (field === 'peso' && typeof novoValor === 'object') {
-            const updatedUser = await prisma.user.update({
-               where: { email },
-               data: {
-                  pesosAntigos: {
-                     create: {
-                        peso: (novoValor as Peso).peso,
-                        data: (novoValor as Peso).data,
-                        bf: (novoValor as Peso).bf,
-                     }
-                  }
-               },
-               include: {
-                  pesosAntigos: true
-               }
-            });
-            this.alterarDado(email, "historico", {
-               id: user.id,
-               ocorrido: `O campo '${field} foi alterado para '${novoValor}'`,
-               data: Date(),
-               userId: user.id,
-               user: user
-            })
-            await prisma.user.update({
-               where: { email },
-               data: {
-                  pesoAtual: updatedUser.pesosAntigos[updatedUser.pesosAntigos.length - 1].peso
-               },
-            });
 
-         } else if (field === "historico" && typeof novoValor === "object") {
-            await prisma.user.update({
-               where: { email },
-               data: {
-                  historico: {
-                     create: novoValor as Historico
+      if (typeof novoValor === 'string') {
+         await prisma.user.update({
+            where: { email },
+            data: { [field]: novoValor },
+         })
+         await prisma.historico.create({
+            data: {
+               userId: user.id,
+               ocorrido: `O campo '${field}' foi alterado para '${novoValor}'`,
+               data: new Date().toISOString(),
+            }
+         });
+         return { field, novoValor }
+      }
+
+      else if (field === 'peso' && typeof novoValor === 'object') {
+         const updatedUser = await prisma.user.update({
+            where: { email },
+            data: {
+               pesosAntigos: {
+                  create: {
+                     peso: (novoValor as Peso).peso,
+                     data: (novoValor as Peso).data,
+                     bf: (novoValor as Peso).bf,
                   }
                }
-            });
-         }
-      } else if (field === "semanaDeTreino" && typeof novoValor === 'object') {
+            },
+            include: {
+               pesosAntigos: true
+            }
+         });
+         await prisma.historico.create({
+            data: {
+               userId: user.id,
+               ocorrido: `O '${field}' foi alterado para '${novoValor}'`,
+               data: new Date().toISOString(),
+            }
+         });
+         await prisma.user.update({
+            where: { email },
+            data: {
+               pesoAtual: updatedUser.pesosAntigos[updatedUser.pesosAntigos.length - 1].peso
+            },
+         });
+
+      }
+      if (field === "semanaDeTreino" && typeof novoValor === 'object') {
          let novaSemana: SemanaDeTreino;
 
          if ('treino' in novoValor && Array.isArray(novoValor.treino)) {

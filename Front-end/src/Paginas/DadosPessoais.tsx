@@ -2,7 +2,7 @@ import BotaoAlterarDado from "@/components/BotaoAlterarDado";
 import BotaoMostrarHistorico from "@/components/BotaoMostrarHistorico";
 import Container from "@/components/Container";
 import Paginacao from "@/components/Paginacao";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -12,6 +12,8 @@ import { SemanaDeTreinoType } from "@/types/treinoType";
 import { Historico, Peso, UserType } from "@/types/userType";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { RxAvatar } from "react-icons/rx";
+
 
 export const DadosPessoais: React.FC = () => {
    const { getUser } = useUser();
@@ -31,7 +33,7 @@ export const DadosPessoais: React.FC = () => {
       fetchUser();
    }, [getUser]);
 
-   const [formato, setFormato] = useState('rounded-none h-56');
+   const [formato, setFormato] = useState('rounded');
    const [pagina, setPagina] = useState(1);
    const [dadosAlterados, setDadosAlterados] = useState<{
       campo: string;
@@ -44,10 +46,10 @@ export const DadosPessoais: React.FC = () => {
    };
 
    function onChangeFoto() {
-      if (formato == 'h-48') {
-         setFormato('rounded-none h-56');
-      } else if (formato == 'rounded-none h-56') {
-         setFormato('h-48');
+      if (formato == 'rounded-full') {
+         setFormato('rounded');
+      } else if (formato == 'rounded') {
+         setFormato('rounded-full');
       }
    }
 
@@ -95,13 +97,13 @@ export const DadosPessoais: React.FC = () => {
                                     <h1 className="text-xs font-bold">Email</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.email}</h2>
-                                       <BotaoAlterarDado
+                                       {/* <BotaoAlterarDado
 
                                           field="email"
                                           novoValor={dadosAlterados.novoValor as string}
                                           handleChange={handleChange}
                                           antigoValor={user.email}
-                                       />
+                                       /> */}
                                     </div>{' '}
                                  </div>
                                  <div className="flex w-[90%]">
@@ -191,14 +193,14 @@ export const DadosPessoais: React.FC = () => {
                                              Foto de Perfil
                                           </h1>
                                           <Avatar
-                                             className={`${formato}  w-48 border-[4px]  border-cinzabg-cinza`}
+                                             className={`${formato} h-48 w-48 border-[4px]  bg-branco`}
                                           >
-                                             {/* <AvatarImage
+                                             <AvatarImage
                                                 className="h-full w-full"
-                                                src={user.fotoPerfilUrl}
-                                             /> */}
+                                             // src={user.fotoPerfilUrl}
+                                             />
                                              <AvatarFallback>
-                                                {/* <RxAvatar className="h-full w-full" /> */}
+                                                <RxAvatar className="h-full w-full" />
                                              </AvatarFallback>
                                           </Avatar>
                                        </div>

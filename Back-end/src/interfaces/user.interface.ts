@@ -48,3 +48,6 @@ export interface UserRepository {
    login(email: string, senha: string): Promise<User | null>
    alterarDado(email: string, field: string, novoValor: string): Promise<{ field: string, novoValor: string | object } | null>
 }
+export interface HistoricoRepository {
+   getHistorico(email: string): Promise<Historico[] | null>
+}

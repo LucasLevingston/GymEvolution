@@ -1,9 +1,11 @@
 import { FastifyInstance } from "fastify";
 import { UserUseCase } from "../usecases/user.usercase";
 import { User, UserCreate } from "../interfaces/user.interface";
+import { HistoricoUseCase } from "../usecases/historico.usecase";
 
 export async function userRoutes(fastify: FastifyInstance) {
    const userUseCase = new UserUseCase()
+   const historicoUseCase = new HistoricoUseCase()
    fastify.post<{ Body: UserCreate }>('/', async (req, reply) => {
       const { senha, email } = req.body
       try {
@@ -36,7 +38,7 @@ export async function userRoutes(fastify: FastifyInstance) {
          reply.send(error)
       }
    })
-   fastify.get('/getUser/:email', async (req, reply) => {
+   fastify.get('/:email', async (req, reply) => {
       const params = req.params;
       if (typeof params === "object" && params && "email" in params) {
          const email = params.email;
@@ -55,4 +57,13 @@ export async function userRoutes(fastify: FastifyInstance) {
          });
       }
    });
+   fastify.get<{ Body: { email: string } }>('/historico', async (req, reply) => {
+      const { email } = req.body
+      try {
+         const result = await historicoUseCase.getHistorico(email)
+         return result
+      } catch (error) {
+         reply.send(error)
+      }
+   })
 }

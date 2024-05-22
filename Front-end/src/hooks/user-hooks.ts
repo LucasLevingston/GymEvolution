@@ -8,7 +8,7 @@ export const useUser = () => {
    const [user, setUser] = useState(null);
    // const [loading, setLoading] = useState(false);
 
-   const baseUrl = "http://localhost:3100/users"
+   const baseUrl = "http://localhost:3100"
 
    // useEffect(() => {
    //    const checkAuthenticated = async () => {
@@ -52,16 +52,16 @@ export const useUser = () => {
          throw new Error("Usuário não encontrado no localStorage");
       }
       const email = user.email;
-      const response = await axios.get(baseUrl + `/getUser/${email}`);
+      const response = await axios.get(baseUrl + `/users/${email}`);
+
       return response.data;
    }
 
 
    const login = async (email: string, senha: string) => {
       const data = { email, senha };
-      console.log(user)
       try {
-         const response = await axios.post(baseUrl + '/login', data);
+         const response = await axios.post(baseUrl + '/users/login', data);
 
          if (response.status === 200) {
             const userData = await response.data
@@ -109,14 +109,13 @@ export const useUser = () => {
       novoValor: string | Historico | Peso | SemanaDeTreinoType
    ) => {
       try {
-         console.log("aqui")
          if (typeof novoValor === "string") {
             const data = {
                email,
                field,
                novoValor
             }
-            const result = await axios.put(baseUrl + "/update", data);
+            const result = await axios.put(baseUrl + "/users/update", data);
             return result
          }
       } catch (error) {
@@ -130,7 +129,17 @@ export const useUser = () => {
       setUser(null);
    };
 
-   return { user, login, logout, criarUsuario, getUser, alterarDados }
+   const getHistorico = async (email: string) => {
+      try {
+         const response = await axios.get(`${baseUrl}/historico/${email}`);
+         console.log(email);
+         return response.data;
+      } catch (error) {
+         return error;
+      }
+   };
+
+   return { user, login, logout, criarUsuario, getUser, alterarDados, getHistorico }
 
 };
 
