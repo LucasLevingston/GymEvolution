@@ -78,10 +78,10 @@ export const DadosPessoais: React.FC = () => {
                         <div className="pb-3 text-2xl font-bold">
                            Informações
                         </div>
-                        <div className="flex">
+                        <div className="flex gap-5">
                            <div className="flex w-[50%] flex-col">
                               <div className="w-full space-y-5">
-                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
+                                 <div className="h-13 w-full  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Nome</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.nome}</h2>
@@ -93,7 +93,7 @@ export const DadosPessoais: React.FC = () => {
                                        />
                                     </div>{' '}
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
+                                 <div className="h-13 w-full  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Email</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.email}</h2>
@@ -106,9 +106,9 @@ export const DadosPessoais: React.FC = () => {
                                        /> */}
                                     </div>{' '}
                                  </div>
-                                 <div className="flex w-[90%]">
+                                 <div className="flex w-full gap-2">
                                     <div className="w-[70%]">
-                                       <div className="h-13 w-[90%]  bg-cinza p-2 ">
+                                       <div className="h-13 w-full  bg-cinza p-2 ">
                                           <h1 className="text-xs font-bold">Rua</h1>
 
                                           <div className="flex items-center justify-between">
@@ -141,7 +141,7 @@ export const DadosPessoais: React.FC = () => {
                                        </div>
                                     </div>
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
+                                 <div className="h-13 w-full  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">CEP</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.cep}</h2>
@@ -154,7 +154,7 @@ export const DadosPessoais: React.FC = () => {
                                        />
                                     </div>
                                  </div>
-                                 <div className="flex w-[90%] justify-between">
+                                 <div className="flex w-full justify-between">
                                     <div className="h-13 w-[50%] bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">Cidade</h1>
                                        <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export const DadosPessoais: React.FC = () => {
                            </div>
                            <div className="flex w-[50%] flex-col ">
                               <div className="w-full space-y-5 ">
-                                 <div className="flex w-[90%] justify-between space-x-4 bg-cinza p-2">
+                                 <div className="flex w-full justify-between space-x-4 bg-cinza p-2">
                                     <div className="flex space-x-4">
                                        <div className="flex flex-col  space-x-2">
                                           <h1 className="py-2 pl-2 text-xs font-bold">
@@ -223,7 +223,7 @@ export const DadosPessoais: React.FC = () => {
                                        antigoValor={user.fotoPerfilUrl}
                                     /> */}
                                  </div>
-                                 <div className="h-13 w-[90%]  bg-cinza p-2 ">
+                                 <div className="h-13 w-full  bg-cinza p-2 ">
                                     <h1 className="text-xs font-bold">Sexo</h1>
                                     <div className="flex items-center justify-between">
                                        <h2 className="text-lg">{user.sexo}</h2>
@@ -236,7 +236,7 @@ export const DadosPessoais: React.FC = () => {
                                        />
                                     </div>{' '}
                                  </div>
-                                 <div className="flex w-[90%] justify-between">
+                                 <div className="flex w-full justify-between">
                                     <div className="h-13 w-[50%]  bg-cinza p-2 ">
                                        <h1 className="text-xs font-bold">
                                           Número de Celular
@@ -281,7 +281,10 @@ export const DadosPessoais: React.FC = () => {
 
                      </div>
                   )}
-                  <Paginacao onChangePage={handleChangePage} />
+                  <div className="flex justify-between">
+                     <Button>Treinos passados</Button>
+                     <Button>Evolução</Button>
+                  </div>
                </div>
             </div>
 
