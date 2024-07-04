@@ -9,7 +9,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx watch src/server.ts",
+    "build": "tsc"
   },
   "keywords": [],
   "author": "",
@@ -18,13 +20,14 @@
     "@types/cors": "^2.8.17",
     "@types/fastify-cors": "^2.1.0",
     "@types/node": "^20.12.12",
-    "prisma": "^5.13.0",
+    "nodemon": "^3.1.4",
+    "prisma": "^5.16.1",
     "tsx": "^4.9.4",
     "typescript": "^5.4.5"
   },
   "dependencies": {
     "@fastify/cors": "^9.0.1",
-    "@prisma/client": "^5.13.0",
+    "@prisma/client": "^5.16.1",
     "cors": "^2.8.5",
     "fastify": "^4.27.0",
     "fastify-cors": "^6.1.0"

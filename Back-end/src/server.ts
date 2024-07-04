@@ -1,23 +1,25 @@
-import fastify, { FastifyInstance } from "fastify"
-import { userRoutes } from "./routes/user.routes"
-import fastifyCors from "@fastify/cors";
-import { historicoRoutes } from "./routes/historico.routes";
+import fastify, { FastifyError, FastifyInstance } from 'fastify';
+import { userRoutes } from './routes/user.routes';
+import fastifyCors from '@fastify/cors';
+import { historicoRoutes } from './routes/historico.routes';
 
-const app: FastifyInstance = fastify({ logger: false })
+const app: FastifyInstance = fastify({ logger: false });
 
 app.register(fastifyCors, {
-   origin: '*'
-})
-
+  origin: '*',
+});
 
 app.register(userRoutes, {
-   prefix: '/users'
-})
+  prefix: '/users',
+});
 app.register(historicoRoutes, {
-   prefix: '/historico'
-})
+  prefix: '/historico',
+});
 
-
-app.listen({
-   port: 3100
-}, () => console.log("Server is running on port 3100"))
+app.listen({ host: 'localhost', port: 3000 }, (err, address) => {
+  if (err) {
+    console.error(err);
+    process.exit(1);
+  }
+  console.log(`Server listening at ${address}`);
+});
