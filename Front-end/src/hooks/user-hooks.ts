@@ -7,7 +7,7 @@ export const useUser = () => {
 	const [user, setUser] = useState(null);
 	// const [loading, setLoading] = useState(false);
 
-	const baseUrl = import.meta.env.VITE_API_URL + '/users';
+	const baseUrl = import.meta.env.VITE_API_URL;
 
 	// useEffect(() => {
 	//    const checkAuthenticated = async () => {
@@ -51,7 +51,7 @@ export const useUser = () => {
 			throw new Error('Usuário não encontrado no localStorage');
 		}
 		const email = user.email;
-		const response = await axios.get(baseUrl + `/${email}`);
+		const response = await axios.get(baseUrl + `/users/${email}`);
 
 		return response.data;
 	};
@@ -59,13 +59,14 @@ export const useUser = () => {
 	const login = async (email: string, senha: string) => {
 		const data = { email, senha };
 		try {
-			const response = await axios.post(baseUrl + '/login', data);
+			const response = await axios.post(baseUrl + '/users/login', data);
 
 			if (response.status === 200) {
 				const userData = await response.data;
 				localStorage.setItem('token', JSON.stringify(userData));
 				setUser(userData);
 				console.log('usuario no local storage:', userData);
+				// console.log(localStorage.getItem("token"))
 				return true;
 			} else {
 				let errorMessage = 'Failed to login';
@@ -86,27 +87,18 @@ export const useUser = () => {
 		const data = { email, senha };
 
 		try {
-			const response = await axios.post(baseUrl + '/create', data);
+			const response = await axios.post(baseUrl, data);
 
 			if (response.status === 200) {
+				toast.success('Usuário criado com sucesso.');
 				return response.data;
 			} else {
-				throw new Error(response.statusText);
+				toast.error('Erro ao criar usuário.');
+				throw new Error('Erro ao criar usuário');
 			}
 		} catch (error) {
-			if (axios.isAxiosError(error)) {
-				if (error.response) {
-					throw new Error(
-						`${error.response.data.message || error.response.statusText}`
-					);
-				} else if (error.request) {
-					throw new Error('Sem resposta do servidor. Verifique sua conexão.');
-				} else {
-					throw new Error(`${error.message}`);
-				}
-			} else if (error instanceof Error) {
-				throw new Error(error.message);
-			}
+			console.error('Erro ao enviar solicitação:', error);
+			throw new Error(`Erro ao cadastrar usuário: ${error}`);
 		}
 	};
 	const alterarDados = async (
@@ -121,7 +113,7 @@ export const useUser = () => {
 					field,
 					novoValor,
 				};
-				const result = await axios.put(baseUrl + '/update', data);
+				const result = await axios.put(baseUrl + '/users/update', data);
 				return result;
 			}
 		} catch (error) {

@@ -9,7 +9,7 @@
     ],
     "module": "ESNext",
     "skipLibCheck": true,
-    "baseUrl": ".",
+    // "baseUrl": ".",
     "paths": {
       "@/*": [
         "./src/*"
@@ -37,7 +37,7 @@
       "path": "./tsconfig.node.json"
     }
   ],
-  "baseUrl": ".",
+  // "baseUrl": ".",
   "paths": {
     "@/*": [
       "./src/*"
