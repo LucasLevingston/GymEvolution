@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import axios from 'axios';
-import { Historico, Peso, UserType } from '@/types/userType';
-import { SemanaDeTreinoType } from '@/types/treinoType';
+import { UserType } from '@/types/userType';
 
 export const useUser = () => {
 	const [user, setUser] = useState(null);
@@ -90,10 +89,8 @@ export const useUser = () => {
 			const response = await axios.post(baseUrl, data);
 
 			if (response.status === 200) {
-				toast.success('Usuário criado com sucesso.');
 				return response.data;
 			} else {
-				toast.error('Erro ao criar usuário.');
 				throw new Error('Erro ao criar usuário');
 			}
 		} catch (error) {
@@ -101,23 +98,12 @@ export const useUser = () => {
 			throw new Error(`Erro ao cadastrar usuário: ${error}`);
 		}
 	};
-	const alterarDados = async (
-		email: string,
-		field: string,
-		novoValor: string | Historico | Peso | SemanaDeTreinoType
-	) => {
+	const alterarDados = async (updatedData: UserType) => {
 		try {
-			if (typeof novoValor === 'string') {
-				const data = {
-					email,
-					field,
-					novoValor,
-				};
-				const result = await axios.put(baseUrl + '/users/update', data);
-				return result;
-			}
+			const result = await axios.put(baseUrl + '/users/update', updatedData);
+			return result;
 		} catch (error) {
-			console.error('Erro ao alterar os dados:');
+			throw new Error('Erro ao alterar os dados:');
 		}
 	};
 
