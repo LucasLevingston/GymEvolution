@@ -6,7 +6,7 @@ export const useUser = () => {
 	const [user, setUser] = useState(null);
 	// const [loading, setLoading] = useState(false);
 
-	const baseUrl = import.meta.env.VITE_API_URL;
+	const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
 	// useEffect(() => {
 	//    const checkAuthenticated = async () => {
@@ -50,15 +50,14 @@ export const useUser = () => {
 			throw new Error('Usuário não encontrado no localStorage');
 		}
 		const email = user.email;
-		const response = await axios.get(baseUrl + `/users/${email}`);
-
+		const response = await axios.get(baseUrl + `/${email}`);
 		return response.data;
 	};
 
-	const login = async (email: string, senha: string) => {
-		const data = { email, senha };
+	const login = async (email: string, password: string) => {
+		const data = { email, password };
 		try {
-			const response = await axios.post(baseUrl + '/users/login', data);
+			const response = await axios.post(baseUrl + '/login', data);
 
 			if (response.status === 200) {
 				const userData = await response.data;
@@ -82,11 +81,11 @@ export const useUser = () => {
 		}
 	};
 
-	const criarUsuario = async (email: string, senha: string) => {
-		const data = { email, senha };
+	const criarUsuario = async (email: string, password: string) => {
+		const data = { email, password };
 
 		try {
-			const response = await axios.post(baseUrl, data);
+			const response = await axios.post(`${baseUrl}/create`, data);
 
 			if (response.status === 200) {
 				return response.data;
@@ -100,7 +99,7 @@ export const useUser = () => {
 	};
 	const alterarDados = async (updatedData: UserType) => {
 		try {
-			const result = await axios.put(baseUrl + '/users/update', updatedData);
+			const result = await axios.put(`${baseUrl}/update`, updatedData);
 			return result;
 		} catch (error) {
 			throw new Error('Erro ao alterar os dados:');

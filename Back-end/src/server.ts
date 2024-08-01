@@ -1,7 +1,7 @@
 import fastify, { FastifyError, FastifyInstance } from 'fastify';
-import { userRoutes } from './routes/user.routes';
+import { userRoutes } from './routes/user-routes';
 import fastifyCors from '@fastify/cors';
-import { historicoRoutes } from './routes/historico.routes';
+import { historyRoutes } from './routes/history-routes';
 
 const app: FastifyInstance = fastify({ logger: false });
 
@@ -12,7 +12,7 @@ app.register(fastifyCors, {
 app.register(userRoutes, {
   prefix: '/users',
 });
-app.register(historicoRoutes, {
+app.register(historyRoutes, {
   prefix: '/historico',
 });
 

@@ -25,13 +25,13 @@ export default function Login() {
 		setSenhaVisivel(!senhaVisivel);
 	};
 	const [email, setEmail] = useState('');
-	const [senha, setSenha] = useState('');
+	const [password, setSenha] = useState('');
 	const [loading, setLoading] = useState(false);
 	const { login } = useUser();
 
 	const handleLogin = async () => {
 		setLoading(true);
-		const result = await login(email, senha);
+		const result = await login(email, password);
 		if (result) {
 			toast.success('Login efetuado com sucesso!');
 			setTimeout(() => {

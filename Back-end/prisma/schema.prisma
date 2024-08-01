@@ -11,51 +11,51 @@ datasource db {
 }
 
 model User {
-  id              String           @id @default(uuid())
-  email           String           @unique
-  senha           String
-  nome            String?
-  sexo            String?
-  rua             String?
-  numero          String?
-  cep             String?
-  cidade          String?
-  estado          String?
-  nascimento      String?
-  telefone        String?
-  pesoAtual       String?
-  historico       Historico[]
-  pesosAntigos    Peso[]
-  SemanasDeTreino SemanaDeTreino[]
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  name          String?
+  sex           String?
+  street        String?
+  number        String?
+  zipCode       String?
+  city          String?
+  state         String?
+  birthDate     String?
+  phone         String?
+  currentWeight String?
+  history       History[]
+  oldWeights    Weight[]
+  trainingWeeks TrainingWeek[]
 
   @@map("users")
 }
 
-model SemanaDeTreino {
+model TrainingWeek {
   id           String        @id @default(uuid())
-  NumeroSemana Int
-  treino       DiaDeTreino[]
-  atual        Boolean
-  informacoes  String?
-  feito        Boolean
-  User         User          @relation(fields: [userId], references: [id])
+  weekNumber   Int
+  trainingDays TrainingDay[]
+  current      Boolean
+  information  String?
+  done         Boolean
+  user         User          @relation(fields: [userId], references: [id])
   userId       String
 
   @@map("semanaDeTreino")
 }
 
-model Historico {
-  id       String @id @default(uuid())
-  ocorrido String
-  data     String
-  userId   String
-  user     User   @relation(fields: [userId], references: [id])
+model History {
+  id     String @id @default(uuid())
+  event  String
+  date   String
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
 }
 
-model Peso {
+model Weight {
   id     String @id @default(uuid())
-  peso   String
-  data   String
+  weight String
+  date   String
   bf     String
   userId String
   user   User   @relation(fields: [userId], references: [id])
@@ -63,34 +63,40 @@ model Peso {
   @@map("pesosAntigos")
 }
 
-model DiaDeTreino {
-  id               String         @id @default(uuid())
-  grupo            String
-  diaDaSemana      String
-  feito            Boolean
-  observacoes      String?
-  exercicios       Exercicio[]
-  semanaDoTreino   SemanaDeTreino @relation(fields: [semanaDeTreinoId], references: [id], onDelete: Cascade)
-  semanaDeTreinoId String
+model TrainingDay {
+  id             String       @id @default(uuid())
+  group          String
+  dayOfWeek      String
+  done           Boolean
+  comments       String?
+  exercises      Exercise[]
+  trainingWeek   TrainingWeek @relation(fields: [trainingWeekId], references: [id], onDelete: Cascade)
+  trainingWeekId String
+
+  @@map("diaDeTreino")
 }
 
-model Exercicio {
-  id               String       @id @default(uuid())
-  nome             String
-  variacao         String?
-  repeticoes       Int
-  quantidadeSeries Int
-  feito            Boolean
-  resultado        Serie[]
-  DiaDeTreino      DiaDeTreino? @relation(fields: [diaDeTreinoId], references: [id])
-  diaDeTreinoId    String
+model Exercise {
+  id            String       @id @default(uuid())
+  name          String
+  variation     String?
+  repetitions   Int
+  sets          Int
+  done          Boolean
+  seriesResults Serie[]
+  trainingDay   TrainingDay? @relation(fields: [trainingDayId], references: [id])
+  trainingDayId String
+
+  @@map("exercicio")
 }
 
 model Serie {
-  id          String    @id @default(uuid())
-  serieIndex  Int?
-  repeticoes  Int?
-  carga       Int?
-  Exercicio   Exercicio @relation(fields: [exercicioId], references: [id])
-  exercicioId String
+  id          String   @id @default(uuid())
+  seriesIndex Int?
+  repetitions Int?
+  weight      Int?
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId  String
+
+  @@map("serie")
 }

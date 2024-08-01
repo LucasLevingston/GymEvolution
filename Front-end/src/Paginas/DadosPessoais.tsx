@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import Container from '@/components/Container';
 import useUser from '@/hooks/user-hooks';
@@ -10,8 +9,9 @@ import { UserType } from '@/types/userType';
 import { Link } from 'react-router-dom';
 import { UserSchema } from '@/schemas/UserSchema';
 import { toast } from 'sonner';
+import DataCard from '@/components/DataCard';
 
-// Defina um novo tipo que corresponde ao esquema de validação
+// Define a type that matches the validation schema
 type UserFormValues = z.infer<typeof UserSchema>;
 
 export const DadosPessoais: React.FC = () => {
@@ -25,7 +25,7 @@ export const DadosPessoais: React.FC = () => {
 				const fetchedUser = await getUser();
 				setUser(fetchedUser);
 			} catch (error) {
-				setError('Erro ao buscar o usuário');
+				setError('Error fetching user data');
 			}
 		};
 
@@ -46,42 +46,57 @@ export const DadosPessoais: React.FC = () => {
 	} = useForm<UserFormValues>({
 		resolver: zodResolver(UserSchema),
 		defaultValues: {
-			nome: '',
+			name: '',
 			email: '',
-			rua: '',
-			numero: '',
-			cep: '',
-			cidade: '',
-			estado: '',
-			sexo: '',
-			telefone: '',
-			nascimento: '',
+			street: '',
+			number: '',
+			postalCode: '',
+			city: '',
+			state: '',
+			gender: '',
+			phone: '',
+			birthDate: '',
 		},
 	});
 
 	const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({});
 
 	const handleEditClick = (field: string) => {
-		setEditMode({ ...editMode, [field]: !editMode[field] });
+		setEditMode((prev) => ({ ...prev, [field]: !prev[field] }));
 	};
 
 	const onSubmit = handleSubmit(async (data: UserFormValues) => {
 		if (!user) {
-			setError('sem usuario');
+			setError('No user found');
+			return;
 		}
+		// const updatedUser: UserType = {
+		// 	id: user.id,
+		// 	email: data.email,
+		// 	password: user.password,
+		// 	name: data.name,
+		// 	gender: data.gender,
+		// 	street: data.street,
+		// 	number: data.number,
+		// 	postalCode: data.postalCode,
+		// 	city: data.city,
+		// 	state: data.state,
+		// 	birthDate: data.birthDate,
+		// 	phone: data.phone,
+		// 	currentWeight: user.currentWeight,
+		// 	history: user.history,
+		// 	oldWeights: user.oldWeights,
+		// 	trainingWeeks: user.trainingWeeks,
+		// };
 		try {
-			console.log('Salvando dados:', data);
-			const result = alterarDados({
-				...data,
-				SemanasDeTreino: user?.SemanasDeTreino,
-			});
+			const result = await alterarDados(data);
+
 			if (result) {
-				toast.success('Dados salvos com sucesso!');
-				return result;
+				toast.success('Data saved successfully!');
+				setEditMode({});
 			}
-			setEditMode({});
 		} catch (error) {
-			setError('Erro ao salvar dados.');
+			setError('Error saving data');
 		}
 	});
 
@@ -105,53 +120,115 @@ export const DadosPessoais: React.FC = () => {
 					onSubmit={onSubmit}
 					className="flex w-full flex-col items-center justify-center pb-3"
 				>
-					<div className="w-[70%] space-y-8 rounded-3xl border-[4px] border-preto bg-branco p-5 text-preto">
-						<div className="pb-3 text-2xl font-bold">Informações</div>
-						<div className="flex gap-5">
-							<div className="w-[50%] space-y-5">
-								<div className="h-13 w-full bg-cinza p-2">
-									<h1 className="text-xs font-bold">Nome</h1>
-									<div className="flex items-center justify-between">
-										<Input
-											{...register('nome')}
-											onChange={(e) => setValue('nome', e.target.value)}
-											disabled={!editMode['nome']}
-											className={`rounded border p-1 ${editMode['nome'] ? 'bg-white' : 'bg-gray-200'} ${errors.nome ? 'border-red-500' : ''}`}
-										/>
-										<Button
-											type="button"
-											onClick={() => handleEditClick('nome')}
-											className="ml-2"
-										>
-											{editMode['nome'] ? 'Salvar' : 'Editar'}
-										</Button>
-									</div>
-									{errors.nome && (
-										<span className="text-xs text-red-500">
-											{errors.nome?.message}
-										</span>
-									)}
-								</div>
-
-								{/* Repita o bloco acima para os outros campos, como 'email', 'rua', etc. */}
-							</div>
-							<div className="w-[50%] space-y-5">{/* Outros campos */}</div>
+					<div className="w-[70%] space-y-8 rounded-3xl border-[4px] border-black bg-white p-5 text-black">
+						<div className="pb-3 text-2xl font-bold">Information</div>
+						<div className="flex flex-wrap justify-center gap-5">
+							<DataCard
+								fieldName="name"
+								fieldLabel="Name"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="email"
+								fieldLabel="Email"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="street"
+								fieldLabel="Street"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="number"
+								fieldLabel="Number"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="postalCode"
+								fieldLabel="Postal Code"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="city"
+								fieldLabel="City"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="state"
+								fieldLabel="State"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="gender"
+								fieldLabel="Gender"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="phone"
+								fieldLabel="Phone"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
+							<DataCard
+								fieldName="birthDate"
+								fieldLabel="Birth Date"
+								register={register}
+								setValue={setValue}
+								editMode={editMode}
+								handleEditClick={handleEditClick}
+								errors={errors}
+							/>
 						</div>
 
 						<div className="flex justify-between">
-							<Button type="button">Treinos passados</Button>
-							<Button type="button">Evolução</Button>
+							<Button type="button">Past Trainings</Button>
+							<Button type="button">Progress</Button>
 							<Button type="submit" className="bg-green-500">
-								Salvar
+								Save
 							</Button>
 						</div>
 					</div>
 				</form>
 			) : (
 				<div className="flex items-center justify-center space-x-5">
-					<div>Faça o login para Continuar</div>
-					<Button variant="outline" className="text-preto">
-						<Link to="/login">Fazer login</Link>
+					<div>Please log in to continue</div>
+					<Button variant="outline" className="text-black">
+						<Link to="/login">Log in</Link>
 					</Button>
 				</div>
 			)}

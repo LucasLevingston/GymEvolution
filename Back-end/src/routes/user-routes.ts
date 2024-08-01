@@ -1,17 +1,17 @@
 import { FastifyInstance } from 'fastify';
-import { UserUseCase } from '../usecases/user.usercase';
-import { User, UserCreate } from '../interfaces/user.interface';
-import { HistoricoUseCase } from '../usecases/historico.usecase';
+import { UserController } from '../controllers/userController';
+import { User } from '@prisma/client';
+import { HistoryController } from '../controllers/historyController';
 
 export async function userRoutes(fastify: FastifyInstance) {
-  const userUseCase = new UserUseCase();
-  const historicoUseCase = new HistoricoUseCase();
+  const userController = new UserController();
+  const historyController = new HistoryController();
 
-  fastify.post<{ Body: UserCreate }>('/create', async (req, reply) => {
-    const { senha, email } = req.body;
+  fastify.post<{ Body: User }>('/create', async (req, reply) => {
+    const user = req.body;
 
     try {
-      const data = await userUseCase.create({ senha, email });
+      const data = await userController.create(user);
       return reply.send(data);
     } catch (error) {
       reply.status(500).send(error);
@@ -19,22 +19,20 @@ export async function userRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post<{
-    Body: { email: string; senha: string };
+    Body: { email: string; password: string };
   }>('/login', async (req, reply) => {
-    const { email, senha } = req.body;
+    const { email, password } = req.body;
     try {
-      const data = await userUseCase.login(email, senha);
+      const data = await userController.login(email, password);
       return reply.send(data);
     } catch (error) {
       reply.send(error);
     }
   });
-  fastify.put<{
-    Body: { email: string; field: string; novoValor: string };
-  }>('/update', async (req, reply) => {
-    const { email, field, novoValor } = req.body;
+  fastify.put<{ Body: User }>('/update', async (req, reply) => {
+    const updatedUser = req.body;
     try {
-      const result = await userUseCase.alterarDado(email, field, novoValor);
+      const result = await userController.updateUser(updatedUser);
       return result;
     } catch (error) {
       reply.send(error);
@@ -45,7 +43,7 @@ export async function userRoutes(fastify: FastifyInstance) {
     if (typeof params === 'object' && params && 'email' in params) {
       const email = params.email;
       try {
-        const data = await userUseCase.getUser(String(email));
+        const data = await userController.getUser(String(email));
         reply.send(data);
       } catch (error) {
         reply.status(500).send({
@@ -59,10 +57,10 @@ export async function userRoutes(fastify: FastifyInstance) {
       });
     }
   });
-  fastify.get<{ Body: { email: string } }>('/historico', async (req, reply) => {
+  fastify.get<{ Body: { email: string } }>('/history', async (req, reply) => {
     const { email } = req.body;
     try {
-      const result = await historicoUseCase.getHistorico(email);
+      const result = await historyController.getHistory(email);
       return result;
     } catch (error) {
       reply.send(error);

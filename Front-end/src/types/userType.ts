@@ -1,37 +1,37 @@
-import { SemanaDeTreinoType } from "./treinoType";
+import { TrainingWeekType } from './trainingType';
 
 export interface UserType {
-   id: string;
-   email: string;
-   senha: string;
-   nome?: string;
-   sexo?: string;
-   rua?: string;
-   numero?: string;
-   cep?: string;
-   cidade?: string;
-   estado?: string;
-   nascimento?: string;
-   telefone?: string;
-   pesoAtual?: number;
-   historico: Historico[];
-   pesosAntigos: Peso[];
-   SemanasDeTreino: SemanaDeTreinoType[];
+	id: string;
+	email: string;
+	password: string;
+	name?: string;
+	gender?: string;
+	street?: string;
+	number?: string;
+	postalCode?: string;
+	city?: string;
+	state?: string;
+	birthDate?: string;
+	phone?: string;
+	currentWeight?: number;
+	history: History[];
+	oldWeights: Weight[];
+	trainingWeeks: TrainingWeekType[];
 }
 
-export interface Historico {
-   id: string;
-   ocorrido: string;
-   data: string;
-   userId: string;
-   user: UserType;
+export interface History {
+	id: string;
+	event: string;
+	date: string;
+	userId: string;
+	user: UserType;
 }
 
-export interface Peso {
-   id: string;
-   peso: number;
-   data: string;
-   bf: number;
-   userId: string;
-   user: UserType;
+export interface Weight {
+	id: string;
+	weight: number;
+	date: string;
+	bf: number;
+	userId: string;
+	user: UserType;
 }
