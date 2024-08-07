@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'; // Ajuste o caminho conforme ne
 import { UseFormRegister, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import { UserSchema } from '@/schemas/UserSchema';
 import { z } from 'zod';
+
 type UserFormValues = z.infer<typeof UserSchema>;
 
 interface DataCardProps {

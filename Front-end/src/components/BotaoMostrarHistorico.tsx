@@ -1,3 +1,5 @@
+// @jsx BotaoMostrarHistorico
+
 import {
 	Sheet,
 	SheetContent,
@@ -8,24 +10,25 @@ import {
 } from '@/components/ui/sheet';
 import { BsJournalText } from 'react-icons/bs';
 import { formatarData } from '@/estatico';
-import useUser from '@/hooks/user-hooks';
 import { History, UserType } from '@/types/userType';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useHistory } from '@/hooks/history-hooks';
+import useUser from '@/hooks/user-hooks';
+
 export default function BotaoMostrarHistorico() {
 	const [user, setUser] = useState<UserType | null>(null);
 	const [historico, setHistorico] = useState<History[] | null>(null);
 
-	const { getUser, getHistorico } = useUser();
+	const { getHistory } = useHistory();
+	const { getUser } = useUser();
 
 	useEffect(() => {
 		const fetchUser = async () => {
-			const fetchedUser = await getUser();
+			const fetchedUser: UserType = await getUser();
 			setUser(fetchedUser);
 
-			const historicoAtual = await getHistorico(fetchedUser?.email);
-			if (historicoAtual) {
-				setHistorico(historicoAtual);
-			}
+			const historicoAtual = await getHistory(fetchedUser?.id);
+			if (historicoAtual) setHistorico(historicoAtual);
 		};
 		fetchUser();
 	}, [getUser]);
@@ -35,7 +38,7 @@ export default function BotaoMostrarHistorico() {
 			{historico && user && (
 				<Sheet>
 					<SheetTrigger className="text-xm flex items-center justify-center space-x-2 p-2 px-3 text-preto ">
-						<div>Ver Histórico</div>
+						<div>History</div>
 						<BsJournalText />
 					</SheetTrigger>
 					<SheetContent className="">
@@ -43,7 +46,10 @@ export default function BotaoMostrarHistorico() {
 							<SheetTitle>Histórico</SheetTitle>
 							<SheetDescription className="max-h-[90vh] overflow-y-auto">
 								{historico.map((acontecimento, index) => (
-									<div key={index} className="space-y-1 border-b py-2">
+									<div
+										key={index}
+										className="space-y-1 border-b py-2 text-preto"
+									>
 										<p>Ocorrido: {acontecimento.event}</p>
 										<p>Data: {formatarData(acontecimento.date)}</p>
 									</div>

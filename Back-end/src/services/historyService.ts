@@ -3,10 +3,10 @@ import { prisma } from '../database/prisma.client';
 import { HistoryRepository } from '../interfaces/user.interface';
 
 class HistoryService implements HistoryRepository {
-  async getHistory(email: string): Promise<History[]> {
+  async getHistory(id: string): Promise<History[]> {
     try {
       const user = await prisma.user.findUnique({
-        where: { email },
+        where: { id },
       });
 
       if (!user) {

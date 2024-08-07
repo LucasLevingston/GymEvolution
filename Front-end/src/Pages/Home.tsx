@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from 'react';
+// @jsx Home.tsx
+
+import { useEffect, useState } from 'react';
 import Container from '@/components/Container';
 import { TreinoDaSemana } from './TreinoDaSemana';
 import { UserType } from '@/types/userType';
@@ -6,6 +8,7 @@ import useUser from '@/hooks/user-hooks';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import Header from '@/components/Header';
 
 export default function Home() {
 	const { getUser } = useUser();
@@ -25,7 +28,8 @@ export default function Home() {
 	}, [getUser]);
 
 	return (
-		<div>
+		<>
+			<Header />
 			{user ? (
 				<Container>
 					<p className="text-2xl">Treino da semana</p>
@@ -41,6 +45,6 @@ export default function Home() {
 					</div>
 				</Container>
 			)}
-		</div>
+		</>
 	);
 }

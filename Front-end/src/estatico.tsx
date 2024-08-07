@@ -89,9 +89,6 @@ export const setorOpcoes = [
 export function formatarDataParaNumeros(data: string): string {
 	const numeros = data.replace(/\D/g, '');
 
-	if (numeros.length !== 8) {
-	}
-
 	const ano = numeros.slice(0, 4);
 	const mes = numeros.slice(4, 6);
 	const dia = numeros.slice(6, 8);
@@ -145,9 +142,9 @@ export function formatarCEP(cep: string): string {
 	return `${parte1}-${parte2}`;
 }
 
-export function limparTelefone(telefone: string) {
-	return telefone.replace(/[\(\)\-\s]/g, '');
-}
+// export function limparTelefone(telefone: string) {
+// 	return telefone.replace(/[\(\)\-\s]/g, '');
+// }
 
 export function getDataAtual() {
 	const dataAtual = new Date();

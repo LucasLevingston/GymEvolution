@@ -19,6 +19,7 @@ import useUser from '@/hooks/user-hooks';
 import { z } from 'zod';
 import { registerSchema } from '@/schemas/RegisterSchema';
 import Container from '@/components/Container';
+import Header from '@/components/Header';
 
 export default function CadastroUsuario() {
 	const [passwordVisisvel, setPasswordVisivel] = useState(false);
@@ -99,118 +100,121 @@ export default function CadastroUsuario() {
 	}
 
 	return (
-		<Container>
-			<div className="flex h-full w-full items-center justify-center pt-10">
-				<Tabs defaultValue="account" className="w-[400px]">
-					<TabsList className="grid w-full bg-cinzaEscuro">
-						<Label className="text-2xl text-white">Cadastrar</Label>
-					</TabsList>
-					<TabsContent value="account">
-						<Card>
-							<CardHeader>
-								<CardTitle>Cadastro</CardTitle>
-								<CardDescription></CardDescription>
-							</CardHeader>
-							<form onSubmit={handleCadastrar}>
-								<CardContent className="space-y-2">
-									<div className="space-y-1">
-										<Label htmlFor="email">Email</Label>
-										<Input
-											id="email"
-											type="email"
-											required
-											autoComplete="email"
-											defaultValue=""
-											onChange={(e) => setEmail(e.target.value)}
-										/>
-									</div>
-									<div className="space-y-1">
-										<Label htmlFor="password">Senha</Label>
-										<div className="flex">
+		<>
+			<Header />
+			<Container>
+				<div className="flex h-full w-full items-center justify-center pt-10">
+					<Tabs defaultValue="account" className="w-[400px]">
+						<TabsList className="grid w-full bg-cinzaEscuro">
+							<Label className="text-2xl text-white">Cadastrar</Label>
+						</TabsList>
+						<TabsContent value="account">
+							<Card>
+								<CardHeader>
+									<CardTitle>Cadastro</CardTitle>
+									<CardDescription></CardDescription>
+								</CardHeader>
+								<form onSubmit={handleCadastrar}>
+									<CardContent className="space-y-2">
+										<div className="space-y-1">
+											<Label htmlFor="email">Email</Label>
 											<Input
-												id="password"
-												type={passwordVisisvel ? 'text' : 'password'}
+												id="email"
+												type="email"
 												required
-												minLength={8}
-												value={password}
-												autoComplete="new-password"
-												onChange={(e) => {
-													setPassword(e.target.value);
-													setPasswordTocada(true);
-												}}
-												onBlur={() => setPasswordTocada(true)}
+												autoComplete="email"
+												defaultValue=""
+												onChange={(e) => setEmail(e.target.value)}
 											/>
-											<button
-												onClick={alterarPasswordVisivel}
-												className="pl-3"
-												type="button"
-											>
-												{passwordVisisvel ? (
-													<IoEyeOutline className="h-7 w-7" />
-												) : (
-													<IoEyeSharp className="h-7 w-7" />
-												)}
-											</button>
 										</div>
-									</div>
-									<div className="space-y-1">
-										<Label htmlFor="password">Confirmar senha</Label>
-										<div className="flex">
-											<Input
-												id="confirmPassword"
-												type={passwordVisisvel ? 'text' : 'password'}
-												required
-												autoComplete="new-password"
-												minLength={8}
-												value={confirmPassword}
-												onChange={(e) => {
-													setConfirmarPassword(e.target.value);
-													setPasswordTocada(true);
-												}}
-												onBlur={() => setPasswordTocada(true)}
-											/>
-											<button
-												onClick={alterarPasswordVisivel}
-												className="pl-3"
-												type="button"
-											>
-												{passwordVisisvel ? (
-													<IoEyeOutline className="h-7 w-7" />
-												) : (
-													<IoEyeSharp className="h-7 w-7" />
-												)}
-											</button>
+										<div className="space-y-1">
+											<Label htmlFor="password">Senha</Label>
+											<div className="flex">
+												<Input
+													id="password"
+													type={passwordVisisvel ? 'text' : 'password'}
+													required
+													minLength={8}
+													value={password}
+													autoComplete="new-password"
+													onChange={(e) => {
+														setPassword(e.target.value);
+														setPasswordTocada(true);
+													}}
+													onBlur={() => setPasswordTocada(true)}
+												/>
+												<button
+													onClick={alterarPasswordVisivel}
+													className="pl-3"
+													type="button"
+												>
+													{passwordVisisvel ? (
+														<IoEyeOutline className="h-7 w-7" />
+													) : (
+														<IoEyeSharp className="h-7 w-7" />
+													)}
+												</button>
+											</div>
 										</div>
-										{passwordsDiferentes && (
-											<p className="text-xs text-vermelho">
-												As senhas devem ser iguais e ter no mínimo 8 caracteres,
-												sendo uma maiúscula e uma especial.
-											</p>
+										<div className="space-y-1">
+											<Label htmlFor="password">Confirmar senha</Label>
+											<div className="flex">
+												<Input
+													id="confirmPassword"
+													type={passwordVisisvel ? 'text' : 'password'}
+													required
+													autoComplete="new-password"
+													minLength={8}
+													value={confirmPassword}
+													onChange={(e) => {
+														setConfirmarPassword(e.target.value);
+														setPasswordTocada(true);
+													}}
+													onBlur={() => setPasswordTocada(true)}
+												/>
+												<button
+													onClick={alterarPasswordVisivel}
+													className="pl-3"
+													type="button"
+												>
+													{passwordVisisvel ? (
+														<IoEyeOutline className="h-7 w-7" />
+													) : (
+														<IoEyeSharp className="h-7 w-7" />
+													)}
+												</button>
+											</div>
+											{passwordsDiferentes && (
+												<p className="text-xs text-vermelho">
+													As senhas devem ser iguais e ter no mínimo 8
+													caracteres, sendo uma maiúscula e uma especial.
+												</p>
+											)}
+										</div>
+									</CardContent>
+									<CardFooter className="flex flex-col items-center justify-center">
+										{carregando ? (
+											<Button disabled>
+												<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+												Carregando...
+											</Button>
+										) : (
+											<Button variant="outline" type="submit">
+												Cadastrar
+											</Button>
 										)}
-									</div>
-								</CardContent>
-								<CardFooter className="flex flex-col items-center justify-center">
-									{carregando ? (
-										<Button disabled>
-											<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-											Carregando...
-										</Button>
-									) : (
-										<Button variant="outline" type="submit">
-											Cadastrar
-										</Button>
-									)}
-									<br />
-									<p className="text-sm">Já possui cadastro?</p>
-									<Link to="/login" className="text-[12px] text-mainColor">
-										Faça o Login aqui
-									</Link>
-								</CardFooter>
-							</form>
-						</Card>
-					</TabsContent>
-				</Tabs>
-			</div>
-		</Container>
+										<br />
+										<p className="text-sm">Já possui cadastro?</p>
+										<Link to="/login" className="text-[12px] text-mainColor">
+											Faça o Login aqui
+										</Link>
+									</CardFooter>
+								</form>
+							</Card>
+						</TabsContent>
+					</Tabs>
+				</div>
+			</Container>
+		</>
 	);
 }
