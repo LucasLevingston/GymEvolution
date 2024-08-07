@@ -11,11 +11,10 @@ import { UserSchema } from '@/schemas/UserSchema';
 import { toast } from 'sonner';
 import DataCard from '@/components/DataCard';
 
-// Define a type that matches the validation schema
 type UserFormValues = z.infer<typeof UserSchema>;
 
 export const DadosPessoais: React.FC = () => {
-	const { getUser, alterarDados } = useUser();
+	const { getUser, updateUser } = useUser();
 	const [user, setUser] = useState<UserType | null>(null);
 	const [error, setError] = useState<string | null>(null);
 
@@ -27,16 +26,13 @@ export const DadosPessoais: React.FC = () => {
 			} catch (error) {
 				setError('Error fetching user data');
 			}
+			if (error) {
+				toast.error(error);
+			}
 		};
 
 		fetchUser();
-	}, [getUser]);
-
-	useEffect(() => {
-		if (error) {
-			toast.error(error);
-		}
-	}, [error]);
+	}, [getUser, error]);
 
 	const {
 		register,
@@ -46,14 +42,14 @@ export const DadosPessoais: React.FC = () => {
 	} = useForm<UserFormValues>({
 		resolver: zodResolver(UserSchema),
 		defaultValues: {
-			name: '',
+			name: user?.name || '',
 			email: '',
 			street: '',
 			number: '',
-			postalCode: '',
+			zipCode: '',
 			city: '',
 			state: '',
-			gender: '',
+			sex: '',
 			phone: '',
 			birthDate: '',
 		},
@@ -70,26 +66,26 @@ export const DadosPessoais: React.FC = () => {
 			setError('No user found');
 			return;
 		}
-		// const updatedUser: UserType = {
-		// 	id: user.id,
-		// 	email: data.email,
-		// 	password: user.password,
-		// 	name: data.name,
-		// 	gender: data.gender,
-		// 	street: data.street,
-		// 	number: data.number,
-		// 	postalCode: data.postalCode,
-		// 	city: data.city,
-		// 	state: data.state,
-		// 	birthDate: data.birthDate,
-		// 	phone: data.phone,
-		// 	currentWeight: user.currentWeight,
-		// 	history: user.history,
-		// 	oldWeights: user.oldWeights,
-		// 	trainingWeeks: user.trainingWeeks,
-		// };
+		const updatedUser: UserType = {
+			id: user.id,
+			email: data.email,
+			password: user.password,
+			name: data.name,
+			sex: data.sex,
+			street: data.street,
+			number: data.number,
+			zipCode: data.zipCode,
+			city: data.city,
+			state: data.state,
+			birthDate: data.birthDate,
+			phone: data.phone,
+			currentWeight: user.currentWeight,
+			history: user.history,
+			oldWeights: user.oldWeights,
+			trainingWeeks: user.trainingWeeks,
+		};
 		try {
-			const result = await alterarDados(data);
+			const result = await updateUser(updatedUser);
 
 			if (result) {
 				toast.success('Data saved successfully!');
@@ -125,7 +121,7 @@ export const DadosPessoais: React.FC = () => {
 						<div className="flex flex-wrap justify-center gap-5">
 							<DataCard
 								fieldName="name"
-								fieldLabel="Name"
+								fieldLabel="Nome"
 								register={register}
 								setValue={setValue}
 								editMode={editMode}
@@ -160,8 +156,8 @@ export const DadosPessoais: React.FC = () => {
 								errors={errors}
 							/>
 							<DataCard
-								fieldName="postalCode"
-								fieldLabel="Postal Code"
+								fieldName="zipCode"
+								fieldLabel="CEP"
 								register={register}
 								setValue={setValue}
 								editMode={editMode}
@@ -179,7 +175,7 @@ export const DadosPessoais: React.FC = () => {
 							/>
 							<DataCard
 								fieldName="state"
-								fieldLabel="State"
+								fieldLabel="Estado"
 								register={register}
 								setValue={setValue}
 								editMode={editMode}
@@ -187,8 +183,8 @@ export const DadosPessoais: React.FC = () => {
 								errors={errors}
 							/>
 							<DataCard
-								fieldName="gender"
-								fieldLabel="Gender"
+								fieldName="sex"
+								fieldLabel="Sexo"
 								register={register}
 								setValue={setValue}
 								editMode={editMode}

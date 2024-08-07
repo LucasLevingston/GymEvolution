@@ -10,16 +10,14 @@ import { toast } from 'sonner';
 export default function Home() {
 	const { getUser } = useUser();
 	const [user, setUser] = useState<UserType | null>(null);
-	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
 				const fetchedUser = await getUser();
 				setUser(fetchedUser);
-			} catch (e) {
-				setError('Erro ao buscar o usuário');
-				toast.error(error);
+			} catch (error) {
+				toast.error('Erro ao buscar o usuário');
 			}
 		};
 

@@ -73,9 +73,9 @@ export default function CadastroUsuario() {
 
 			const response = await criarUsuario(email, password);
 			if (response) {
-				toast.success('Funcionário Cadastrado!');
+				toast.success('Usuário cadastrado com sucesso!');
 				setTimeout(() => {
-					window.location.href = '/';
+					window.location.href = '/login';
 				}, 2000);
 			} else {
 				toast.error(response.message);

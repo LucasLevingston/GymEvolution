@@ -36,11 +36,6 @@ import { User, History } from '@prisma/client';
 //   user: User;
 // }
 
-export interface UserCreate {
-  email: string;
-  password: string;
-}
-
 export interface UserRepository {
   create(data: User): Promise<User>;
   findByEmail(email: string): Promise<User | null>;
@@ -51,4 +46,5 @@ export interface UserRepository {
 
 export interface HistoryRepository {
   getHistory(email: string): Promise<History[] | null>;
+  addToHistory(updatedUser: User): Promise<History[] | null>;
 }

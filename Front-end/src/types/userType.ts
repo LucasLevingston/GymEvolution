@@ -5,10 +5,10 @@ export interface UserType {
 	email: string;
 	password: string;
 	name?: string;
-	gender?: string;
+	sex?: string;
 	street?: string;
 	number?: string;
-	postalCode?: string;
+	zipCode?: string;
 	city?: string;
 	state?: string;
 	birthDate?: string;
@@ -17,6 +17,8 @@ export interface UserType {
 	history: History[];
 	oldWeights: Weight[];
 	trainingWeeks: TrainingWeekType[];
+
+	[key: string]: any;
 }
 
 export interface History {

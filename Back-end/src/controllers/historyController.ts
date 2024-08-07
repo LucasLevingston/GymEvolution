@@ -16,5 +16,6 @@ class HistoryController {
       throw new Error();
     }
   }
+  async addToHistory(event: string, date: string, userId: string) {}
 }
 export { HistoryController };

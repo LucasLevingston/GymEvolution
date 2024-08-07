@@ -29,7 +29,8 @@ export async function userRoutes(fastify: FastifyInstance) {
       reply.send(error);
     }
   });
-  fastify.put<{ Body: User }>('/update', async (req, reply) => {
+
+  fastify.put<{ Body: User }>('/', async (req, reply) => {
     const updatedUser = req.body;
     try {
       const result = await userController.updateUser(updatedUser);
@@ -38,6 +39,7 @@ export async function userRoutes(fastify: FastifyInstance) {
       reply.send(error);
     }
   });
+
   fastify.get('/:email', async (req, reply) => {
     const params = req.params;
     if (typeof params === 'object' && params && 'email' in params) {

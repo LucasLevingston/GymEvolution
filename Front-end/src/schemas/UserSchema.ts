@@ -18,7 +18,7 @@ export const UserSchema = z.object({
 		.max(10, 'Number must be less than 10 characters')
 		.optional(),
 
-	postalCode: z
+	zipCode: z
 		.string()
 		// .regex(/^\d+$/, 'Postal code must be numeric')
 		.optional(),
@@ -27,10 +27,7 @@ export const UserSchema = z.object({
 
 	state: z.string().max(2, 'State must be exactly 2 characters').optional(),
 
-	gender: z
-		.string()
-		.max(50, 'Gender must be less than 50 characters')
-		.optional(),
+	sex: z.string().max(50, 'Gender must be less than 50 characters').optional(),
 
 	phone: z
 		.string()

@@ -18,4 +18,25 @@ export async function historyRoutes(fastify: FastifyInstance) {
       }
     }
   );
+  fastify.post(
+    '/:email',
+    async (
+      request: FastifyRequest<{
+        Body: {
+          event: string;
+          date: string;
+          userId: string;
+        };
+      }>,
+      reply: FastifyReply
+    ) => {
+      const eventHistory = request.body;
+      try {
+        const result = await historyController.addToHistory(eventHistory);
+        reply.send(result);
+      } catch (error) {
+        reply.send(error);
+      }
+    }
+  );
 }
