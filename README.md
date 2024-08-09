@@ -4,6 +4,9 @@
 
 ## Tecnologias Utilizadas
 
+![React.js](https://img.shields.io/badge/-React.js-0D1117?style=for-the-badge&logo=react&labelColor=0D1117)&nbsp;</br>
+![Tailwind CSS](https://img.shields.io/badge/-Tailwind%20CSS-0D1117?style=for-the-badge&logo=tailwind-css&labelColor=0D1117)&nbsp;</br>
+![Postman](https://img.shields.io/badge/-Postman-0D1117?style=for-the-badge&logo=Postman&labelColor=0D1117)&nbsp;</br>
 ![Node.JS](https://img.shields.io/badge/-Node.JS-0D1117?style=for-the-badge&logo=node.js&labelColor=0D1117&textColor=0D1117)&nbsp;</br>
 ![TypeScript](https://img.shields.io/badge/-TypeScript-0D1117?style=for-the-badge&logo=typescript&labelColor=0D1117)&nbsp;</br>
 ![Fastify](https://img.shields.io/badge/-Fastify-0D1117?style=for-the-badge&logo=fastify&labelColor=0D1117)&nbsp;</br>
