@@ -8,7 +8,7 @@ import Login from './Pages/Login';
 import CadastroUsuario from './Pages/CadastrarUsuario';
 import { DadosPessoais } from './Pages/DadosPessoais';
 import Evolution from './Pages/Evolution';
-import NovoTreino from './Pages/NovoTreino';
+import CreateTraining from './Pages/CreateTraining';
 
 function App() {
 	return (
@@ -24,7 +24,7 @@ function App() {
 					<Route path={`/`} element={<Home />} />
 					<Route path={`/login`} element={<Login />} />
 					<Route path={`/evolucao`} element={<Evolution />} />
-					<Route path={`/novo-treino`} element={<NovoTreino />} />
+					<Route path={`/novo-treino`} element={<CreateTraining />} />
 					<Route path={`/dados-pessoais`} element={<DadosPessoais />} />
 					<Route path={`/cadastro-usuario`} element={<CadastroUsuario />} />
 					<Route path={`/treinando/:treinoId`} element={<Treinando />} />

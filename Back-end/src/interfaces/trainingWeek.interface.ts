@@ -1,5 +1,7 @@
 // import { User } from './user.interface';
 
+import { TrainingWeek } from '@prisma/client';
+
 // export interface TrainingWeek {
 //   id: string;
 //   weekNumber: number;
@@ -65,3 +67,11 @@
 //     }[];
 //   }[];
 // }
+
+export interface TrainingWeekRepository {
+  createTrainingWeek(
+    userId: string,
+    weekNumber: string,
+    information: string
+  ): Promise<TrainingWeek | null>;
+}
