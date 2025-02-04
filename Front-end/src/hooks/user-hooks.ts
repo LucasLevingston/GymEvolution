@@ -8,14 +8,14 @@ export const useUser = () => {
 	const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
 
 	const getUser = async () => {
-		const userString = await localStorage.getItem('token');
+		const userString = localStorage.getItem('token');
 		const user: UserType | null = userString ? JSON.parse(userString) : null;
 
-		if (!user) {
-			throw new Error('Usuário não encontrado no localStorage');
-		}
-		const email = user.email;
-		const response = await axios.get(baseUrl + `/${email}`);
+		if (!user) throw new Error('User not found in localStorage');
+
+		const response = await axios.get(baseUrl + `/${user.id}`);
+		if (!response) throw new Error('Error no get user');
+
 		return response.data;
 	};
 
@@ -44,7 +44,7 @@ export const useUser = () => {
 		}
 	};
 
-	const criarUsuario = async (email: string, password: string) => {
+	const createUser = async (email: string, password: string) => {
 		const data = { email, password };
 
 		try {
@@ -53,11 +53,11 @@ export const useUser = () => {
 			if (response.status === 200) {
 				return response.data;
 			} else {
-				throw new Error('Erro ao criar usuário');
+				throw new Error('Error creating user');
 			}
 		} catch (error) {
-			console.error('Erro ao enviar solicitação:', error);
-			throw new Error(`Erro ao cadastrar usuário: ${error}`);
+			console.error('Error sending request:', error);
+			throw new Error(`Error registering user: ${error}`);
 		}
 	};
 
@@ -67,7 +67,7 @@ export const useUser = () => {
 			return response.data;
 		} catch (error) {
 			console.error('Error updating user:', error);
-			throw new Error('Erro ao alterar os dados');
+			throw new Error('Error updating data');
 		}
 	};
 
@@ -80,7 +80,7 @@ export const useUser = () => {
 		user,
 		login,
 		logout,
-		criarUsuario,
+		createUser,
 		getUser,
 		updateUser,
 	};

@@ -1,5 +1,3 @@
-// @jsx Home.tsx
-
 import { useEffect, useState } from 'react';
 import Container from '@/components/Container';
 import { TreinoDaSemana } from './TreinoDaSemana';
@@ -20,6 +18,7 @@ export default function Home() {
 				const fetchedUser = await getUser();
 				setUser(fetchedUser);
 			} catch (error) {
+				console.log(error);
 				toast.error('Erro ao buscar o usuário');
 			}
 		};
@@ -32,7 +31,7 @@ export default function Home() {
 			<Header />
 			{user ? (
 				<Container>
-					<p className="text-2xl">Treino da semana</p>
+					<p className="text-2xl">Training of Week</p>
 					<TreinoDaSemana />
 				</Container>
 			) : (

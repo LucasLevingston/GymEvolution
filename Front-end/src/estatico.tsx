@@ -11,7 +11,7 @@ export const sexoOpcoes = [
 export function formatarData(data: string): string {
 	const dataObj = new Date(data);
 	const dia = dataObj.getDate().toString().padStart(2, '0');
-	const mes = (dataObj.getMonth() + 1).toString().padStart(2, '0'); // Mês começa de 0, então somamos 1
+	const mes = (dataObj.getMonth() + 1).toString().padStart(2, '0');
 	const ano = dataObj.getFullYear();
 	const horas = dataObj.getHours().toString().padStart(2, '0');
 	const minutos = dataObj.getMinutes().toString().padStart(2, '0');
@@ -67,6 +67,7 @@ export const cargoOpcoes = [
 		opcao: 'Sênior',
 	},
 ];
+
 export const setorOpcoes = [
 	{
 		id: 'tecnologia',

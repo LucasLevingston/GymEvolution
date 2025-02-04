@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { ExercicioSchema } from './ExercicioSchema';
+import { ExerciseSchema } from './ExerciseSchema';
+import { SemanaDeTreinoSchema } from './SemanaDeTreinoSchema';
 
 export const DiaDeTreinoSchema = z.object({
 	id: z.string(),
@@ -7,7 +8,7 @@ export const DiaDeTreinoSchema = z.object({
 	diaDaSemana: z.string(),
 	feito: z.boolean(),
 	observacoes: z.string().optional(),
-	exercicios: z.array(ExercicioSchema),
-	semanaDoTreino: z.lazy(() => SemanaDeTreino),
+	exercicios: z.array(ExerciseSchema),
+	semanaDoTreino: z.lazy(() => SemanaDeTreinoSchema),
 	semanaDeTreinoId: z.string(),
 });

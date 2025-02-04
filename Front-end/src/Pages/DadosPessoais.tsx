@@ -26,7 +26,7 @@ import {
 } from '@/components/ui/popover';
 import { estadosBrasileiros } from '@/estatico';
 import { cn } from '@/lib/utils';
-import BotaoMostrarHistorico from '@/components/BotaoMostrarHistorico';
+import BotaoMostrarHistorico from '@/components/HistoryButton';
 import Header from '@/components/Header';
 
 type UserFormValues = z.infer<typeof UserSchema>;
@@ -35,15 +35,15 @@ export const DadosPessoais: React.FC = () => {
 	const { getUser, updateUser } = useUser();
 	const [user, setUser] = useState<UserType | null>(null);
 	const [error, setError] = useState<string | null>(null);
-	const [open, setOpen] = useState(false); // Estado para controlar o popover
-	const [selectedState, setSelectedState] = useState<string | null>(null); // Estado para controlar o estado selecionado
+	const [open, setOpen] = useState(false);
+	const [selectedState, setSelectedState] = useState<string | null>(null);
 
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
 				const fetchedUser = await getUser();
 				setUser(fetchedUser);
-				setSelectedState(fetchedUser?.state || null); // Inicializa o estado selecionado com o valor do usuário
+				setSelectedState(fetchedUser?.state || null);
 			} catch (error) {
 				setError('Error fetching user data');
 			}

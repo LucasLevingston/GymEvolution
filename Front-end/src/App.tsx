@@ -1,11 +1,9 @@
-// @jsx App.tsx
-
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import Home from './Pages/Home';
 import { Treinando } from './Pages/Treinando';
 import { TreinosPassados } from './Pages/TreinosPassados';
 import Login from './Pages/Login';
-import CadastroUsuario from './Pages/CadastrarUsuario';
+import CreateUser from './Pages/CreateUser';
 import { DadosPessoais } from './Pages/DadosPessoais';
 import Evolution from './Pages/Evolution';
 import CreateTraining from './Pages/CreateTraining';
@@ -26,7 +24,7 @@ function App() {
 					<Route path={`/evolucao`} element={<Evolution />} />
 					<Route path={`/novo-treino`} element={<CreateTraining />} />
 					<Route path={`/dados-pessoais`} element={<DadosPessoais />} />
-					<Route path={`/cadastro-usuario`} element={<CadastroUsuario />} />
+					<Route path={`/cadastro-usuario`} element={<CreateUser />} />
 					<Route path={`/treinando/:treinoId`} element={<Treinando />} />
 					<Route path={`/treinos-passados`} element={<TreinosPassados />} />
 					<Route path={`*`} element={<Navigate to="/login" />} />
