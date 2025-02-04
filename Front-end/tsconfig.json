@@ -35,10 +35,5 @@
       "path": "./tsconfig.node.json"
     }
   ],
-  // "baseUrl": ".",
-  "paths": {
-    "@/*": [
-      "./src/*"
-    ]
-  }
+
 }

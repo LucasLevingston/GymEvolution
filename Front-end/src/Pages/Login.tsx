@@ -1,5 +1,3 @@
-// @jsx Login.tsx
-
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -34,16 +32,18 @@ export default function Login() {
 	const handleLogin = async () => {
 		setLoading(true);
 		const result = await login(email, password);
-		if (result) {
-			toast.success('Login efetuado com sucesso!');
-			setTimeout(() => {
-				window.location.href = '/';
-			}, 2000);
+
+		if (!result) {
 			setLoading(false);
-		} else {
-			setLoading(false);
-			toast.error('Email ou senha inválidos');
+			return toast.error('Email ou senha inválidos');
 		}
+
+		toast.success('Login efetuado com sucesso!');
+		setTimeout(() => {
+			window.location.href = '/';
+		}, 2000);
+
+		setLoading(false);
 	};
 
 	return (
@@ -100,8 +100,7 @@ export default function Login() {
 								<CardFooter className="flex flex-col items-center justify-center">
 									{loading ? (
 										<Button disabled>
-											<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-											Carregando...
+											<ReloadIcon className="h-4 w-4 animate-spin" />
 										</Button>
 									) : (
 										<Button

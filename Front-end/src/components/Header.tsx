@@ -1,4 +1,4 @@
-import logoDivisao from '../assets/logo.png';
+import logoDivision from '../assets/logo.png';
 import { Link } from 'react-router-dom';
 import {
 	DropdownMenu,
@@ -20,23 +20,23 @@ import { toast } from 'sonner';
 export default function Header() {
 	const { logout } = useUser();
 	return (
-		<div className="flex h-20 w-full justify-between bg-branco px-5">
+		<div className="flex h-20 w-full justify-between bg-white px-5">
 			<button
 				onClick={() => {
 					window.location.href = '/';
 				}}
 			>
 				<div className="flex items-center gap-2">
-					<img src={logoDivisao} className="w-16" />
+					<img src={logoDivision} className="w-16" />
 					<p className="font-saira-stencil text-xl">GymEvolution</p>
 				</div>
 			</button>
 			<div className="flex items-center">
-				<p className="font-saira">Inicio</p>
+				<p className="font-saira">Home</p>
 			</div>
-			<div className="flex w-[5%] items-center space-x-2  border-l-[1px] border-l-cinza ">
+			<div className="border-l-gray flex w-[5%] items-center space-x-2 border-l-[1px] ">
 				<Link to="/" className="flex items-center">
-					<MdHome className="ml-8 text-xl text-cinza" />
+					<MdHome className="text-gray ml-8 text-xl" />
 				</Link>
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>
@@ -44,44 +44,44 @@ export default function Header() {
 							<HiOutlineDotsVertical />
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-56 bg-branco">
-						<DropdownMenuLabel>Opções</DropdownMenuLabel>
+					<DropdownMenuContent className="w-56 bg-white">
+						<DropdownMenuLabel>Options</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
 								<Link to={'/dados-pessoais'}>
 									<button className="flex items-center gap-2">
 										<User className="w-4" />
-										<span>Dados pessoais</span>
+										<span>Personal Data</span>
 									</button>
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
 								<Link to="/" className="flex items-center gap-2">
 									<CgGym />
-									<span>Treino da semana</span>
+									<span>Weekly Workout</span>
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
 								<button
 									className="flex items-center gap-2"
 									onClick={() => {
-										window.location.href = '/treinos-passados';
+										window.location.href = '/past-workouts';
 									}}
 								>
 									<IoChevronBack />
-									<span>Treinos passados</span>
+									<span>Past Workouts</span>
 								</button>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
 								<button
 									className="flex items-center gap-2"
 									onClick={() => {
-										window.location.href = '/evolucao';
+										window.location.href = '/progress';
 									}}
 								>
 									<IoAnalytics />
-									<span>Evolução</span>
+									<span>Progress</span>
 								</button>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
@@ -90,7 +90,7 @@ export default function Header() {
 							<button
 								onClick={() => {
 									logout();
-									toast.warning('Saiu da conta. ');
+									toast.warning('Logged out of the account.');
 									setTimeout(() => {
 										window.location.href = '/login';
 									}, 2000);
@@ -98,7 +98,7 @@ export default function Header() {
 								className="flex items-center"
 							>
 								<LogOut className="mr-2 h-4 w-4" />
-								<span>Sair da conta</span>
+								<span>Log Out</span>
 							</button>
 						</DropdownMenuItem>
 					</DropdownMenuContent>

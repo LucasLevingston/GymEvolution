@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { ExercicioSchema } from './ExercicioSchema';
+import { ExerciseSchema } from './ExerciseSchema';
 
 export const SerieSchema = z.object({
 	id: z.string(),
 	serieIndex: z.number().optional(),
 	repeticoes: z.number().optional(),
 	carga: z.number().optional(),
-	Exercicio: z.lazy(() => ExercicioSchema),
-	exercicioId: z.string(),
+	Exercise: z.lazy(() => ExerciseSchema),
+	exerciseId: z.string(),
 });

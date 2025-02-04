@@ -1,8 +1,6 @@
-import { FastifyInstance } from 'fastify';
-import { createTrainingWeekController } from '../controllers/trainingWeekController';
+// import { FastifyInstance } from 'fastify';
+// import { createTrainingWeek } from 'services/training-week/create';
 
-export async function trainingWeekRoutes(fastify: FastifyInstance) {
-  const trainingWeekController = new createTrainingWeekController();
-
-  fastify.post('/training-week', createTrainingWeekController);
-}
+// export async function trainingWeekRoutes(fastify: FastifyInstance) {
+//   fastify.post('/training-week', createTrainingWeek);
+// }

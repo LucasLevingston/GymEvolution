@@ -1,42 +1,42 @@
+import { getHistoryController } from 'controllers/history/get';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { HistoryController } from '../controllers/historyController';
+import { addToHistory } from 'services/history/add';
 
 export async function historyRoutes(fastify: FastifyInstance) {
-  const historyController = new HistoryController();
-  fastify.get(
-    '/:email',
-    async (
-      request: FastifyRequest<{ Params: { email: string } }>,
-      reply: FastifyReply
-    ) => {
-      const email = request.params.email;
-      try {
-        const result = await historyController.getHistory(email);
-        reply.send(result);
-      } catch (error) {
-        reply.send(error);
-      }
-    }
+  fastify.get<{
+    Params: { id: string };
+  }>(
+    '/:id',
+    {
+      schema: {
+        description: 'Get user history by ID',
+        tags: ['History'],
+        params: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', description: 'User ID' },
+          },
+          required: ['id'],
+        },
+
+        response: {
+          200: {
+            description: 'User history retrieved successfully',
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {},
+            },
+          },
+          404: {
+            description: 'User not found',
+          },
+          500: {
+            description: 'Internal server error',
+          },
+        },
+      },
+    },
+    getHistoryController
   );
-  // fastify.post(
-  //   '/:email',
-  //   async (
-  //     request: FastifyRequest<{
-  //       Body: {
-  //         event: string;
-  //         date: string;
-  //         userId: string;
-  //       };
-  //     }>,
-  //     reply: FastifyReply
-  //   ) => {
-  //     const eventHistory = request.body;
-  //     try {
-  //       const result = await historyController.addToHistory(eventHistory);
-  //       reply.send(result);
-  //     } catch (error) {
-  //       reply.send(error);
-  //     }
-  //   }
-  // );
 }
