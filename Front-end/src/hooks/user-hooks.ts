@@ -10,23 +10,31 @@ export const useUser = () => {
 		clearUser,
 		updateUser: updateUserStore,
 		token,
+		setToken,
 	} = useUserStore();
 
 	const getUser = async (id: string): Promise<UserType> => {
 		const response = await axios.get<UserType>(`${baseUrl}/${id}`);
 		if (!response.data) throw new Error('Error no get user');
+
+		if (response.data.id === user?.id) {
+			setUser(response.data);
+		}
 		return response.data;
 	};
 
 	const login = async (email: string, password: string): Promise<UserType> => {
 		const data = { email, password };
 		try {
-			const response = await axios.post<UserType>(`${baseUrl}/login`, data);
+			const response = await axios.post<{ user: UserType; token: string }>(
+				`${baseUrl}/login`,
+				data
+			);
 			if (response.status !== 200) throw new Error('Error on login');
-
-			setUser(response.data);
-
-			return response.data;
+			setUser(response.data.user);
+			setToken(response.data.token);
+			console.log('TESTE:', user, token);
+			return response.data.user;
 		} catch (error: any) {
 			throw new Error(error.response.data.message);
 		}

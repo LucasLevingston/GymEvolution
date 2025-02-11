@@ -4,12 +4,15 @@ import { Treinando } from './Pages/Treinando';
 import { TreinosPassados } from './Pages/TreinosPassados';
 import Login from './Pages/Login';
 import CreateUser from './Pages/CreateUser';
-import { DadosPessoais } from './Pages/MyInformations';
+import MyInformationsSettings from './Pages/Settings/MyInformations';
 import Evolution from './Pages/Evolution';
 import CreateTraining from './Pages/NewTraining';
 import { useUserStore } from './store/user-store';
 import NotFound from './Pages/Not-Found';
 import { ThemeProvider } from './components/providers/ThemeProvider';
+import Profile from './Pages/Profile';
+import ThemeSettings from './Pages/Settings/ThemeSettings';
+import { TrainingWeek } from './Pages/TrainingWeek';
 
 interface PrivateRouteProps {
 	element: JSX.Element;
@@ -36,10 +39,7 @@ const App: React.FC = () => {
 						path="/new-training"
 						element={<PrivateRoute element={<CreateTraining />} />}
 					/>
-					<Route
-						path="/my-informations"
-						element={<PrivateRoute element={<DadosPessoais />} />}
-					/>
+
 					<Route path="/register" element={<CreateUser />} />
 					<Route
 						path="/training/:treinoId"
@@ -48,6 +48,22 @@ const App: React.FC = () => {
 					<Route
 						path="/treinos-passados"
 						element={<PrivateRoute element={<TreinosPassados />} />}
+					/>
+					<Route
+						path="/profile"
+						element={<PrivateRoute element={<Profile />} />}
+					/>
+					<Route
+						path="/settings/theme"
+						element={<PrivateRoute element={<ThemeSettings />} />}
+					/>
+					<Route
+						path="/settings/my-informations"
+						element={<PrivateRoute element={<MyInformationsSettings />} />}
+					/>
+					<Route
+						path="/training-week"
+						element={<PrivateRoute element={<TrainingWeek />} />}
 					/>
 					<Route path="*" element={<NotFound />} />
 				</Routes>

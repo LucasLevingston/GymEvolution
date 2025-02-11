@@ -9,7 +9,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, Settings, User } from 'lucide-react';
 import { HiOutlineDotsVertical } from 'react-icons/hi';
 import { MdHome } from 'react-icons/md';
 import { CgGym } from 'react-icons/cg';
@@ -52,10 +52,10 @@ export default function Header() {
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
-								<Link to={'/my-informations'}>
+								<Link to={'/profile'}>
 									<button className="flex items-center gap-2">
 										<User className="w-4" />
-										<span>Personal Data</span>
+										<span>Profile</span>
 									</button>
 								</Link>
 							</DropdownMenuItem>
@@ -88,8 +88,16 @@ export default function Header() {
 								</button>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
+						<DropdownMenuItem>
+							<Link
+								to="/settings/my-informations"
+								className="flex items-center gap-2"
+							>
+								<Settings className="h-4 w-4" />
+								<span>Settings</span>
+							</Link>
+						</DropdownMenuItem>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem></DropdownMenuItem>
 						<DropdownMenuItem>
 							<button
 								onClick={() => {

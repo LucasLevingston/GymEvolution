@@ -1,4 +1,3 @@
-import { User } from '@prisma/client';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { getUserByEmailService } from 'services/user/get-by-email';

@@ -8,6 +8,7 @@ interface UserStoreProps {
 	updateUser: (updatedUser: Partial<UserType>) => void;
 	clearUser: () => void;
 	getUser: () => UserType;
+	setToken: (token: string) => void;
 }
 const storedUser = localStorage.getItem('user');
 const initialUser = storedUser ? JSON.parse(storedUser) : null;
@@ -18,31 +19,38 @@ export const useUserStore = create<UserStoreProps>()((set) => ({
 	user: initialUser,
 	token: initialToken,
 	setUser: (user) => {
-		set({ user: user.user, token: user.token });
-
-		localStorage.setItem('user', JSON.stringify(user.user));
-		localStorage.setItem('token', JSON.stringify(user.token));
-
+		set({ user });
+		localStorage.setItem('user', JSON.stringify(user));
 		return user;
 	},
+
 	updateUser: (updatedUser) =>
 		set((state) => {
 			const newUser = state.user ? { ...state.user, ...updatedUser } : null;
 			localStorage.setItem('user', JSON.stringify(newUser));
 			return { user: newUser };
 		}),
+
 	clearUser: () => {
 		set({ user: null });
 
 		localStorage.removeItem('user');
 		localStorage.removeItem('token');
 	},
+
 	getUser: () => {
 		const storedUser = localStorage.getItem('user');
 		return storedUser ? JSON.parse(storedUser) : null;
 	},
+
 	getToken: () => {
 		const storedUser = localStorage.getItem('token');
 		return storedUser ? JSON.parse(storedUser) : null;
+	},
+
+	setToken: (token) => {
+		set({ token });
+		localStorage.setItem('token', JSON.stringify(token));
+		return token;
 	},
 }));
