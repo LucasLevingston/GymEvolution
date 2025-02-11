@@ -2,8 +2,8 @@ import { UserType } from './userType';
 
 export interface TrainingWeekType {
 	id: string;
-	weekNumber: string;
-	training: TrainingDayType[];
+	weekNumber: number;
+	trainingDays: TrainingDayType[];
 	current: boolean;
 	information?: string;
 	done: boolean;

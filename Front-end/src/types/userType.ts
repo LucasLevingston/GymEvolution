@@ -17,8 +17,6 @@ export interface UserType {
 	history: History[];
 	oldWeights: Weight[];
 	trainingWeeks: TrainingWeekType[];
-
-	[key: string]: any;
 }
 
 export interface History {

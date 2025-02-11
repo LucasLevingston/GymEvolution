@@ -3,10 +3,9 @@
 import type React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/Container';
-import { TreinoDaSemana } from './TreinoDaSemana';
+import { TrainingWeek } from './TrainingWeek';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
-import { useUserStore } from '@/store/user-store';
 import {
 	Card,
 	CardContent,
@@ -15,9 +14,21 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { BarChart3, Dumbbell, Utensils, LineChart } from 'lucide-react';
+import useUser from '@/hooks/user-hooks';
+import { useEffect } from 'react';
 
 export default function Home() {
-	const { user } = useUserStore();
+	const { user, getUser } = useUser();
+
+	useEffect(() => {
+		const fetchUser = async () => {
+			if (user) {
+				await getUser(user.id);
+			}
+		};
+
+		fetchUser();
+	}, [user, getUser]);
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -74,7 +85,7 @@ export default function Home() {
 							<h2 className="mb-6 text-2xl font-semibold text-primary">
 								This Week's Training
 							</h2>
-							<TreinoDaSemana />
+							<TrainingWeek />
 						</section>
 					)}
 

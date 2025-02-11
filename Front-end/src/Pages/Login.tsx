@@ -56,9 +56,9 @@ export default function Login() {
 		}
 
 		toast.success('Login successfully!');
-		setTimeout(() => {
-			window.location.href = '/';
-		}, 2000);
+		// setTimeout(() => {
+		// 	window.location.href = '/';
+		// }, 2000);
 	};
 
 	return (

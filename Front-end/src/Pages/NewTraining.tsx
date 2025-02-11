@@ -29,36 +29,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useUser from '@/hooks/user-hooks';
 import { Plus, Save } from 'lucide-react';
-
-// Define the schema for form validation
-const formSchema = z.object({
-	information: z.string().optional(),
-	training: z.array(
-		z.object({
-			group: z.string().min(1, { message: 'Muscle group is required' }),
-			dayOfWeek: z.string().min(1, { message: 'Day of the week is required' }),
-			exercises: z.array(
-				z.object({
-					name: z.string().min(1, { message: 'Exercise name is required' }),
-					repetitions: z
-						.string()
-						.min(1, { message: 'Repetitions are required' }),
-					numberOfSets: z
-						.string()
-						.min(1, { message: 'Number of sets is required' }),
-					variation: z.string().optional(),
-				})
-			),
-		})
-	),
-});
+import { newTrainingSchema } from '@/schemas/newTrainingSchema';
 
 export default function NewTraining() {
 	const { user } = useUser();
 	const [activeTab, setActiveTab] = useState('0');
 
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
+	const form = useForm<z.infer<typeof newTrainingSchema>>({
+		resolver: zodResolver(newTrainingSchema),
 		defaultValues: {
 			information: '',
 			training: [
@@ -103,7 +81,7 @@ export default function NewTraining() {
 		setActiveTab(currentTraining.length.toString());
 	};
 
-	const onSubmit = (data: z.infer<typeof formSchema>) => {
+	const onSubmit = (data: z.infer<typeof newTrainingSchema>) => {
 		console.log('Training data:', data);
 		// Here you would typically send the data to your backend
 	};
