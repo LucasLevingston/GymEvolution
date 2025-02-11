@@ -1,6 +1,4 @@
-import { ReloadIcon } from '@radix-ui/react-icons';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import {
 	Card,
 	CardContent,
@@ -10,72 +8,83 @@ import {
 	CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
 import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5';
 import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { ReloadIcon } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
 import useUser from '@/hooks/user-hooks';
+import type { z } from 'zod';
+import { registerSchema } from '@/schemas/RegisterSchema';
 import Container from '@/components/Container';
 import Header from '@/components/Header';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from '@/components/ui/form';
-import { loginSchema } from '@/schemas/LogInSchema';
+import { useState } from 'react';
 
-export default function Login() {
+export default function Register() {
 	const [passwordVisible, setPasswordVisible] = useState(false);
-	const { login } = useUser();
+	const { createUser } = useUser();
 
-	const form = useForm<z.infer<typeof loginSchema>>({
-		resolver: zodResolver(loginSchema),
+	const form = useForm<z.infer<typeof registerSchema>>({
+		resolver: zodResolver(registerSchema),
 		defaultValues: {
 			email: '',
 			password: '',
+			confirmPassword: '',
 		},
 	});
 
-	const toggleShowPassword = () => {
+	const togglePasswordVisible = () => {
 		setPasswordVisible(!passwordVisible);
 	};
 
-	const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-		const result = await login(values.email, values.password);
-
-		if (!result) {
-			return toast.error('Login failed. Please check your credentials.');
+	async function onSubmit(values: z.infer<typeof registerSchema>) {
+		try {
+			const response = await createUser({
+				email: values.email,
+				password: values.password,
+			});
+			if (response) {
+				toast.success('User registered successfully!');
+				setTimeout(() => {
+					window.location.href = '/login';
+				}, 2000);
+			} else {
+				toast.error(response);
+			}
+		} catch (error) {
+			if (error === 'Error: User already exists') {
+				toast.error(`Registration error: User already registered.`);
+			} else {
+				toast.error(`Registration error: ${error}`);
+			}
 		}
-
-		toast.success('Login successfully!');
-		// setTimeout(() => {
-		// 	window.location.href = '/';
-		// }, 2000);
-	};
+	}
 
 	return (
-		<>
+		<div className="min-h-screen bg-background">
 			<Header />
 			<Container>
 				<div className="flex h-full w-full items-center justify-center">
 					<Tabs defaultValue="account" className="w-[400px]">
-						<TabsList className="bg-darkGray grid w-full">
-							<Label className="text-2xl text-white">
-								Log in to your account
-							</Label>
-						</TabsList>
+						<div className="flex w-full justify-center bg-background">
+							<h1 className="text-2xl font-bold">Register</h1>
+						</div>
 						<TabsContent value="account">
 							<Card>
 								<CardHeader>
-									<CardTitle>Login</CardTitle>
+									<CardTitle>Registration</CardTitle>
 									<CardDescription></CardDescription>
 								</CardHeader>
 								<Form {...form}>
@@ -113,7 +122,41 @@ export default function Login() {
 																	{...field}
 																/>
 																<button
-																	onClick={toggleShowPassword}
+																	onClick={togglePasswordVisible}
+																	className="pl-3"
+																	type="button"
+																>
+																	{passwordVisible ? (
+																		<IoEyeOutline className="h-7 w-7" />
+																	) : (
+																		<IoEyeSharp className="h-7 w-7" />
+																	)}
+																</button>
+															</div>
+														</FormControl>
+														<FormDescription>
+															Password must be at least 8 characters long,
+															include an uppercase letter and a special
+															character.
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="confirmPassword"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Confirm Password</FormLabel>
+														<FormControl>
+															<div className="flex">
+																<Input
+																	type={passwordVisible ? 'text' : 'password'}
+																	{...field}
+																/>
+																<button
+																	onClick={togglePasswordVisible}
 																	className="pl-3"
 																	type="button"
 																>
@@ -133,32 +176,27 @@ export default function Login() {
 										<CardFooter className="flex flex-col items-center justify-center">
 											<Button type="submit">
 												{form.formState.isSubmitting ? (
-													<ReloadIcon className="h-4 w-4 animate-spin" />
+													<>
+														<ReloadIcon className="h-4 w-4 animate-spin" />
+														Loading...
+													</>
 												) : (
-													'Log In'
+													'Register'
 												)}
 											</Button>
 											<br />
-											<Link
-												to="/reset-password"
-												className="text-[12px] text-mainColor"
-											>
-												Forgot password? Click here to recover
+											<p className="text-sm">Already have an account?</p>
+											<Link to="/login" className="text-[12px] text-mainColor">
+												Log in here
 											</Link>
 										</CardFooter>
 									</form>
 								</Form>
-								<CardFooter className="flex flex-col items-center justify-center">
-									<Label>Don't have an account?</Label>
-									<Link to="/register" className="text-[12px] text-mainColor">
-										Register here!
-									</Link>
-								</CardFooter>
 							</Card>
 						</TabsContent>
 					</Tabs>
 				</div>
 			</Container>
-		</>
+		</div>
 	);
 }

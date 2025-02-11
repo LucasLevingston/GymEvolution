@@ -70,7 +70,6 @@ export const useUser = () => {
 	};
 
 	const logout = () => {
-		localStorage.removeItem('token');
 		clearUser();
 	};
 
