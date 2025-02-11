@@ -1,5 +1,3 @@
-'use client';
-
 import { useState } from 'react';
 import type { z } from 'zod';
 import { useForm } from 'react-hook-form';
@@ -8,16 +6,15 @@ import { Button } from '@/components/ui/button';
 import useUser from '@/hooks/user-hooks';
 import type { UserType } from '@/types/userType';
 import { UserSchema } from '@/schemas/UserSchema';
-import { toast } from '@/hooks/use-toast';
 import DataCard from '@/components/DataCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SiedbarComponent from '@/components/sidebar/SiedbarComponent';
+import { toast } from 'sonner';
 
 type UserFormValues = z.infer<typeof UserSchema>;
 
 export default function MyInformations() {
 	const { updateUser, user } = useUser();
-	const [selectedState] = useState<string | null>(null);
 	const [editMode, setEditMode] = useState<{ [key: string]: boolean }>({});
 
 	const {
@@ -52,23 +49,15 @@ export default function MyInformations() {
 		const updatedUser: UserType = {
 			...user,
 			...data,
-			state: selectedState || data.state,
 		};
 		try {
 			const response = await updateUser(updatedUser);
 			if (response) {
-				toast({
-					title: 'Success',
-					description: 'Your information has been updated.',
-				});
+				toast.success('Your information has been updated.');
 			}
 		} catch (error) {
 			console.error(error);
-			toast({
-				title: 'Error',
-				description: 'Failed to update your information.',
-				variant: 'destructive',
-			});
+			toast.error('Failed to update your information.');
 		}
 	};
 

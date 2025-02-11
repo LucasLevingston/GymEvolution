@@ -19,7 +19,7 @@ export function formatDate(data: string): string {
 
 	return `${dia}/${mes}/${ano} ${horas}:${minutos}:${segundos}`;
 }
-export const estadosBrasileiros = [
+export const brazilianStates = [
 	{ label: 'Acre', value: 'AC' },
 	{ label: 'Alagoas', value: 'AL' },
 	{ label: 'Amapá', value: 'AP' },
@@ -176,4 +176,6 @@ export function formatarDataHistorico(data: string): string {
 	return dataFormatada;
 }
 
-export function validarMudancas() {}
+export const capitalizeFirstLetter = (string: string) => {
+	return string.charAt(0).toUpperCase() + string.slice(1);
+};

@@ -32,7 +32,7 @@ export const useUserStore = create<UserStoreProps>()((set) => ({
 		}),
 
 	clearUser: () => {
-		set({ user: null });
+		set({ user: null, token: null });
 
 		localStorage.removeItem('user');
 		localStorage.removeItem('token');

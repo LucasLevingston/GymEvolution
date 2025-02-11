@@ -3,7 +3,6 @@
 import type React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/Container';
-import { TrainingWeek } from './TrainingWeek';
 import { Button } from '@/components/ui/button';
 import Header from '@/components/Header';
 import {
@@ -16,6 +15,7 @@ import {
 import { BarChart3, Dumbbell, Utensils, LineChart } from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
 import { useEffect } from 'react';
+import { TrainingWeek } from '@/components/TrainingWeek';
 
 export default function Home() {
 	const { user, getUser } = useUser();
@@ -35,7 +35,6 @@ export default function Home() {
 			<Header />
 			<Container>
 				<main className="py-12">
-					{/* Hero Section */}
 					<section className="mb-16 text-center">
 						<h1 className="mb-4 text-4xl font-bold tracking-tight text-primary sm:text-5xl md:text-6xl">
 							Your Personal Training & Diet Assistant
@@ -79,17 +78,26 @@ export default function Home() {
 						/>
 					</section>
 
-					{/* Weekly Training Overview */}
 					{user && (
 						<section className="mb-16">
 							<h2 className="mb-6 text-2xl font-semibold text-primary">
 								This Week's Training
 							</h2>
-							<TrainingWeek />
+
+							{user.trainingWeeks[user.trainingWeeks.length - 1] ? (
+								<TrainingWeek
+									trainingWeek={
+										user.trainingWeeks[user.trainingWeeks.length - 1]
+									}
+								/>
+							) : (
+								<p className="text-center text-muted-foreground">
+									Não há dias de treino registrados para esta semana.
+								</p>
+							)}
 						</section>
 					)}
 
-					{/* Call to Action */}
 					<section className="rounded-lg bg-primary/10 p-8 text-center">
 						<h2 className="mb-4 text-3xl font-bold text-primary">
 							Ready to Transform Your Fitness Journey?
