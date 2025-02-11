@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const loginSchema = z.object({
-	email: z.string().email({ message: 'Email inválido' }),
+	email: z.string().email({ message: 'Invalid email address' }),
 	password: z
 		.string()
-		.min(6, { message: 'A senha deve ter no mínimo 6 caracteres' }),
+		.min(8, { message: 'Password must be at least 8 characters long' }),
 });

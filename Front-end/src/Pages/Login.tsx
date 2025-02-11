@@ -19,41 +19,58 @@ import useUser from '@/hooks/user-hooks';
 import Container from '@/components/Container';
 import Header from '@/components/Header';
 
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import {
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
+import { loginSchema } from '@/schemas/LogInSchema';
+
 export default function Login() {
-	const [senhaVisivel, setSenhaVisivel] = useState(false);
-	const toggleShowPassword = () => {
-		setSenhaVisivel(!senhaVisivel);
-	};
-	const [email, setEmail] = useState('');
-	const [password, setSenha] = useState('');
-	const [loading, setLoading] = useState(false);
+	const [passwordVisible, setPasswordVisible] = useState(false);
 	const { login } = useUser();
 
-	const handleLogin = async () => {
-		setLoading(true);
-		const result = await login(email, password);
+	const form = useForm<z.infer<typeof loginSchema>>({
+		resolver: zodResolver(loginSchema),
+		defaultValues: {
+			email: '',
+			password: '',
+		},
+	});
+
+	const toggleShowPassword = () => {
+		setPasswordVisible(!passwordVisible);
+	};
+
+	const onSubmit = async (values: z.infer<typeof loginSchema>) => {
+		const result = await login(values.email, values.password);
 
 		if (!result) {
-			setLoading(false);
-			return toast.error('Email ou senha inválidos');
+			return toast.error('Login failed. Please check your credentials.');
 		}
 
-		toast.success('Login efetuado com sucesso!');
+		toast.success('Login successfully!');
 		setTimeout(() => {
 			window.location.href = '/';
 		}, 2000);
-
-		setLoading(false);
 	};
 
 	return (
 		<>
 			<Header />
 			<Container>
-				<div className="flex h-full w-full items-center justify-center pt-10">
+				<div className="flex h-full w-full items-center justify-center">
 					<Tabs defaultValue="account" className="w-[400px]">
-						<TabsList className="grid w-full bg-cinzaEscuro">
-							<Label className="text-2xl text-white">Entrar na sua conta</Label>
+						<TabsList className="bg-darkGray grid w-full">
+							<Label className="text-2xl text-white">
+								Log in to your account
+							</Label>
 						</TabsList>
 						<TabsContent value="account">
 							<Card>
@@ -61,72 +78,80 @@ export default function Login() {
 									<CardTitle>Login</CardTitle>
 									<CardDescription></CardDescription>
 								</CardHeader>
-								<form>
-									<CardContent className="space-y-2">
-										<div className="space-y-1">
-											<Label htmlFor="email">Email</Label>
-											<Input
-												id="email"
-												required
-												autoComplete="email"
-												onChange={(e) => setEmail(e.target.value)}
+								<Form {...form}>
+									<form
+										onSubmit={form.handleSubmit(onSubmit)}
+										className="space-y-4"
+									>
+										<CardContent className="space-y-2">
+											<FormField
+												control={form.control}
+												name="email"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Email</FormLabel>
+														<FormControl>
+															<Input
+																placeholder="email@example.com"
+																{...field}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
 											/>
-										</div>
-										<div className="space-y-1">
-											<Label htmlFor="senha">Senha</Label>
-											<div className="flex">
-												<Input
-													type={senhaVisivel ? 'text' : 'password'}
-													required
-													autoComplete="current-password"
-													minLength={8}
-													onChange={(e) => setSenha(e.target.value)}
-												/>
-												<button
-													onClick={toggleShowPassword}
-													className="pl-3"
-													type="button"
-												>
-													{senhaVisivel ? (
-														<IoEyeOutline className="h-7 w-7" />
-													) : (
-														<IoEyeSharp className="h-7 w-7" />
-													)}
-												</button>
-											</div>
-										</div>
-									</CardContent>
-								</form>
+											<FormField
+												control={form.control}
+												name="password"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Password</FormLabel>
+														<FormControl>
+															<div className="flex">
+																<Input
+																	type={passwordVisible ? 'text' : 'password'}
+																	{...field}
+																/>
+																<button
+																	onClick={toggleShowPassword}
+																	className="pl-3"
+																	type="button"
+																>
+																	{passwordVisible ? (
+																		<IoEyeOutline className="h-7 w-7" />
+																	) : (
+																		<IoEyeSharp className="h-7 w-7" />
+																	)}
+																</button>
+															</div>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</CardContent>
+										<CardFooter className="flex flex-col items-center justify-center">
+											<Button type="submit">
+												{form.formState.isSubmitting ? (
+													<ReloadIcon className="h-4 w-4 animate-spin" />
+												) : (
+													'Log In'
+												)}
+											</Button>
+											<br />
+											<Link
+												to="/reset-password"
+												className="text-[12px] text-mainColor"
+											>
+												Forgot password? Click here to recover
+											</Link>
+										</CardFooter>
+									</form>
+								</Form>
 								<CardFooter className="flex flex-col items-center justify-center">
-									{loading ? (
-										<Button disabled>
-											<ReloadIcon className="h-4 w-4 animate-spin" />
-										</Button>
-									) : (
-										<Button
-											variant="outline"
-											onClick={async () => {
-												handleLogin();
-											}}
-										>
-											Entrar
-										</Button>
-									)}
-									<br />
-									<Link
-										to="/redefinir-senha"
-										className="text-[12px] text-mainColor"
-									>
-										Esqueceu a senha? Clique aqui para recuperar
-									</Link>
-								</CardFooter>
-								<CardFooter className="flex flex-col items-center justify-center">
-									<Label>Não possui conta?</Label>
-									<Link
-										to="/cadastro-usuario"
-										className="text-[12px] text-mainColor"
-									>
-										Fazer cadastro aqui!
+									<Label>Don't have an account?</Label>
+									<Link to="/register" className="text-[12px] text-mainColor">
+										Register here!
 									</Link>
 								</CardFooter>
 							</Card>

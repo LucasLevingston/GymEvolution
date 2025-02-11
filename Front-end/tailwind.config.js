@@ -19,14 +19,14 @@ export default {
 		extend: {
 			colors: {
 				mainColor: '#0073CF',
-				branco: '#fff',
-				preto: '#000',
-				cinza: '#E1E3E3',
+				white: '#fff',
+				black: '#000',
+				gray: '#E1E3E3',
 				transparent: 'transparent',
-				vermelho: '#FF0000',
-				azulClaro: '#B8CAD4',
-				verde: '#5EE617',
-				cinzaEscuro: '#212121',
+				red: '#FF0000',
+				lightBlue: '#B8CAD4',
+				green: '#5EE617',
+				darkGray: '#212121',
 
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',

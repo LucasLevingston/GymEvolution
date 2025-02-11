@@ -4,34 +4,56 @@ import { Treinando } from './Pages/Treinando';
 import { TreinosPassados } from './Pages/TreinosPassados';
 import Login from './Pages/Login';
 import CreateUser from './Pages/CreateUser';
-import { DadosPessoais } from './Pages/DadosPessoais';
+import { DadosPessoais } from './Pages/MyInformations';
 import Evolution from './Pages/Evolution';
-import CreateTraining from './Pages/CreateTraining';
+import CreateTraining from './Pages/NewTraining';
+import { useUserStore } from './store/user-store';
+import NotFound from './Pages/Not-Found';
+import { ThemeProvider } from './components/providers/ThemeProvider';
 
-function App() {
-	return (
-		<BrowserRouter>
-			{
-				// loading ? (
-				//   <Container className="flex h-full w-full flex-col items-center justify-center space-y-5">
-				//     <div>Carregando...</div>
-				//     <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-				//   </Container>
-				// ) :
-				<Routes>
-					<Route path={`/`} element={<Home />} />
-					<Route path={`/login`} element={<Login />} />
-					<Route path={`/evolucao`} element={<Evolution />} />
-					<Route path={`/novo-treino`} element={<CreateTraining />} />
-					<Route path={`/dados-pessoais`} element={<DadosPessoais />} />
-					<Route path={`/cadastro-usuario`} element={<CreateUser />} />
-					<Route path={`/treinando/:treinoId`} element={<Treinando />} />
-					<Route path={`/treinos-passados`} element={<TreinosPassados />} />
-					<Route path={`*`} element={<Navigate to="/login" />} />
-				</Routes>
-			}
-		</BrowserRouter>
-	);
+interface PrivateRouteProps {
+	element: JSX.Element;
 }
+
+const PrivateRoute: React.FC<PrivateRouteProps> = ({ element }) => {
+	const { user } = useUserStore();
+
+	return user ? element : <Navigate to="/login" />;
+};
+
+const App: React.FC = () => {
+	return (
+		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+			<BrowserRouter>
+				<Routes>
+					<Route path="/" element={<Home />} />
+					<Route path="/login" element={<Login />} />
+					<Route
+						path="/evolution"
+						element={<PrivateRoute element={<Evolution />} />}
+					/>
+					<Route
+						path="/new-training"
+						element={<PrivateRoute element={<CreateTraining />} />}
+					/>
+					<Route
+						path="/my-informations"
+						element={<PrivateRoute element={<DadosPessoais />} />}
+					/>
+					<Route path="/register" element={<CreateUser />} />
+					<Route
+						path="/training/:treinoId"
+						element={<PrivateRoute element={<Treinando />} />}
+					/>
+					<Route
+						path="/treinos-passados"
+						element={<PrivateRoute element={<TreinosPassados />} />}
+					/>
+					<Route path="*" element={<NotFound />} />
+				</Routes>
+			</BrowserRouter>
+		</ThemeProvider>
+	);
+};
 
 export default App;

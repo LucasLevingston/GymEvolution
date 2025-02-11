@@ -3,24 +3,13 @@
 import Container from '@/components/Container';
 import { ExerciciseCard } from '@/components/ExerciciseCard';
 import { Button } from '@/components/ui/button';
-import useUser from '@/hooks/user-hooks';
+import { useUserStore } from '@/store/user-store';
 import { TrainingDayType } from '@/types/trainingType';
-import { UserType } from '@/types/userType';
 import { useEffect, useState } from 'react';
 import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
 
 export const TreinosPassados: React.FC = () => {
-	const { getUser } = useUser();
-	const [user, setUser] = useState<UserType | null>(null);
-
-	useEffect(() => {
-		const fetchUser = async () => {
-			const fetchedUser = await getUser();
-			setUser(fetchedUser);
-		};
-
-		fetchUser();
-	}, [getUser]);
+	const { user } = useUserStore();
 
 	const treinos = user?.TreinosAntigos || [];
 

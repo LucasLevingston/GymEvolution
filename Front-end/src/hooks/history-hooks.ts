@@ -14,7 +14,7 @@ export const useHistory = () => {
 	const [error, setError] = useState<string | null>(null);
 	const { user } = useUser();
 
-	const baseUrl = `${import.meta.env.VITE_API_URL}/historico`;
+	const baseUrl = `${import.meta.env.VITE_API_URL}/history`;
 
 	useEffect(() => {
 		if (user) {

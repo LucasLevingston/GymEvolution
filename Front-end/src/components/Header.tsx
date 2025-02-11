@@ -16,11 +16,12 @@ import { CgGym } from 'react-icons/cg';
 import { IoAnalytics, IoChevronBack } from 'react-icons/io5';
 import useUser from '@/hooks/user-hooks';
 import { toast } from 'sonner';
+import { ModeToggle } from './toggle/ModeToggle';
 
 export default function Header() {
 	const { logout } = useUser();
 	return (
-		<div className="flex h-20 w-full justify-between bg-white px-5">
+		<div className="flex h-20 w-full justify-between  bg-blue-300 px-5 text-black">
 			<button
 				onClick={() => {
 					window.location.href = '/';
@@ -44,12 +45,14 @@ export default function Header() {
 							<HiOutlineDotsVertical />
 						</button>
 					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-56 bg-white">
-						<DropdownMenuLabel>Options</DropdownMenuLabel>
+					<DropdownMenuContent className="w-56 ">
+						<DropdownMenuLabel className="flex justify-between">
+							Options <ModeToggle />
+						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
-								<Link to={'/dados-pessoais'}>
+								<Link to={'/my-informations'}>
 									<button className="flex items-center gap-2">
 										<User className="w-4" />
 										<span>Personal Data</span>
@@ -86,6 +89,7 @@ export default function Header() {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
+						<DropdownMenuItem></DropdownMenuItem>
 						<DropdownMenuItem>
 							<button
 								onClick={() => {

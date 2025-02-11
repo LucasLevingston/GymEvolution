@@ -1,3 +1,5 @@
+'use client';
+
 import {
 	Sheet,
 	SheetContent,
@@ -7,52 +9,58 @@ import {
 	SheetTrigger,
 } from '@/components/ui/sheet';
 import { BsJournalText } from 'react-icons/bs';
-import { formatarData } from '@/estatico';
-import { History, UserType } from '@/types/userType';
-import { useEffect, useState } from 'react';
 import { useHistory } from '@/hooks/history-hooks';
 import useUser from '@/hooks/user-hooks';
+import { useEffect, useState } from 'react';
+import type { History } from '@/types/userType';
+import { formatDate } from '@/estatico';
 
-export default function BotaoMostrarHistorico() {
-	const [user, setUser] = useState<UserType | null>(null);
-	const [historico, setHistorico] = useState<History[] | null>(null);
-
+export default function ShowHistoryButton() {
+	const { user } = useUser();
 	const { getHistory } = useHistory();
-	const { getUser } = useUser();
+	const [history, setHistory] = useState<History[]>([]);
 
 	useEffect(() => {
-		const fetchUser = async () => {
-			const fetchedUser: UserType = await getUser();
-			setUser(fetchedUser);
-
-			const historicoAtual = await getHistory(fetchedUser?.id);
-			if (historicoAtual) setHistorico(historicoAtual);
+		const fetchHistory = async () => {
+			if (user) {
+				const userHistory = await getHistory(user.id);
+				setHistory(userHistory);
+			}
 		};
-		fetchUser();
-	}, [getUser]);
+
+		fetchHistory();
+	}, [user, getHistory]);
+
+	if (!user) return null;
 
 	return (
-		<div className="rounded-lg bg-cinza">
-			{historico && user && (
+		<div>
+			{history.length > 0 && (
 				<Sheet>
-					<SheetTrigger className="text-xm flex items-center justify-center space-x-2 p-2 px-3 text-preto ">
-						<div>History</div>
-						<BsJournalText />
+					<SheetTrigger className="flex items-center justify-center space-x-2 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-2 text-sm font-medium text-white shadow-lg transition-all duration-300 ease-in-out hover:from-blue-600 hover:to-purple-700 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+						<span>History</span>
+						<BsJournalText className="h-5 w-5" />
 					</SheetTrigger>
-					<SheetContent className="">
+					<SheetContent className="w-[400px] sm:w-[540px]">
 						<SheetHeader>
-							<SheetTitle>Histórico</SheetTitle>
-							<SheetDescription className="max-h-[90vh] overflow-y-auto">
-								{historico.map((acontecimento, index) => (
-									<div
+							<SheetTitle className="text-2xl font-bold text-gray-800">
+								History
+							</SheetTitle>
+							<div className="max-h-[calc(90vh-100px)] overflow-y-auto">
+								{history.map((eventItem, index) => (
+									<SheetDescription
 										key={index}
-										className="space-y-1 border-b py-2 text-preto"
+										className="mb-4 rounded-lg bg-white p-4 shadow-md transition-all duration-300 ease-in-out hover:shadow-lg"
 									>
-										<p>Ocorrido: {acontecimento.event}</p>
-										<p>Data: {formatarData(acontecimento.date)}</p>
-									</div>
+										<span className="block text-lg font-semibold text-gray-800">
+											{eventItem.event}
+										</span>
+										<span className="text-sm text-gray-600">
+											{formatDate(eventItem.date)}
+										</span>
+									</SheetDescription>
 								))}
-							</SheetDescription>
+							</div>
 						</SheetHeader>
 					</SheetContent>
 				</Sheet>

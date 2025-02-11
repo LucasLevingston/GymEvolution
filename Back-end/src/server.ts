@@ -3,6 +3,9 @@ import { userRoutes } from './routes/user-routes';
 import fastifyCors from '@fastify/cors';
 import { historyRoutes } from './routes/history-routes';
 import fastifySwagger from '@fastify/swagger';
+import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
+import { errorHandler } from 'error-handler';
+import { env } from './env';
 
 const app: FastifyInstance = fastify({ logger: false });
 
@@ -21,6 +24,10 @@ app.register(fastifySwagger, {
   },
 });
 
+app.setErrorHandler(errorHandler);
+app.setValidatorCompiler(validatorCompiler);
+app.setSerializerCompiler(serializerCompiler);
+
 app.register(userRoutes, {
   prefix: '/users',
 });
@@ -28,10 +35,10 @@ app.register(historyRoutes, {
   prefix: '/history',
 });
 
-app.listen({ host: 'localhost', port: 3000 }, (err, address) => {
+app.listen({ host: 'localhost', port: env.PORT }, (err, address) => {
   if (err) {
     console.error(err);
     process.exit(1);
   }
-  console.log(`Server listening at ${address}`);
+  console.log(`Server listening on port ${env.PORT}`);
 });

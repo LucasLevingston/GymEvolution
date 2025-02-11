@@ -4,13 +4,12 @@ import Container from '@/components/Container';
 import Header from '@/components/Header';
 import { Button } from '@/components/ui/button';
 import useUser from '@/hooks/user-hooks';
-import { UserType, Weight } from '@/types/userType';
+import { Weight } from '@/types/userType';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
 export default function Evolution() {
-	const { getUser } = useUser();
-	const [user, setUser] = useState<UserType | null>(null);
+	const { getUser, user } = useUser();
 	const [error, setError] = useState<string | null>(null);
 	const [pesos, setPesos] = useState<Weight[] | null>(null);
 	if (error) {
@@ -20,8 +19,6 @@ export default function Evolution() {
 	useEffect(() => {
 		const fetchUser = async () => {
 			try {
-				const fetchedUser = await getUser();
-				setUser(fetchedUser);
 				if (user) {
 					setPesos(user.pesosAntigos);
 				}

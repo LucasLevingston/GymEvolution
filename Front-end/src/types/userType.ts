@@ -13,7 +13,7 @@ export interface UserType {
 	state?: string;
 	birthDate?: string;
 	phone?: string;
-	currentWeight?: number;
+	currentWeight?: string;
 	history: History[];
 	oldWeights: Weight[];
 	trainingWeeks: TrainingWeekType[];
