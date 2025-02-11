@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+'use client';
+
+import React from 'react';
 import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
 import {
 	Card,
@@ -16,86 +18,60 @@ import { Button } from '@/components/ui/button';
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
 import useUser from '@/hooks/user-hooks';
-import { z } from 'zod';
+import type { z } from 'zod';
 import { registerSchema } from '@/schemas/RegisterSchema';
 import Container from '@/components/Container';
 import Header from '@/components/Header';
 
-export default function UserRegistration() {
-	const [passwordVisible, setPasswordVisible] = useState(false);
-	const [loading, setLoading] = useState(false);
-	const [email, setEmail] = useState('');
-	const [password, setPassword] = useState('');
-	const [confirmPassword, setConfirmPassword] = useState('');
-	const [passwordTouched, setPasswordTouched] = useState(false);
-	const [differentPasswords, setDifferentPasswords] = useState(false);
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from '@/components/ui/form';
 
+export default function UserRegistration() {
+	const [passwordVisible, setPasswordVisible] = React.useState(false);
 	const { createUser } = useUser();
+
+	const form = useForm<z.infer<typeof registerSchema>>({
+		resolver: zodResolver(registerSchema),
+		defaultValues: {
+			email: '',
+			password: '',
+			confirmPassword: '',
+		},
+	});
 
 	const togglePasswordVisible = () => {
 		setPasswordVisible(!passwordVisible);
 	};
 
-	function validatePassword() {
-		if (!passwordTouched) return true;
-
-		if (password !== confirmPassword) return false;
-
-		const uppercaseExpression = /[A-Z]/;
-		const specialCharacterExpression = /[!@#$%^&*(),.?":{}|<>]/;
-
-		const validLength = password.length >= 8 && confirmPassword.length >= 8;
-		const validUppercase =
-			uppercaseExpression.test(password) &&
-			uppercaseExpression.test(confirmPassword);
-		const validSpecialCharacter =
-			specialCharacterExpression.test(password) &&
-			specialCharacterExpression.test(confirmPassword);
-
-		return validLength && validUppercase && validSpecialCharacter;
-	}
-
-	async function handleRegister(event: React.FormEvent) {
-		event.preventDefault();
-		setLoading(true);
+	async function onSubmit(values: z.infer<typeof registerSchema>) {
 		try {
-			const validation = validatePassword();
-			if (!validation) {
-				setDifferentPasswords(true);
-				toast.error('Passwords must match and meet the requirements.');
-				return;
-			} else setDifferentPasswords(false);
-
-			registerSchema.parse({
-				email,
-				password: password,
-				confirmPassword: confirmPassword,
+			const response = await createUser({
+				email: values.email,
+				password: values.password,
 			});
-
-			const response = await createUser(email, password);
 			if (response) {
 				toast.success('User registered successfully!');
 				setTimeout(() => {
 					window.location.href = '/login';
 				}, 2000);
 			} else {
-				toast.error(response.message);
+				toast.error(response);
 			}
 		} catch (error) {
-			if (error instanceof z.ZodError) {
-				toast.error(
-					'Validation error: ' +
-						error.errors.map((err) => err.message).join(', ')
-				);
+			if (error === 'Error: User already exists') {
+				toast.error(`Registration error: User already registered.`);
 			} else {
-				if (error === 'Error: User already exists') {
-					toast.error(`Registration error: User already registered.`);
-				} else {
-					toast.error(`Registration error: ${error}`);
-				}
+				toast.error(`Registration error: ${error}`);
 			}
-		} finally {
-			setLoading(false);
 		}
 	}
 
@@ -103,7 +79,7 @@ export default function UserRegistration() {
 		<>
 			<Header />
 			<Container>
-				<div className="flex h-full w-full items-center justify-center pt-10">
+				<div className="flex h-full w-full items-center justify-center">
 					<Tabs defaultValue="account" className="w-[400px]">
 						<TabsList className="bg-darkGray grid w-full">
 							<Label className="text-2xl text-white">Register</Label>
@@ -114,102 +90,111 @@ export default function UserRegistration() {
 									<CardTitle>Registration</CardTitle>
 									<CardDescription></CardDescription>
 								</CardHeader>
-								<form onSubmit={handleRegister}>
-									<CardContent className="space-y-2">
-										<div className="space-y-1">
-											<Label htmlFor="email">Email</Label>
-											<Input
-												id="email"
-												type="email"
-												required
-												autoComplete="email"
-												defaultValue=""
-												onChange={(e) => setEmail(e.target.value)}
+								<Form {...form}>
+									<form
+										onSubmit={form.handleSubmit(onSubmit)}
+										className="space-y-4"
+									>
+										<CardContent className="space-y-2">
+											<FormField
+												control={form.control}
+												name="email"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Email</FormLabel>
+														<FormControl>
+															<Input
+																placeholder="email@example.com"
+																{...field}
+															/>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
 											/>
-										</div>
-										<div className="space-y-1">
-											<Label htmlFor="password">Password</Label>
-											<div className="flex">
-												<Input
-													id="password"
-													type={passwordVisible ? 'text' : 'password'}
-													required
-													minLength={8}
-													value={password}
-													autoComplete="new-password"
-													onChange={(e) => {
-														setPassword(e.target.value);
-														setPasswordTouched(true);
-													}}
-													onBlur={() => setPasswordTouched(true)}
-												/>
-												<button
-													onClick={togglePasswordVisible}
-													className="pl-3"
-													type="button"
-												>
-													{passwordVisible ? (
-														<IoEyeOutline className="h-7 w-7" />
-													) : (
-														<IoEyeSharp className="h-7 w-7" />
-													)}
-												</button>
-											</div>
-										</div>
-										<div className="space-y-1">
-											<Label htmlFor="confirmPassword">Confirm Password</Label>
-											<div className="flex">
-												<Input
-													id="confirmPassword"
-													type={passwordVisible ? 'text' : 'password'}
-													required
-													autoComplete="new-password"
-													minLength={8}
-													value={confirmPassword}
-													onChange={(e) => {
-														setConfirmPassword(e.target.value);
-														setPasswordTouched(true);
-													}}
-													onBlur={() => setPasswordTouched(true)}
-												/>
-												<button
-													onClick={togglePasswordVisible}
-													className="pl-3"
-													type="button"
-												>
-													{passwordVisible ? (
-														<IoEyeOutline className="h-7 w-7" />
-													) : (
-														<IoEyeSharp className="h-7 w-7" />
-													)}
-												</button>
-											</div>
-											{differentPasswords && (
-												<p className="text-red text-xs">
-													Passwords must match and have at least 8 characters,
-													including one uppercase and one special character.
-												</p>
-											)}
-										</div>
-									</CardContent>
-									<CardFooter className="flex flex-col items-center justify-center">
-										{loading ? (
-											<Button disabled>
-												<ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
-												Loading...
+											<FormField
+												control={form.control}
+												name="password"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Password</FormLabel>
+														<FormControl>
+															<div className="flex">
+																<Input
+																	type={passwordVisible ? 'text' : 'password'}
+																	{...field}
+																/>
+																<button
+																	onClick={togglePasswordVisible}
+																	className="pl-3"
+																	type="button"
+																>
+																	{passwordVisible ? (
+																		<IoEyeOutline className="h-7 w-7" />
+																	) : (
+																		<IoEyeSharp className="h-7 w-7" />
+																	)}
+																</button>
+															</div>
+														</FormControl>
+														<FormDescription>
+															Password must be at least 8 characters long,
+															include an uppercase letter and a special
+															character.
+														</FormDescription>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+											<FormField
+												control={form.control}
+												name="confirmPassword"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Confirm Password</FormLabel>
+														<FormControl>
+															<div className="flex">
+																<Input
+																	type={passwordVisible ? 'text' : 'password'}
+																	{...field}
+																/>
+																<button
+																	onClick={togglePasswordVisible}
+																	className="pl-3"
+																	type="button"
+																>
+																	{passwordVisible ? (
+																		<IoEyeOutline className="h-7 w-7" />
+																	) : (
+																		<IoEyeSharp className="h-7 w-7" />
+																	)}
+																</button>
+															</div>
+														</FormControl>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</CardContent>
+										<CardFooter className="flex flex-col items-center justify-center">
+											<Button type="submit">
+												{form.formState.isSubmitting ? (
+													<>
+														<ReloadIcon className="h-4 w-4 animate-spin" />
+														Loading...
+													</>
+												) : (
+													'Register'
+												)}
 											</Button>
-										) : (
-											<Button variant="outline" type="submit">
-												Register
-											</Button>
-										)}
-										<br />
-										<p className="text-sm">Already have an account?</p>
-										<Link to="/login" className="text-[12px] text-mainColor">
-											Log in here
-										</Link>
-									</CardFooter>
-								</form>
+											<br />
+											<p className="text-sm">Already have an account?</p>
+											<Link to="/login" className="text-[12px] text-mainColor">
+												Log in here
+											</Link>
+										</CardFooter>
+									</form>
+								</Form>
 							</Card>
 						</TabsContent>
 					</Tabs>

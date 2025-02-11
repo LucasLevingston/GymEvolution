@@ -1,4 +1,3 @@
-import { User } from '@prisma/client';
 import { FastifyRequest } from 'fastify';
 import { deleteUserService } from 'services/user/delete-user';
 import { getUserByIdService } from 'services/user/get-by-id';

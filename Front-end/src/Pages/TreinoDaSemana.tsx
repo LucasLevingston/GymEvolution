@@ -1,5 +1,3 @@
-// @jsx TreinoDaSemana.tsx
-
 import { ExerciciseCard } from '@/components/ExerciciseCard';
 import { Button } from '@/components/ui/button';
 import useUser from '@/hooks/user-hooks';
@@ -8,17 +6,11 @@ import { UserType } from '@/types/userType';
 import { useEffect, useState } from 'react';
 
 export const TreinoDaSemana: React.FC = () => {
-	const { getUser } = useUser();
-	const [user, setUser] = useState<UserType | null>(null);
+	const { getUser, user } = useUser();
 	const [semanaDeTreinoAtual, setSemanaDeTreinoAtual] =
 		useState<TrainingWeekType | null>(null);
 
 	useEffect(() => {
-		const fetchUser = async () => {
-			const fetchedUser = await getUser();
-			setUser(fetchedUser);
-		};
-		fetchUser();
 		let quantidade = 0;
 		if (user?.SemanasDeTreino) {
 			quantidade = user?.SemanasDeTreino.length;
@@ -78,7 +70,7 @@ export const TreinoDaSemana: React.FC = () => {
 						<Button
 							className="bg-branco text-preto hover:bg-cinza"
 							onClick={() => {
-								window.location.href = 'novo-treino';
+								window.location.href = 'new-training';
 							}}
 						>
 							Registrar novo treino

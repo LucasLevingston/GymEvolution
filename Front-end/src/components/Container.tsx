@@ -1,5 +1,3 @@
-// @jsx Container.tsx
-
 import { Toaster } from 'sonner';
 
 interface ContainerProps {
@@ -13,7 +11,7 @@ export default function Container({
 }: ContainerProps): JSX.Element {
 	return (
 		<div>
-			<div className={`h-full w-full px-20 py-5 text-branco ${className}`}>
+			<div className={`h-full w-full px-20 py-5 ${className}`}>
 				{children}
 				<Toaster richColors position="top-right" />
 			</div>

@@ -39,4 +39,5 @@ export const UserSchema = z.object({
 		.max(10, 'Birth date must be exactly 10 characters')
 		// .regex(/^\d{4}-\d{2}-\d{2}$/, 'Birth date must be in YYYY-MM-DD format')
 		.optional(),
+	currentWeight: z.string(),
 });
