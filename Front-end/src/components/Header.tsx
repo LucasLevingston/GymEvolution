@@ -18,6 +18,8 @@ import {
 	ChevronLeft,
 	BarChart,
 	Menu,
+	Utensils,
+	Calendar,
 } from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
 import { toast } from 'sonner';
@@ -74,6 +76,18 @@ export default function Header() {
 								className="transition-colors hover:text-foreground/80"
 							>
 								Progress
+							</Link>
+							<Link
+								to="/diet"
+								className="transition-colors hover:text-foreground/80"
+							>
+								Current Diet
+							</Link>
+							<Link
+								to="/past-diets"
+								className="transition-colors hover:text-foreground/80"
+							>
+								Past Diets
 							</Link>
 						</>
 					)}
@@ -134,6 +148,18 @@ export default function Header() {
 											<span>Progress</span>
 										</Link>
 									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link to="/diet-plan" className="flex items-center">
+											<Utensils className="mr-2 h-4 w-4" />
+											<span>Current Diet</span>
+										</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link to="/past-diets" className="flex items-center">
+											<Calendar className="mr-2 h-4 w-4" />
+											<span>Past Diets</span>
+										</Link>
+									</DropdownMenuItem>
 								</DropdownMenuGroup>
 								<DropdownMenuSeparator />
 								<DropdownMenuItem asChild>
@@ -183,6 +209,12 @@ export default function Header() {
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<Link to="/past-workouts">Past Workouts</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link to="/diet-plan">Current Diet</Link>
+									</DropdownMenuItem>
+									<DropdownMenuItem asChild>
+										<Link to="/past-diets">Past Diets</Link>
 									</DropdownMenuItem>
 									<DropdownMenuItem asChild>
 										<Link to="/progress">Progress</Link>

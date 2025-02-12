@@ -1,3 +1,4 @@
+import { Diet } from './DietType';
 import { TrainingWeekType } from './trainingType';
 
 export interface UserType {
@@ -17,6 +18,7 @@ export interface UserType {
 	history: History[];
 	oldWeights: Weight[];
 	trainingWeeks: TrainingWeekType[];
+	diets: Diet[];
 }
 
 export interface History {
