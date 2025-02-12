@@ -1,13 +1,20 @@
 'use client';
 
-import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import {
+	Line,
+	LineChart,
+	ResponsiveContainer,
+	XAxis,
+	YAxis,
+	CartesianGrid,
+} from 'recharts';
 import { Card, CardContent } from '@/components/ui/card';
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart';
-import { Weight } from '@/types/userType';
+import type { Weight } from '@/types/userType';
 
 interface WeightChartProps {
 	weights: Weight[];
@@ -32,7 +39,11 @@ export function WeightChart({ weights }: WeightChartProps) {
 					className="h-[300px]"
 				>
 					<ResponsiveContainer width="100%" height="100%">
-						<LineChart data={chartData}>
+						<LineChart
+							data={chartData}
+							margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+						>
+							<CartesianGrid strokeDasharray="3 3" />
 							<XAxis dataKey="date" />
 							<YAxis />
 							<ChartTooltip content={<ChartTooltipContent />} />

@@ -24,6 +24,7 @@ model User {
   history       History[]
   oldWeights    Weight[]
   trainingWeeks TrainingWeek[]
+  diets         Diet[]
 
   @@map("users")
 }
@@ -38,7 +39,7 @@ model TrainingWeek {
   user         User          @relation(fields: [userId], references: [id])
   userId       String
 
-  @@map("semanaDeTreino")
+  @@map("trainingWeeks")
 }
 
 model History {
@@ -47,6 +48,8 @@ model History {
   date   String
   userId String
   user   User   @relation(fields: [userId], references: [id])
+
+  @@map("histories")
 }
 
 model Weight {
@@ -57,7 +60,7 @@ model Weight {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  @@map("pesosAntigos")
+  @@map("weights")
 }
 
 model TrainingDay {
@@ -70,7 +73,7 @@ model TrainingDay {
   trainingWeek   TrainingWeek @relation(fields: [trainingWeekId], references: [id], onDelete: Cascade)
   trainingWeekId String
 
-  @@map("diaDeTreino")
+  @@map("trainingDays")
 }
 
 model Exercise {
@@ -84,7 +87,7 @@ model Exercise {
   trainingDay   TrainingDay? @relation(fields: [trainingDayId], references: [id])
   trainingDayId String
 
-  @@map("exercicio")
+  @@map("exercises")
 }
 
 model Serie {
@@ -95,5 +98,57 @@ model Serie {
   exercise    Exercise @relation(fields: [exerciseId], references: [id])
   exerciseId  String
 
-  @@map("serie")
+  @@map("series")
+}
+
+model Diet {
+  id                 String @id @default(uuid())
+  weekNumber         Int
+  meals              Meal[]
+  totalCalories      Int?
+  totalProtein       Float?
+  totalCarbohydrates Float?
+  totalFat           Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  User   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  @@map("diets")
+}
+
+model Meal {
+  id            String      @id @default(uuid())
+  name          String?
+  calories      Int?
+  protein       Float?
+  carbohydrates Float?
+  fat           Float?
+  servingSize   String?
+  mealType      String?
+  day           Int?
+  hour          String?
+  isCompleted   Boolean?
+  mealItems     MealItems[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  Diet   Diet?   @relation(fields: [dietId], references: [id])
+  dietId String?
+
+  @@map("meals")
+}
+
+model MealItems {
+  id            String  @id @default(uuid())
+  name          String
+  quantity      Int
+  calories      Int?
+  protein       Float?
+  carbohydrates Float?
+  Meal          Meal?   @relation(fields: [mealId], references: [id])
+  mealId        String?
 }

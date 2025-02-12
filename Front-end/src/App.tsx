@@ -16,6 +16,7 @@ import Progress from './Pages/Progress';
 import ResetPassword from './Pages/Authentication/ResetPassword';
 import PasswordRecovery from './Pages/Authentication/PasswordRecovery';
 import DietPlan from './Pages/Diet';
+import PastDiets from './Pages/PastDiets';
 
 interface PrivateRouteProps {
 	element: JSX.Element;
@@ -73,6 +74,10 @@ const App: React.FC = () => {
 					<Route
 						path="/diet"
 						element={<PrivateRoute element={<DietPlan />} />}
+					/>
+					<Route
+						path="/past-diets"
+						element={<PrivateRoute element={<PastDiets />} />}
 					/>
 					<Route path="*" element={<NotFound />} />
 				</Routes>

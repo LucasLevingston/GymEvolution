@@ -69,6 +69,43 @@ export async function getUserByIdService(id: string) {
           },
         },
       },
+      diets: {
+        select: {
+          id: true,
+          weekNumber: true,
+          totalCalories: true,
+          totalProtein: true,
+          totalCarbohydrates: true,
+          totalFat: true,
+          meals: {
+            select: {
+              id: true,
+              name: true,
+              calories: true,
+              protein: true,
+              carbohydrates: true,
+              fat: true,
+              servingSize: true,
+              mealType: true,
+              createdAt: true,
+              updatedAt: true,
+              isCompleted: true,
+              day: true,
+              hour: true,
+              mealItems: {
+                select: {
+                  calories: true,
+                  carbohydrates: true,
+                  id: true,
+                  name: true,
+                  protein: true,
+                  quantity: true,
+                },
+              },
+            },
+          },
+        },
+      },
     },
   });
 }

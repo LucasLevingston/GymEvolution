@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useTheme } from 'next-themes';
+import { useTheme } from '@/components/providers/ThemeProvider';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -34,6 +34,7 @@ export default function ThemeSettings() {
 			theme: theme ?? 'light',
 		},
 	});
+	console.log(theme);
 
 	const onSubmit = form.handleSubmit(async (data) => {
 		setTheme(data.theme as 'light' | 'dark');

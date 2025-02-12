@@ -73,6 +73,9 @@ export async function userRoutes(app: FastifyInstance) {
               phone: z.string().optional(),
               currentWeight: z.string().optional(),
               trainingWeeks: z.any(),
+              history: z.any(),
+              oldWeights: z.any(),
+              diets: z.any(),
             }),
           }),
           400: z.object({
@@ -164,6 +167,7 @@ export async function userRoutes(app: FastifyInstance) {
             trainingWeeks: z.any(),
             history: z.any(),
             oldWeights: z.any(),
+            diets: z.any(),
           }),
           404: z.object({
             error: z.string(),
