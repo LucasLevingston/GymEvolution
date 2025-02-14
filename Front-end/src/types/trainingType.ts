@@ -1,89 +1,23 @@
 import { UserType } from './userType';
 
-export interface TrainingWeekType {
-	id: string;
+export type TrainingWeekType = {
+	id?: string;
 	weekNumber: number;
 	trainingDays: TrainingDayType[];
 	current: boolean;
-	information?: string;
+	information?: string | null;
 	done: boolean;
 	user: UserType;
 	userId: string;
-}
-
-// export interface TrainingDayType {
-// 	id: string;
-// 	group: string;
-// 	dayOfWeek: string;
-// 	done: boolean;
-// 	notes?: string;
-// 	exercises: ExerciseType[];
-// 	trainingWeek: TrainingWeekType;
-// 	trainingWeekId: string;
-// }
-
-// export interface ExerciseType {
-// 	id: string;
-// 	name: string;
-// 	variation?: string;
-// 	repetitions: string;
-// 	numberOfSets: string;
-// 	done: boolean;
-// 	result: SeriesType[];
-// 	trainingDay?: TrainingDayType;
-// 	trainingDayId?: string;
-// }
-
-// export interface SeriesType {
-// 	id: string;
-// 	seriesIndex?: string;
-// 	repetitions?: string;
-// 	load?: string;
-// 	exercise: ExerciseType;
-// 	exerciseId: string;
-// }
-
-// export interface TrainingWeekCreate {
-// 	information?: string;
-// 	done: boolean;
-// 	training: {
-// 		group: string;
-// 		dayOfWeek: string;
-// 		done: boolean;
-// 		notes: string;
-// 		exercises: {
-// 			name: string;
-// 			variation?: string;
-// 			repetitions: string;
-// 			numberOfSets: string;
-// 			done: boolean;
-// 			result: {
-// 				seriesIndex: string;
-// 				repetitions: string;
-// 				load: string;
-// 			}[];
-// 		}[];
-// 	}[];
-// }
-// Atualize seu tipo `SeriesType` para incluir todas as propriedades necessárias
-export type SeriesType = {
-	id?: string;
-	exercise: string;
-	exerciseId: string;
-	seriesIndex: string;
-	repetitions: string;
-	load: string;
 };
 
-export type ExerciseType = {
+export type WeightType = {
 	id?: string;
-
-	name: string;
-	variation?: string;
-	repetitions: string;
-	numberOfSets: string;
-	done: boolean;
-	result: SeriesType[];
+	weight: string;
+	date: string;
+	bf: string;
+	userId: string;
+	user: UserType;
 };
 
 export type TrainingDayType = {
@@ -91,12 +25,29 @@ export type TrainingDayType = {
 	group: string;
 	dayOfWeek: string;
 	done: boolean;
-	notes: string;
+	comments?: string | null;
 	exercises: ExerciseType[];
+	trainingWeek?: TrainingWeekType;
+	trainingWeekId: string;
 };
 
-export type TrainingWeekCreate = {
-	information: string;
+export type ExerciseType = {
+	id?: string;
+	name: string;
+	variation?: string | null;
+	repetitions: number;
+	sets: number;
 	done: boolean;
-	training: TrainingDayType[];
+	seriesResults?: SerieType[];
+	trainingDay?: TrainingDayType | null;
+	trainingDayId?: string;
+};
+
+export type SerieType = {
+	id?: string;
+	seriesIndex?: number | null;
+	repetitions?: number | null;
+	weight?: number | null;
+	exercise?: ExerciseType;
+	exerciseId?: string;
 };

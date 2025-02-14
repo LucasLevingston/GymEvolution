@@ -1,18 +1,20 @@
-import { History } from '@prisma/client';
-import { ClientError } from 'errors/client-error';
-import { FastifyRequest } from 'fastify';
-import { getHistory } from 'services/history/get';
-
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { prisma } from 'utils/prisma';
 export async function getHistoryController(
-  request: FastifyRequest<{ Params: { id: string } }>
-): Promise<History[] | null> {
-  const { id } = request.params;
-
+  request: FastifyRequest<{
+    Params: { id: string };
+  }>,
+  reply: FastifyReply
+) {
   try {
-    const h = await getHistory(id);
-    return h;
+    const history = await prisma.history.findUnique({
+      where: { id: request.params.id },
+    });
+    if (!history) {
+      return reply.code(404).send({ error: 'History entry not found' });
+    }
+    return reply.send(history);
   } catch (error) {
-    console.error(error);
     throw error;
   }
 }

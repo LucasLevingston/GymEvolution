@@ -1,39 +1,39 @@
-import { Diet } from './DietType';
+import { DietType } from './DietType';
 import { TrainingWeekType } from './trainingType';
 
-export interface UserType {
+export type UserType = {
 	id: string;
 	email: string;
 	password: string;
-	name?: string;
-	sex?: string;
-	street?: string;
-	number?: string;
-	zipCode?: string;
-	city?: string;
-	state?: string;
-	birthDate?: string;
-	phone?: string;
-	currentWeight?: string;
-	history: History[];
-	oldWeights: Weight[];
+	name?: string | null;
+	sex?: string | null;
+	street?: string | null;
+	number?: string | null;
+	zipCode?: string | null;
+	city?: string | null;
+	state?: string | null;
+	birthDate?: string | null;
+	phone?: string | null;
+	currentWeight?: string | null;
+	history: HistoryType[];
+	oldWeights: WeightType[];
 	trainingWeeks: TrainingWeekType[];
-	diets: Diet[];
-}
+	diets: DietType[];
+};
 
-export interface History {
+export type HistoryType = {
 	id: string;
 	event: string;
 	date: string;
 	userId: string;
 	user: UserType;
-}
+};
 
-export interface Weight {
+export type WeightType = {
 	id: string;
-	weight: number;
+	weight: string;
 	date: string;
-	bf: number;
+	bf: string;
 	userId: string;
 	user: UserType;
-}
+};

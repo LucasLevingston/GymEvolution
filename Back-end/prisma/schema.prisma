@@ -91,12 +91,13 @@ model Exercise {
 }
 
 model Serie {
-  id          String   @id @default(uuid())
+  id          String @id @default(uuid())
   seriesIndex Int?
   repetitions Int?
   weight      Int?
-  exercise    Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId  String
+
+  exercise   Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId String
 
   @@map("series")
 }

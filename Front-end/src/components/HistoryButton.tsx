@@ -1,5 +1,3 @@
-'use client';
-
 import {
 	Sheet,
 	SheetContent,
@@ -43,7 +41,7 @@ export default function ShowHistoryButton() {
 					</SheetTrigger>
 					<SheetContent className="w-[400px] sm:w-[540px]">
 						<SheetHeader>
-							<SheetTitle className="text-2xl font-bold text-gray-800">
+							<SheetTitle className="text-gray-800 text-2xl font-bold">
 								History
 							</SheetTitle>
 							<div className="max-h-[calc(90vh-100px)] overflow-y-auto">
@@ -52,10 +50,10 @@ export default function ShowHistoryButton() {
 										key={index}
 										className="mb-4 rounded-lg bg-white p-4 shadow-md transition-all duration-300 ease-in-out hover:shadow-lg"
 									>
-										<span className="block text-lg font-semibold text-gray-800">
+										<span className="text-gray-800 block text-lg font-semibold">
 											{eventItem.event}
 										</span>
-										<span className="text-sm text-gray-600">
+										<span className="text-gray-600 text-sm">
 											{formatDate(eventItem.date)}
 										</span>
 									</SheetDescription>

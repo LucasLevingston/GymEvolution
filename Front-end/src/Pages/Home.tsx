@@ -1,5 +1,3 @@
-'use client';
-
 import type React from 'react';
 import { Link } from 'react-router-dom';
 import Container from '@/components/Container';
@@ -15,7 +13,7 @@ import {
 import { BarChart3, Dumbbell, Utensils, LineChart } from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
 import { useEffect } from 'react';
-import { TrainingWeek } from '@/components/TrainingWeek';
+import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
 
 export default function Home() {
 	const { user, getUser } = useUser();
@@ -85,7 +83,7 @@ export default function Home() {
 							</h2>
 
 							{user.trainingWeeks[user.trainingWeeks.length - 1] ? (
-								<TrainingWeek
+								<TrainingWeekComponent
 									trainingWeek={
 										user.trainingWeeks[user.trainingWeeks.length - 1]
 									}
