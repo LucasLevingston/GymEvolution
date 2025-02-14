@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import useUser from '@/hooks/user-hooks';
-import type { TrainingWeekType } from '@/types/trainingType';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { PlusCircleIcon } from 'lucide-react';
+import { PlusCircleIcon, CalendarIcon } from 'lucide-react';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
-import { TrainingWeek } from '@/components/TrainingWeek';
+import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
+import { TrainingWeekType } from '@/types/trainingType';
 
 export default function PastWorkouts() {
 	const { user } = useUser();
+	const navigate = useNavigate();
 
 	const [currentTrainingWeek, setCurrentTrainingWeek] =
 		useState<TrainingWeekType | null>(null);
@@ -33,10 +35,7 @@ export default function PastWorkouts() {
 					<p className="text-center text-muted-foreground">
 						Please log in to view your workouts.
 					</p>
-					<Button
-						variant="outline"
-						onClick={() => (window.location.href = '/login')}
-					>
+					<Button variant="outline" onClick={() => navigate('/login')}>
 						Log In
 					</Button>
 				</CardContent>
@@ -52,10 +51,7 @@ export default function PastWorkouts() {
 				</CardHeader>
 				<CardContent className="flex flex-col items-center justify-center space-y-4 p-6">
 					<p className="text-center text-muted-foreground">No workout found!</p>
-					<Button
-						variant="outline"
-						onClick={() => (window.location.href = '/new-training')}
-					>
+					<Button variant="outline" onClick={() => navigate('/new-training')}>
 						<PlusCircleIcon className="mr-2 h-4 w-4" />
 						Register new workout
 					</Button>
@@ -69,9 +65,15 @@ export default function PastWorkouts() {
 			<Header />
 			<Container>
 				<div className="space-y-6">
-					<h1 className="text-3xl font-bold">Your Weekly Workouts</h1>
+					<div className="flex items-center justify-between">
+						<h1 className="text-3xl font-bold">Your Weekly Workouts</h1>
+						<Button variant="outline" onClick={() => navigate('/workout-week')}>
+							<CalendarIcon className="mr-2 h-4 w-4" />
+							View Current Week's Workout
+						</Button>
+					</div>
 					{user.trainingWeeks.map((week, index) => (
-						<TrainingWeek key={index} trainingWeek={week} />
+						<TrainingWeekComponent key={index} trainingWeek={week} />
 					))}
 				</div>
 			</Container>

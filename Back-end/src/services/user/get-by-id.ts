@@ -40,6 +40,7 @@ export async function getUserByIdService(id: string) {
           current: true,
           done: true,
           information: true,
+          userId: true,
           trainingDays: {
             select: {
               id: true,

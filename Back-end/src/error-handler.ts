@@ -12,7 +12,10 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
       .send({ message: 'Invalid input', errors: error.flatten().fieldErrors });
   }
 
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError ||
+    error instanceof Prisma.PrismaClientValidationError
+  ) {
     switch (error.code) {
       case 'P2002':
         reply.status(409).send({
@@ -31,7 +34,7 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
         return;
       default:
         reply.status(500).send({
-          message: 'Internal server error',
+          message: 'Database server error',
           error: 'Database error',
         });
         return;

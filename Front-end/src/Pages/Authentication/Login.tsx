@@ -49,16 +49,16 @@ export default function Login() {
 	};
 
 	const onSubmit = async (values: z.infer<typeof loginSchema>) => {
-		const result = await login(values.email, values.password);
+		try {
+			await login(values.email, values.password);
 
-		if (!result) {
-			return toast.error('Login failed. Please check your credentials.');
+			toast.success('Login successfully!');
+			setTimeout(() => {
+				window.location.href = '/';
+			}, 2000);
+		} catch (error: any) {
+			return toast.error(error.message);
 		}
-
-		toast.success('Login successfully!');
-		setTimeout(() => {
-			window.location.href = '/';
-		}, 2000);
 	};
 
 	return (

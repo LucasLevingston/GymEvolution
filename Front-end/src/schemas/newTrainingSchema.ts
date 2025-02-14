@@ -1,23 +1,12 @@
 import { z } from 'zod';
+import { trainingDaySchema } from './trainingDaySchema';
 
-export const newTrainingSchema = z.object({
+export const trainingWeekSchema = z.object({
+	id: z.string().uuid().optional(),
+	weekNumber: z.number().int().positive(),
+	current: z.boolean(),
 	information: z.string().optional(),
-	training: z.array(
-		z.object({
-			group: z.string().min(1, { message: 'Muscle group is required' }),
-			dayOfWeek: z.string().min(1, { message: 'Day of the week is required' }),
-			exercises: z.array(
-				z.object({
-					name: z.string().min(1, { message: 'Exercise name is required' }),
-					repetitions: z
-						.string()
-						.min(1, { message: 'Repetitions are required' }),
-					numberOfSets: z
-						.string()
-						.min(1, { message: 'Number of sets is required' }),
-					variation: z.string().optional(),
-				})
-			),
-		})
-	),
+	done: z.boolean(),
+	trainingDays: z.array(trainingDaySchema),
+	userId: z.string().uuid(),
 });

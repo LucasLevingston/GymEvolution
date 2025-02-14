@@ -5,7 +5,6 @@ import { useTheme } from '@/components/providers/ThemeProvider';
 
 export function ModeToggle() {
 	const { theme, setTheme } = useTheme();
-	console.log(theme);
 
 	const handleToggle = (checked: boolean) => {
 		if (checked) {

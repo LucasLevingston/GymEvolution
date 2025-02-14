@@ -10,13 +10,12 @@ export interface Meal {
 	day?: number;
 	hour?: string;
 	isCompleted?: boolean;
-	mealItems?: MealItem[];
+	mealItems?: MealItemType[];
 
 	createdAt: Date;
 	updatedAt: Date;
 }
-// Define a estrutura de uma dieta
-export interface Diet {
+export interface DietType {
 	id: string;
 	weekNumber: number;
 	totalCalories: number;
@@ -27,7 +26,7 @@ export interface Diet {
 	createdAt: string;
 }
 
-export interface MealItem {
+export interface MealItemType {
 	id: string;
 	name: string;
 	quantity: number;

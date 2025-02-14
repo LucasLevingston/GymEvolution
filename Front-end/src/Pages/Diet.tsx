@@ -1,8 +1,12 @@
-'use client';
-
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { AlertCircle, ArrowLeft, ArrowRight, Plus } from 'lucide-react';
+import {
+	AlertCircle,
+	ArrowLeft,
+	ArrowRight,
+	ClipboardListIcon,
+	Plus,
+} from 'lucide-react';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
 import useUser from '@/hooks/user-hooks';
@@ -10,10 +14,12 @@ import type { Diet } from '@/types/DietType';
 import { useState } from 'react';
 import { DietComponent } from '@/components/DietComponent';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useNavigate } from 'react-router-dom';
 
 export default function DietPlan() {
 	const { user } = useUser();
 	const [selectedDate, setSelectedDate] = useState(new Date());
+	const navigate = useNavigate();
 
 	const latestDiet: Diet | undefined = user?.diets[user.diets.length - 1];
 
@@ -77,6 +83,10 @@ export default function DietPlan() {
 					</div>
 					<DietComponent diet={latestDiet} />
 				</div>
+				<Button variant="outline" onClick={() => navigate('/past-diets')}>
+					<ClipboardListIcon className="mr-2 h-4 w-4" />
+					View Old Diets
+				</Button>
 			</Container>
 		</div>
 	);
