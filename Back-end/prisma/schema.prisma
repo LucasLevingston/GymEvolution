@@ -8,23 +8,25 @@ datasource db {
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String
-  name          String?
-  sex           String?
-  street        String?
-  number        String?
-  zipCode       String?
-  city          String?
-  state         String?
-  birthDate     String?
-  phone         String?
-  currentWeight String?
-  history       History[]
-  oldWeights    Weight[]
-  trainingWeeks TrainingWeek[]
-  diets         Diet[]
+  id                   String         @id @default(uuid())
+  email                String         @unique
+  password             String
+  name                 String?
+  sex                  String?
+  street               String?
+  number               String?
+  zipCode              String?
+  city                 String?
+  state                String?
+  birthDate            String?
+  phone                String?
+  currentWeight        String?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  history              History[]
+  oldWeights           Weight[]
+  trainingWeeks        TrainingWeek[]
+  diets                Diet[]
 
   @@map("users")
 }

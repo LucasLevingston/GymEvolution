@@ -93,7 +93,7 @@ export async function updateTrainingWeekController(
         },
       },
     });
-    console.log(trainingWeek);
+
     return reply.status(200).send(trainingWeek);
   } catch (error) {
     console.log(error);

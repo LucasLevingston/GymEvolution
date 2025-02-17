@@ -28,9 +28,11 @@ import { toast } from 'sonner';
 import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5';
 import Container from '@/components/Container';
 import Header from '@/components/Header';
+import useUser from '@/hooks/user-hooks';
 
 const resetPasswordSchema = z
 	.object({
+		token: z.string(),
 		password: z
 			.string()
 			.min(8, { message: 'Password must be at least 8 characters long' }),
@@ -44,10 +46,14 @@ const resetPasswordSchema = z
 export default function ResetPassword() {
 	const [passwordVisible, setPasswordVisible] = useState(false);
 	const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+	const { resetPassword } = useUser();
+
+	const token = new URLSearchParams(location.search).get('token');
 
 	const form = useForm<z.infer<typeof resetPasswordSchema>>({
 		resolver: zodResolver(resetPasswordSchema),
 		defaultValues: {
+			token: token || '',
 			password: '',
 			confirmPassword: '',
 		},
@@ -62,11 +68,18 @@ export default function ResetPassword() {
 	};
 
 	const onSubmit = async (values: z.infer<typeof resetPasswordSchema>) => {
-		console.log(values);
-		toast.success('Password reset successfully!');
-		setTimeout(() => {
-			window.location.href = '/login';
-		}, 2000);
+		try {
+			const result = await resetPassword({
+				newPassword: values.password,
+				token: values.token,
+			});
+			toast.success(result);
+			setTimeout(() => {
+				window.location.href = '/login';
+			}, 2000);
+		} catch (error) {
+			toast.error('Error');
+		}
 	};
 
 	return (
