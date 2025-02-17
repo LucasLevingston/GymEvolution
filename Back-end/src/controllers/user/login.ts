@@ -26,7 +26,7 @@ export async function login(
     const token = generateToken(user.id);
 
     const result = await loginService(user.id);
-    console.log(result);
+
     return {
       user: result,
       token,

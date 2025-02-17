@@ -73,6 +73,40 @@ export const useUser = () => {
 		clearUser();
 	};
 
+	const passwordRecover = async (email: string) => {
+		try {
+			const response = await axios.post<{ message: string }>(
+				`${baseUrl}/password-recover`,
+				{ email }
+			);
+			if (!response) {
+				throw new Error('Error on axios');
+			}
+
+			return response.data.message;
+		} catch (error: any) {
+			throw new Error(error.response.data.message);
+		}
+	};
+	const resetPassword = async (data: {
+		token: string;
+		newPassword: string;
+	}) => {
+		try {
+			const response = await axios.post<{ message: string }>(
+				`${baseUrl}/reset-password`,
+				data
+			);
+			if (!response) {
+				throw new Error('Error on axios');
+			}
+
+			return response.data.message;
+		} catch (error: any) {
+			throw new Error(error.response.data.message);
+		}
+	};
+
 	return {
 		user,
 		login,
@@ -80,6 +114,8 @@ export const useUser = () => {
 		createUser,
 		getUser,
 		updateUser,
+		passwordRecover,
+		resetPassword,
 	};
 };
 

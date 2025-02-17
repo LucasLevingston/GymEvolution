@@ -1,5 +1,5 @@
 import { DietType } from './DietType';
-import { TrainingWeekType } from './trainingType';
+import { TrainingWeekType } from './TrainingType';
 
 export type UserType = {
 	id: string;
@@ -35,5 +35,5 @@ export type WeightType = {
 	date: string;
 	bf: string;
 	userId: string;
-	user: UserType;
+	user?: UserType;
 };

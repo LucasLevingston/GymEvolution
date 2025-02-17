@@ -28,6 +28,10 @@ export default function Home() {
 		fetchUser();
 	}, [user, getUser]);
 
+	const currentTraining = user?.trainingWeeks.find(
+		(trainingWeek) => trainingWeek.current
+	);
+
 	return (
 		<div className="min-h-screen bg-background">
 			<Header />
@@ -41,18 +45,13 @@ export default function Home() {
 							Track your progress, analyze your performance, and achieve your
 							fitness goals with our comprehensive system.
 						</p>
-						{user ? (
-							<Button asChild size="lg">
-								<Link to="/dashboard">Go to Dashboard</Link>
-							</Button>
-						) : (
+						{!user && (
 							<Button asChild size="lg">
 								<Link to="/login">Get Started</Link>
 							</Button>
 						)}
 					</section>
 
-					{/* Feature Highlights */}
 					<section className="mb-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
 						<FeatureCard
 							icon={<Dumbbell className="h-10 w-10" />}
@@ -82,12 +81,8 @@ export default function Home() {
 								This Week's Training
 							</h2>
 
-							{user.trainingWeeks[user.trainingWeeks.length - 1] ? (
-								<TrainingWeekComponent
-									trainingWeek={
-										user.trainingWeeks[user.trainingWeeks.length - 1]
-									}
-								/>
+							{currentTraining ? (
+								<TrainingWeekComponent trainingWeek={currentTraining} />
 							) : (
 								<p className="text-center text-muted-foreground">
 									Não há dias de treino registrados para esta semana.

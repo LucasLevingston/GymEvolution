@@ -95,9 +95,9 @@ export const TrainingWeekComponent: React.FC<TrainingWeekProps> = ({
 						<Badge
 							className={`text-sm ${
 								trainingWeek.done
-									? 'bg-red-500'
+									? 'bg-red'
 									: trainingWeek.current
-										? 'bg-green-500'
+										? 'bg-green'
 										: 'bg-blue-400'
 							}`}
 						>

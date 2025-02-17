@@ -1,18 +1,18 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { WeightChart } from '@/components/progress/WeightChart';
 import { BodyFatChart } from '@/components/progress/BodyFatChart';
 import useUser from '@/hooks/user-hooks';
-import { Weight } from '@/types/userType';
-import { TrainingWeekType } from '@/types/trainingType';
+import { WeightType } from '@/types/userType';
+import { TrainingWeekType } from '@/types/TrainingType';
 import { TrainingProgressChart } from '@/components/progress/TraininProgressChart';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
+import { WeightChart } from '@/components/progress/WeightChart';
 
 export default function Progress() {
 	const { user } = useUser();
-	const [weights, setWeights] = useState<Weight[]>([]);
+	const [weights, setWeights] = useState<WeightType[]>([]);
 	const [trainingWeeks, setTrainingWeeks] = useState<TrainingWeekType[]>([]);
 
 	useEffect(() => {

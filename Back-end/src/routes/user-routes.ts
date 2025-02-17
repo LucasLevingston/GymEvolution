@@ -8,6 +8,8 @@ import { getHistoryController } from 'controllers/history/get';
 import { z } from 'zod';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { authenticate } from 'middlewares/auth.middleware';
+import { passwordRecover } from 'controllers/user/password-recover';
+import { resetPassword } from 'controllers/user/reset-password';
 
 export async function userRoutes(app: FastifyInstance) {
   // app.addHook('onRequest', authenticate);
@@ -211,5 +213,30 @@ export async function userRoutes(app: FastifyInstance) {
       },
     },
     getHistoryController
+  );
+
+  app.post(
+    '/password-recover',
+    {
+      schema: {
+        body: z.object({
+          email: z.string().email(),
+        }),
+      },
+    },
+    passwordRecover
+  );
+
+  app.post(
+    '/reset-password',
+    {
+      schema: {
+        body: z.object({
+          token: z.string(),
+          newPassword: z.string().min(8),
+        }),
+      },
+    },
+    resetPassword
   );
 }

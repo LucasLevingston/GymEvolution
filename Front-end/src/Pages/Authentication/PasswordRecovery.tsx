@@ -27,12 +27,14 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import Container from '@/components/Container';
 import Header from '@/components/Header';
+import useUser from '@/hooks/user-hooks';
 
 const recoverPasswordSchema = z.object({
 	email: z.string().email({ message: 'Invalid email address' }),
 });
 
 export default function PasswordRecovery() {
+	const { passwordRecover } = useUser();
 	const [isEmailSent, setIsEmailSent] = useState(false);
 
 	const form = useForm<z.infer<typeof recoverPasswordSchema>>({
@@ -43,10 +45,14 @@ export default function PasswordRecovery() {
 	});
 
 	const onSubmit = async (values: z.infer<typeof recoverPasswordSchema>) => {
-		console.log(values);
+		try {
+			const result = await passwordRecover(values.email);
 
-		setIsEmailSent(true);
-		toast.success('Recovery email sent successfully!');
+			toast.success(result);
+			setIsEmailSent(true);
+		} catch (error) {
+			toast.error('Email not found');
+		}
 	};
 
 	return (
