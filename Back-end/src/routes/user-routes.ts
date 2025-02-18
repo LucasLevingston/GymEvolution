@@ -10,6 +10,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { authenticate } from 'middlewares/auth.middleware';
 import { passwordRecover } from 'controllers/user/password-recover';
 import { resetPassword } from 'controllers/user/reset-password';
+import { weightSchema } from 'schemas/weightSchema';
 
 export async function userRoutes(app: FastifyInstance) {
   // app.addHook('onRequest', authenticate);
@@ -113,6 +114,7 @@ export async function userRoutes(app: FastifyInstance) {
           birthDate: z.string().optional(),
           phone: z.string().optional(),
           currentWeight: z.string().optional(),
+          oldWeights: z.any(),
         }),
         response: {
           200: z.object({

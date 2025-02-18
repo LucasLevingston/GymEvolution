@@ -13,10 +13,10 @@ import {
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart';
-import type { Weight } from '@/types/userType';
+import { WeightType } from '@/types/userType';
 
 interface BodyFatChartProps {
-	weights: Weight[];
+	weights: WeightType[];
 }
 
 export function BodyFatChart({ weights }: BodyFatChartProps) {
