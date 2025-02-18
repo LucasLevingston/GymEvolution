@@ -4,12 +4,11 @@ import { prisma } from 'utils/prisma';
 export async function updateUserService(
   updatedUser: User & {
     histories?: History[];
-    weights?: Weight[];
+    oldWeights?: Weight[];
     trainingWeeks?: TrainingWeek[];
     diets?: Diet[];
   }
 ) {
-  // Verifica se o usuário existe
   const existingUser = await prisma.user.findUnique({
     where: { id: updatedUser.id },
     include: {
@@ -24,7 +23,6 @@ export async function updateUserService(
     throw new Error('User not found');
   }
 
-  // Atualiza os dados do usuário
   const result = await prisma.user.update({
     where: { id: updatedUser.id },
     data: {
@@ -39,9 +37,8 @@ export async function updateUserService(
       phone: updatedUser.phone ?? existingUser.phone,
       currentWeight: updatedUser.currentWeight ?? existingUser.currentWeight,
       email: updatedUser.email ?? existingUser.email,
-      password: updatedUser.password ?? existingUser.password, // Considere hash
+      password: updatedUser.password ?? existingUser.password,
       history: {
-        // Atualiza ou cria novos registros de histórico
         upsert: updatedUser.histories?.map((history) => ({
           where: { id: history.id },
           create: history,
@@ -49,15 +46,22 @@ export async function updateUserService(
         })),
       },
       oldWeights: {
-        // Atualiza ou cria novos registros de peso
-        upsert: updatedUser.weights?.map((weight) => ({
+        upsert: updatedUser.oldWeights?.map((weight) => ({
           where: { id: weight.id },
-          create: weight,
-          update: weight,
+          create: {
+            weight: weight.weight,
+            bf: weight.bf,
+            date: weight.date,
+            // user: existingUser,
+          },
+          update: {
+            weight: weight.weight,
+            bf: weight.bf,
+            date: weight.date,
+          },
         })),
       },
       trainingWeeks: {
-        // Atualiza ou cria novas semanas de treino
         upsert: updatedUser.trainingWeeks?.map((trainingWeek) => ({
           where: { id: trainingWeek.id },
           create: trainingWeek,
@@ -65,7 +69,6 @@ export async function updateUserService(
         })),
       },
       diets: {
-        // Atualiza ou cria novas dietas
         upsert: updatedUser.diets?.map((diet) => ({
           where: { id: diet.id },
           create: diet,
@@ -75,7 +78,6 @@ export async function updateUserService(
     },
   });
 
-  // Remove a senha da resposta
   const { password, ...userWithoutPassword } = result;
 
   return userWithoutPassword;

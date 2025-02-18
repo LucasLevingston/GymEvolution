@@ -13,13 +13,13 @@ import useUser from '@/hooks/user-hooks';
 
 import { toast } from 'sonner';
 import { useTraining } from '@/hooks/training-hooks';
-import type { TrainingDayType, TrainingWeekType } from '@/types/trainingType';
 import { trainingWeekSchema } from '@/schemas/newTrainingSchema';
 import { Link } from 'react-router-dom';
 import { TrainingDayComponent } from './TrainingDayComponent';
 import { Form, FormControl, FormField, FormItem } from './ui/form';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
+import { TrainingDayType, TrainingWeekType } from '@/types/TrainingType';
 
 interface TrainingWeekProps {
 	trainingWeek: TrainingWeekType;
