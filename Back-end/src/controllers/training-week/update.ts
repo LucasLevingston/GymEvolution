@@ -17,7 +17,7 @@ export async function updateTrainingWeekController(
         done: boolean;
         comments?: string;
         exercises: Array<{
-          id: string;
+          id?: string; // Torne o id opcional para permitir criação
           name: string;
           variation?: string;
           repetitions: number;
@@ -30,6 +30,7 @@ export async function updateTrainingWeekController(
   reply: FastifyReply
 ) {
   try {
+    console.log(request.body);
     const { id } = request.params;
     const { weekNumber, current, information, done, userId, trainingDays } = request.body;
 
@@ -62,10 +63,9 @@ export async function updateTrainingWeekController(
                     done: exercise.done,
                   },
                   create: {
-                    id: exercise.id,
                     name: exercise.name,
-                    variation: exercise.variation,
                     repetitions: exercise.repetitions,
+                    variation: exercise.variation,
                     sets: exercise.sets,
                     done: exercise.done,
                   },
@@ -80,7 +80,6 @@ export async function updateTrainingWeekController(
               comments: day.comments,
               exercises: {
                 create: day.exercises.map((exercise) => ({
-                  id: exercise.id,
                   name: exercise.name,
                   variation: exercise.variation,
                   repetitions: exercise.repetitions,
@@ -97,6 +96,6 @@ export async function updateTrainingWeekController(
     return reply.status(200).send(trainingWeek);
   } catch (error) {
     console.log(error);
-    throw error;
+    return reply.status(500).send({ error: 'Internal Server Error' });
   }
 }

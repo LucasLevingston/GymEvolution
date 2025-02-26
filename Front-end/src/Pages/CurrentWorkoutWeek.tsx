@@ -10,7 +10,7 @@ import type React from 'react';
 import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
-import { TrainingWeekType } from '@/types/trainingType';
+import { TrainingWeekType } from '@/types/TrainingType';
 
 export const CurrentWorkoutWeek: React.FC = () => {
 	const { user } = useUser();
@@ -35,6 +35,7 @@ export const CurrentWorkoutWeek: React.FC = () => {
 			</Card>
 		);
 	}
+
 	useEffect(() => {
 		const currentWeek = user.trainingWeeks.find(
 			(trainingWeek) => trainingWeek.current
@@ -43,6 +44,7 @@ export const CurrentWorkoutWeek: React.FC = () => {
 			setCurrentTrainingWeek(currentWeek);
 		}
 	}, [user]);
+
 	if (!currentTrainingWeek) {
 		return (
 			<Card className="w-full">
@@ -75,12 +77,8 @@ export const CurrentWorkoutWeek: React.FC = () => {
 							View Past Workouts
 						</Button>
 					</div>
-					{user.trainingWeeks.find((trainingWeek) => trainingWeek.current) ? (
-						<TrainingWeekComponent
-							trainingWeek={user.trainingWeeks.find(
-								(trainingWeek) => trainingWeek.current
-							)}
-						/>
+					{currentTrainingWeek ? (
+						<TrainingWeekComponent initialData={currentTrainingWeek} />
 					) : (
 						<p className="text-center text-muted-foreground">
 							There are no workout days recorded for this week.

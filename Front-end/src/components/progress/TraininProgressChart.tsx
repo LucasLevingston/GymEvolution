@@ -1,11 +1,11 @@
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from 'recharts';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
 	ChartContainer,
 	ChartTooltip,
 	ChartTooltipContent,
 } from '@/components/ui/chart';
-import { TrainingWeekType } from '@/types/trainingType';
+import { TrainingWeekType } from '@/types/TrainingType';
 
 interface TrainingProgressChartProps {
 	trainingWeeks: TrainingWeekType[];
@@ -22,6 +22,9 @@ export function TrainingProgressChart({
 
 	return (
 		<Card>
+			<CardHeader>
+				<CardTitle>Training Progress</CardTitle>
+			</CardHeader>
 			<CardContent className="p-6">
 				<ChartContainer
 					config={{

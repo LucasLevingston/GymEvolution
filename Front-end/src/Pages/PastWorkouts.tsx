@@ -1,5 +1,3 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useUser from '@/hooks/user-hooks';
@@ -9,7 +7,7 @@ import { PlusCircleIcon, CalendarIcon } from 'lucide-react';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
 import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
-import { TrainingWeekType } from '@/types/trainingType';
+import { TrainingWeekType } from '@/types/TrainingType';
 
 export default function PastWorkouts() {
 	const { user } = useUser();
@@ -73,7 +71,7 @@ export default function PastWorkouts() {
 						</Button>
 					</div>
 					{user.trainingWeeks.map((week, index) => (
-						<TrainingWeekComponent key={index} trainingWeek={week} />
+						<TrainingWeekComponent key={index} initialData={week} />
 					))}
 				</div>
 			</Container>

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { trainingDaySchema } from './trainingDaySchema';
+import { UserSchema } from './UserSchema';
 
 export const trainingWeekSchema = z.object({
 	id: z.string().uuid().optional(),
@@ -9,4 +10,7 @@ export const trainingWeekSchema = z.object({
 	done: z.boolean(),
 	trainingDays: z.array(trainingDaySchema),
 	userId: z.string().uuid(),
+	user: UserSchema.optional(),
 });
+
+export type TrainingWeekFormData = z.infer<typeof trainingWeekSchema>;

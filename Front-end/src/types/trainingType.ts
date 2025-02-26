@@ -5,9 +5,9 @@ export type TrainingWeekType = {
 	weekNumber: number;
 	trainingDays: TrainingDayType[];
 	current: boolean;
-	information?: string | null;
+	information?: string;
 	done: boolean;
-	user: UserType;
+	user?: UserType;
 	userId: string;
 };
 
@@ -17,7 +17,7 @@ export type WeightType = {
 	date: string;
 	bf: string;
 	userId: string;
-	user: UserType;
+	user?: UserType;
 };
 
 export type TrainingDayType = {
@@ -25,29 +25,30 @@ export type TrainingDayType = {
 	group: string;
 	dayOfWeek: string;
 	done: boolean;
-	comments?: string | null;
+	comments?: string;
 	exercises: ExerciseType[];
 	trainingWeek?: TrainingWeekType;
-	trainingWeekId: string;
+	trainingWeekId?: string;
+	user?: UserType;
 };
 
 export type ExerciseType = {
 	id?: string;
 	name: string;
-	variation?: string | null;
+	variation?: string;
 	repetitions: number;
 	sets: number;
 	done: boolean;
 	seriesResults?: SerieType[];
-	trainingDay?: TrainingDayType | null;
+	trainingDay?: TrainingDayType;
 	trainingDayId?: string;
 };
 
 export type SerieType = {
 	id?: string;
-	seriesIndex?: number | null;
-	repetitions?: number | null;
-	weight?: number | null;
+	seriesIndex?: number;
+	repetitions?: number;
+	weight?: number;
 	exercise?: ExerciseType;
 	exerciseId?: string;
 };

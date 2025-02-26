@@ -26,22 +26,16 @@ import { weightSchema } from '@/schemas/weightSchema';
 import type { WeightType } from '@/types/userType';
 import useUser from '@/hooks/user-hooks';
 
-interface RegisterWeightDialogProps {
-	onWeightAdded: (newWeight: WeightType) => void;
-}
-
-export function RegisterWeightDialog({
-	onWeightAdded,
-}: RegisterWeightDialogProps) {
+export function RegisterWeightDialog() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
-	const { user, updateUser } = useUser();
+	const { user, updateUser, getUser } = useUser();
 
 	const form = useForm<z.infer<typeof weightSchema>>({
 		resolver: zodResolver(weightSchema),
 		defaultValues: {
-			weight: '',
-			bf: '',
+			weight: 0,
+			bf: 0,
 		},
 	});
 
@@ -54,8 +48,8 @@ export function RegisterWeightDialog({
 
 			const newWeight: WeightType = {
 				id: Date.now().toString(),
-				weight: values.weight,
-				bf: values.bf,
+				weight: String(values.weight),
+				bf: String(values.bf),
 				date: new Date().toISOString(),
 				userId: user.id,
 			};
@@ -67,10 +61,11 @@ export function RegisterWeightDialog({
 			};
 
 			await updateUser(updatedUser);
-			onWeightAdded(newWeight);
+			await getUser;
+
 			form.reset();
 			setIsOpen(false);
-			toast.success('Weight updated successfully');
+			toast.success('New weight created successfully');
 		} catch (error) {
 			console.error('Error updating weight:', error);
 			toast.error('Failed to update weight');
@@ -100,7 +95,18 @@ export function RegisterWeightDialog({
 								<FormItem>
 									<FormLabel>Weight (kg)</FormLabel>
 									<FormControl>
-										<Input type="number" step="0.1" {...field} />
+										<Input
+											type="number"
+											{...field}
+											onChange={(e) => {
+												// Parse the string value to a number
+												const value =
+													e.target.value === ''
+														? 0
+														: Number.parseFloat(e.target.value);
+												field.onChange(value);
+											}}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -113,7 +119,18 @@ export function RegisterWeightDialog({
 								<FormItem>
 									<FormLabel>Body Fat %</FormLabel>
 									<FormControl>
-										<Input type="number" step="0.1" {...field} />
+										<Input
+											type="number"
+											{...field}
+											onChange={(e) => {
+												// Parse the string value to a number
+												const value =
+													e.target.value === ''
+														? 0
+														: Number.parseFloat(e.target.value);
+												field.onChange(value);
+											}}
+										/>
 									</FormControl>
 									<FormMessage />
 								</FormItem>

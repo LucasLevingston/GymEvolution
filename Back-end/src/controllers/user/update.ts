@@ -8,7 +8,6 @@ import { updateUserService } from 'services/user/update';
 export async function updateUser(request: FastifyRequest<{ Body: User }>) {
   try {
     const updatedUser = request.body;
-
     const user = await getUserByEmailService(updatedUser.email);
     if (!user) throw new ClientError('User not found');
 

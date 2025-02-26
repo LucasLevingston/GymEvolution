@@ -1,7 +1,5 @@
-import type React from 'react';
-import type { UseFormReturn } from 'react-hook-form';
-import type { TrainingWeekType, ExerciseType } from '@/types/trainingType';
-import { Input } from '@/components/ui/input';
+import { UseFormReturn } from 'react-hook-form';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
 	FormField,
 	FormItem,
@@ -9,95 +7,124 @@ import {
 	FormControl,
 	FormMessage,
 } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Trash2Icon } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
+import { TrainingWeekFormData } from '@/schemas/trainingWeekSchema';
 
 interface ExerciseComponentProps {
-	exercise: ExerciseType;
-	index: number;
+	exercise: TrainingWeekFormData['trainingDays'][number]['exercises'][number];
 	dayIndex: number;
-	form: UseFormReturn<TrainingWeekType>;
+	exerciseIndex: number;
 	isEditing: boolean;
+	form: UseFormReturn<TrainingWeekFormData>;
+	onRemove: () => void;
 }
 
-export const ExerciseComponent: React.FC<ExerciseComponentProps> = ({
-	index,
+export function ExerciseComponent({
 	dayIndex,
-	form,
+	exerciseIndex,
 	isEditing,
-}) => {
-	const handleRemoveExercise = () => {
-		const currentExercises = form.getValues().trainingDays[dayIndex].exercises;
-		const updatedExercises = currentExercises.filter((_, i) => i !== index);
-		form.setValue(`trainingDays.${dayIndex}.exercises`, updatedExercises);
-	};
-
+	form,
+	onRemove,
+}: ExerciseComponentProps) {
 	return (
-		<div className="border-md rounded-md border  p-2">
-			<div className="flex items-center justify-between">
-				<h4 className="text-lg font-semibold">Exercise {index + 1}</h4>
+		<Card className="mb-4">
+			<CardHeader className="flex flex-row items-center justify-between pb-2">
+				<CardTitle className="text-lg font-medium">
+					<FormField
+						control={form.control}
+						name={`trainingDays.${dayIndex}.exercises.${exerciseIndex}.name`}
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Exercise name</FormLabel>
+
+								<Input
+									{...field}
+									className="bg-transparent text-lg font-medium"
+									disabled={!isEditing}
+								/>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</CardTitle>
 				{isEditing && (
-					<Button
-						variant="destructive"
-						size="sm"
-						onClick={handleRemoveExercise}
-					>
-						<Trash2Icon className="h-4 w-4" />
+					<Button variant="ghost" size="sm" onClick={onRemove}>
+						<Trash2 className="h-4 w-4" />
 					</Button>
 				)}
-			</div>
-			<FormField
-				control={form.control}
-				name={`trainingDays.${dayIndex}.exercises.${index}.name`}
-				render={({ field }) => (
-					<FormItem>
-						<FormLabel>Name</FormLabel>
-						<FormControl>
-							<Input {...field} disabled={!isEditing} />
-						</FormControl>{' '}
-						<FormMessage />
-					</FormItem>
-				)}
-			/>
-			<FormField
-				control={form.control}
-				name={`trainingDays.${dayIndex}.exercises.${index}.variation`}
-				render={({ field }) => (
-					<FormItem>
-						<FormLabel>Variation</FormLabel>
-						<FormControl>
-							<Input {...field} disabled={!isEditing} />
-						</FormControl>{' '}
-						<FormMessage />
-					</FormItem>
-				)}
-			/>
-			<FormField
-				control={form.control}
-				name={`trainingDays.${dayIndex}.exercises.${index}.repetitions`}
-				render={({ field }) => (
-					<FormItem>
-						<FormLabel>Repetitions</FormLabel>
-						<FormControl>
-							<Input {...field} type="number" disabled={!isEditing} />
-						</FormControl>{' '}
-						<FormMessage />
-					</FormItem>
-				)}
-			/>
-			<FormField
-				control={form.control}
-				name={`trainingDays.${dayIndex}.exercises.${index}.sets`}
-				render={({ field }) => (
-					<FormItem>
-						<FormLabel>Sets</FormLabel>
-						<FormControl>
-							<Input {...field} type="number" disabled={!isEditing} />
-						</FormControl>{' '}
-						<FormMessage />
-					</FormItem>
-				)}
-			/>
-		</div>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<div className="grid grid-cols-1 gap-4">
+					<FormField
+						control={form.control}
+						name={`trainingDays.${dayIndex}.exercises.${exerciseIndex}.repetitions`}
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Repetitions</FormLabel>
+								<FormControl>
+									<Input
+										type="number"
+										{...field}
+										onChange={(e) => field.onChange(parseInt(e.target.value))}
+										disabled={!isEditing}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						control={form.control}
+						name={`trainingDays.${dayIndex}.exercises.${exerciseIndex}.sets`}
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Sets</FormLabel>
+								<FormControl>
+									<Input
+										type="number"
+										{...field}
+										onChange={(e) => field.onChange(parseInt(e.target.value))}
+										disabled={!isEditing}
+									/>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+				</div>
+				<FormField
+					control={form.control}
+					name={`trainingDays.${dayIndex}.exercises.${exerciseIndex}.done`}
+					render={({ field }) => (
+						<FormItem className="flex flex-row items-center space-x-3 space-y-0">
+							<FormControl>
+								<Checkbox
+									checked={field.value}
+									onCheckedChange={field.onChange}
+									disabled={!isEditing}
+								/>
+							</FormControl>
+							<FormLabel>Completed</FormLabel>
+						</FormItem>
+					)}
+				/>
+				<FormField
+					control={form.control}
+					name={`trainingDays.${dayIndex}.exercises.${exerciseIndex}.variation`}
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Variation</FormLabel>
+							<FormControl>
+								<Input {...field} disabled={!isEditing} />
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+			</CardContent>
+		</Card>
 	);
-};
+}

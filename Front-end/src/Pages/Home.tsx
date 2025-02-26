@@ -14,6 +14,7 @@ import { BarChart3, Dumbbell, Utensils, LineChart } from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
 import { useEffect } from 'react';
 import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
+import { toast } from 'sonner';
 
 export default function Home() {
 	const { user, getUser } = useUser();
@@ -21,7 +22,10 @@ export default function Home() {
 	useEffect(() => {
 		const fetchUser = async () => {
 			if (user) {
-				await getUser(user.id);
+				const result = await getUser(user.id);
+				if (!result) {
+					toast.error('error');
+				}
 			}
 		};
 
@@ -82,7 +86,7 @@ export default function Home() {
 							</h2>
 
 							{currentTraining ? (
-								<TrainingWeekComponent trainingWeek={currentTraining} />
+								<TrainingWeekComponent initialData={currentTraining} />
 							) : (
 								<p className="text-center text-muted-foreground">
 									Não há dias de treino registrados para esta semana.

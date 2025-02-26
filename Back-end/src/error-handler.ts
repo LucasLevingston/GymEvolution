@@ -1,6 +1,7 @@
 import { Prisma } from '@prisma/client';
 import { ClientError } from 'errors/client-error';
 import type { FastifyInstance } from 'fastify';
+import { ResponseSerializationError } from 'fastify-type-provider-zod';
 import { ZodError } from 'zod';
 
 type FastifyErrorHandler = FastifyInstance['errorHandler'];
@@ -10,6 +11,10 @@ export const errorHandler: FastifyErrorHandler = (error, request, reply) => {
     return reply
       .status(400)
       .send({ message: 'Invalid input', errors: error.flatten().fieldErrors });
+  }
+  if (error instanceof ResponseSerializationError) {
+    console.log(error);
+    return reply.status(400).send({ message: 'Invalid input', error: error.cause });
   }
 
   if (

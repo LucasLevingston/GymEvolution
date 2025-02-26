@@ -7,10 +7,9 @@ import { getUser } from 'controllers/user/get';
 import { getHistoryController } from 'controllers/history/get';
 import { z } from 'zod';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { authenticate } from 'middlewares/auth.middleware';
 import { passwordRecover } from 'controllers/user/password-recover';
 import { resetPassword } from 'controllers/user/reset-password';
-import { weightSchema } from 'schemas/weightSchema';
+import { userSchema } from 'schemas/userSchema';
 
 export async function userRoutes(app: FastifyInstance) {
   // app.addHook('onRequest', authenticate);
@@ -60,27 +59,7 @@ export async function userRoutes(app: FastifyInstance) {
           password: z.string().min(6, 'Password must be at least 6 characters long'),
         }),
         response: {
-          200: z.object({
-            token: z.string(),
-            user: z.object({
-              id: z.string().uuid(),
-              email: z.string(),
-              name: z.string().optional(),
-              sex: z.string().optional(),
-              street: z.string().optional(),
-              number: z.string().optional(),
-              zipCode: z.string().optional(),
-              city: z.string().optional(),
-              state: z.string().optional(),
-              birthDate: z.string().optional(),
-              phone: z.string().optional(),
-              currentWeight: z.string().optional(),
-              trainingWeeks: z.any(),
-              history: z.any(),
-              oldWeights: z.any(),
-              diets: z.any(),
-            }),
-          }),
+          200: userSchema,
           400: z.object({
             error: z.string().optional(),
             message: z.string().optional(),
@@ -117,20 +96,7 @@ export async function userRoutes(app: FastifyInstance) {
           oldWeights: z.any(),
         }),
         response: {
-          200: z.object({
-            id: z.string().uuid(),
-            email: z.string().email().optional(),
-            name: z.string().optional(),
-            sex: z.string().optional(),
-            street: z.string().optional(),
-            number: z.string().optional(),
-            zipCode: z.string().optional(),
-            city: z.string().optional(),
-            state: z.string().optional(),
-            birthDate: z.string().optional(),
-            phone: z.string().optional(),
-            currentWeight: z.string().optional(),
-          }),
+          200: userSchema,
           400: z.object({
             error: z.string().optional(),
             message: z.string().optional(),
@@ -155,24 +121,7 @@ export async function userRoutes(app: FastifyInstance) {
           id: z.string().uuid('Invalid user ID'),
         }),
         response: {
-          200: z.object({
-            id: z.string().uuid(),
-            email: z.string().email().optional(),
-            name: z.string().optional(),
-            sex: z.string().optional(),
-            street: z.string().optional(),
-            number: z.string().optional(),
-            zipCode: z.string().optional(),
-            city: z.string().optional(),
-            state: z.string().optional(),
-            birthDate: z.string().optional(),
-            phone: z.string().optional(),
-            currentWeight: z.string().optional(),
-            trainingWeeks: z.any(),
-            history: z.any(),
-            oldWeights: z.any(),
-            diets: z.any(),
-          }),
+          200: userSchema,
           404: z.object({
             error: z.string(),
             message: z.string(),
@@ -199,7 +148,6 @@ export async function userRoutes(app: FastifyInstance) {
         response: {
           200: z.array(
             z.object({
-              // Define the structure of history items
               date: z.string(),
               activity: z.string(),
             })
