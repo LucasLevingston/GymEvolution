@@ -27,7 +27,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import useUser from '@/hooks/user-hooks';
 import { Plus, Save, Trash2, X } from 'lucide-react';
-import { trainingWeekSchema } from '@/schemas/newTrainingSchema';
+import { trainingWeekSchema } from '@/schemas/trainingWeekSchema';
 import { useTraining } from '@/hooks/training-hooks';
 
 export default function NewTraining() {

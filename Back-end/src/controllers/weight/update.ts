@@ -1,3 +1,6 @@
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { prisma } from 'utils/prisma';
+
 export async function updateWeightController(
   request: FastifyRequest<{
     Params: { id: string };
@@ -12,9 +15,6 @@ export async function updateWeightController(
     });
     return reply.send(weight);
   } catch (error) {
-    if (error.code === 'P2025') {
-      return reply.code(404).send({ error: 'Weight entry not found' });
-    }
-    r;
+    throw error;
   }
 }

@@ -7,7 +7,7 @@ import {
 	XAxis,
 	YAxis,
 } from 'recharts';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
 	ChartContainer,
 	ChartTooltip,
@@ -27,35 +27,37 @@ export function BodyFatChart({ weights }: BodyFatChartProps) {
 
 	return (
 		<Card>
+			<CardHeader>
+				<CardTitle>Body Fat Percentage Progress</CardTitle>
+			</CardHeader>
 			<CardContent className="p-6">
-				<ChartContainer
-					config={{
-						bodyFat: {
-							label: 'Body Fat %',
-							color: 'hsl(var(--chart-2))',
-						},
-					}}
-					className="h-[300px]"
-				>
+				<div className="h-[400px]">
 					<ResponsiveContainer width="100%" height="100%">
-						<LineChart
-							data={chartData}
-							margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+						<ChartContainer
+							config={{
+								bodyFat: {
+									label: 'Body Fat %',
+									color: 'hsl(var(--chart-2))',
+								},
+							}}
+							className="h-[300px]"
 						>
-							<CartesianGrid strokeDasharray="3 3" />
-							<XAxis dataKey="date" />
-							<YAxis />
-							<ChartTooltip content={<ChartTooltipContent />} />
-							<Legend />
-							<Line
-								type="monotone"
-								dataKey="bodyFat"
-								stroke="var(--color-bodyFat)"
-								strokeWidth={2}
-							/>
-						</LineChart>
+							<LineChart data={chartData}>
+								<CartesianGrid strokeDasharray="3 3" />
+								<XAxis dataKey="date" />
+								<YAxis />
+								<ChartTooltip content={<ChartTooltipContent />} />
+								<Legend />
+								<Line
+									type="monotone"
+									dataKey="bodyFat"
+									stroke="var(--color-bodyFat)"
+									strokeWidth={2}
+								/>
+							</LineChart>
+						</ChartContainer>
 					</ResponsiveContainer>
-				</ChartContainer>
+				</div>
 			</CardContent>
 		</Card>
 	);

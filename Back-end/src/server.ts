@@ -6,6 +6,7 @@ import {
   jsonSchemaTransform,
   serializerCompiler,
   validatorCompiler,
+  ZodTypeProvider,
 } from 'fastify-type-provider-zod';
 import { userRoutes } from './routes/user-routes';
 import { historyRoutes } from './routes/history-routes';
@@ -20,7 +21,7 @@ import { dietRoutes } from 'routes/diet-routes';
 import { mealRoutes } from 'routes/meal-routes';
 import { mealItemsRoutes } from 'routes/meal-items-routes';
 
-const app: FastifyInstance = fastify({ logger: false });
+const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
   origin: '*',

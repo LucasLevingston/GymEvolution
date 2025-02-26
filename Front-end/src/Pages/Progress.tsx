@@ -1,26 +1,47 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BodyFatChart } from '@/components/progress/BodyFatChart';
 import useUser from '@/hooks/user-hooks';
-import { WeightType } from '@/types/userType';
-import { TrainingWeekType } from '@/types/TrainingType';
+import type { WeightType } from '@/types/userType';
+import type { TrainingWeekType } from '@/types/TrainingType';
 import { TrainingProgressChart } from '@/components/progress/TraininProgressChart';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
-import { WeightChart } from '@/components/progress/WeightChart';
+import { EditableWeightChart } from '@/components/progress/WeightChart';
 
 export default function Progress() {
-	const { user } = useUser();
+	const { user, updateUser } = useUser();
 	const [weights, setWeights] = useState<WeightType[]>([]);
 	const [trainingWeeks, setTrainingWeeks] = useState<TrainingWeekType[]>([]);
 
 	useEffect(() => {
 		if (user) {
-			setWeights(user.oldWeights);
-			setTrainingWeeks(user.trainingWeeks);
+			setWeights(user.oldWeights || []);
+			setTrainingWeeks(user.trainingWeeks || []);
 		}
 	}, [user]);
+
+	const handleDataChange = async (newWeights: WeightType[]) => {
+		setWeights(newWeights);
+
+		if (user) {
+			try {
+				const updatedUser = {
+					...user,
+					oldWeights: newWeights,
+					currentWeight:
+						newWeights.length > 0
+							? newWeights[newWeights.length - 1].weight
+							: user.currentWeight,
+				};
+
+				await updateUser(updatedUser);
+			} catch (error) {
+				console.error('Error updating weights:', error);
+			}
+		}
+	};
 
 	if (!user) {
 		return (
@@ -58,35 +79,20 @@ export default function Progress() {
 								Training Progress
 							</TabsTrigger>
 						</TabsList>
+
 						<TabsContent value="weight">
-							<Card>
-								<CardHeader>
-									<CardTitle>Weight Progress</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<WeightChart weights={weights} />
-								</CardContent>
-							</Card>
+							<EditableWeightChart
+								data={weights}
+								onDataChange={handleDataChange}
+							/>
 						</TabsContent>
+
 						<TabsContent value="bodyFat">
-							<Card>
-								<CardHeader>
-									<CardTitle>Body Fat Percentage Progress</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<BodyFatChart weights={weights} />
-								</CardContent>
-							</Card>
+							<BodyFatChart weights={weights} />
 						</TabsContent>
+
 						<TabsContent value="trainingProgress">
-							<Card>
-								<CardHeader>
-									<CardTitle>Training Progress</CardTitle>
-								</CardHeader>
-								<CardContent>
-									<TrainingProgressChart trainingWeeks={trainingWeeks} />
-								</CardContent>
-							</Card>
+							<TrainingProgressChart trainingWeeks={trainingWeeks} />
 						</TabsContent>
 					</Tabs>
 				</div>

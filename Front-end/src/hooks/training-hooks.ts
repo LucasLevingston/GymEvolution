@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import type { z } from 'zod';
-import type { trainingWeekSchema } from '@/schemas/newTrainingSchema';
+import type { trainingWeekSchema } from '@/schemas/trainingWeekSchema';
 import axios from 'axios';
-import { TrainingWeekType } from '@/types/trainingType';
+import { TrainingWeekType } from '@/types/TrainingType';
 
 type TrainingData = z.infer<typeof trainingWeekSchema>;
 const baseUrl = `${import.meta.env.VITE_API_URL}/training-weeks`;

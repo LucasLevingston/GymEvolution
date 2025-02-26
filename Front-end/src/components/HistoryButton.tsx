@@ -10,13 +10,13 @@ import { BsJournalText } from 'react-icons/bs';
 import { useHistory } from '@/hooks/history-hooks';
 import useUser from '@/hooks/user-hooks';
 import { useEffect, useState } from 'react';
-import type { History } from '@/types/userType';
+import type { HistoryType } from '@/types/userType';
 import { formatDate } from '@/estatico';
 
 export default function ShowHistoryButton() {
 	const { user } = useUser();
 	const { getHistory } = useHistory();
-	const [history, setHistory] = useState<History[]>([]);
+	const [history, setHistory] = useState<HistoryType[]>([]);
 
 	useEffect(() => {
 		const fetchHistory = async () => {
