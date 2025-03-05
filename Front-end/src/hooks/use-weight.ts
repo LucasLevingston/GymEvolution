@@ -1,53 +1,99 @@
-import { create } from 'zustand';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { WeightType } from '@/types/userType';
+import { weightStore } from '@/store/weight-store';
+import type { WeightType } from '@/types/userType';
 
-interface WeightState {
-	weights: WeightType[];
-	isLoading: boolean;
-	error: string | null;
-	fetchWeights: () => Promise<void>;
-	addWeight: (newWeight: Omit<WeightType, 'id'>) => Promise<void>;
-	updateWeight: (updatedWeight: WeightType) => Promise<void>;
-}
+export function useWeight() {
+	const [state, setState] = useState(() => weightStore.getState());
 
-const useWeight = create<WeightState>((set) => ({
-	weights: [],
-	isLoading: false,
-	error: null,
+	useEffect(() => {
+		const unsubscribe = weightStore.subscribe(() => {
+			setState(weightStore.getState());
+		});
 
-	fetchWeights: async () => {
-		set({ isLoading: true });
+		return () => {
+			unsubscribe();
+		};
+	}, []);
+	const baseUrl = `${import.meta.env.VITE_API_URL}/weights`;
+	const fetchWeights = async () => {
+		weightStore.setLoading(true);
 		try {
-			const response = await axios.get('/weights');
-			set({ weights: response.data, isLoading: false, error: null });
+			const response = await axios.get('${baseUrl}');
+			weightStore.setWeights(response.data);
+			weightStore.setError(null);
+			return response.data;
 		} catch (error) {
-			set({ error: 'Failed to fetch weights', isLoading: false });
+			weightStore.setError('Failed to fetch weights');
+			throw error;
+		} finally {
+			weightStore.setLoading(false);
 		}
-	},
+	};
 
-	addWeight: async (newWeight) => {
-		set({ isLoading: true });
+	const addWeight = async (newWeight: Omit<WeightType, 'id'>) => {
+		weightStore.setLoading(true);
 		try {
-			const response = await axios.post(`/weights`, newWeight);
-			console.log(response);
+			const response = await axios.post('${baseUrl}', newWeight);
+			const updatedWeights = [...state.weights, response.data];
+			weightStore.setWeights(updatedWeights);
+			weightStore.setError(null);
+			return response.data;
 		} catch (error) {
-			set({ error: 'Failed to add weight', isLoading: false });
+			weightStore.setError('Failed to add weight');
+			throw error;
+		} finally {
+			weightStore.setLoading(false);
 		}
-	},
+	};
 
-	updateWeight: async (updatedWeight) => {
-		set({ isLoading: true });
+	const updateWeight = async (updatedWeight: WeightType) => {
+		weightStore.setLoading(true);
 		try {
 			const response = await axios.put(
-				`/weights/${updatedWeight.id}`,
+				`${baseUrl}/${updatedWeight.id}`,
 				updatedWeight
 			);
-			console.log(response);
+			const updatedWeights = state.weights.map((weight) =>
+				weight.id === updatedWeight.id ? response.data : weight
+			);
+			weightStore.setWeights(updatedWeights);
+			weightStore.setError(null);
+			return response.data;
 		} catch (error) {
-			set({ error: 'Failed to update weight', isLoading: false });
+			weightStore.setError('Failed to update weight');
+			throw error;
+		} finally {
+			weightStore.setLoading(false);
 		}
-	},
-}));
+	};
 
-export default useWeight;
+	const deleteWeight = async (id: string) => {
+		weightStore.setLoading(true);
+		try {
+			const result = await axios.delete(`${baseUrl}/${id}`);
+			const updatedWeights = state.weights.filter((weight) => weight.id !== id);
+			weightStore.setWeights(updatedWeights);
+			weightStore.setError(null);
+			return result.data;
+		} catch (error) {
+			weightStore.setError('Failed to delete weight');
+			throw error;
+		} finally {
+			weightStore.setLoading(false);
+		}
+	};
+
+	return {
+		// State
+		weights: state.weights,
+		isLoading: state.isLoading,
+		error: state.error,
+
+		// Actions
+		fetchWeights,
+		addWeight,
+		updateWeight,
+		deleteWeight,
+	};
+}

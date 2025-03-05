@@ -1,17 +1,20 @@
+import { ClientError } from 'errors/client-error';
+import { FastifyRequest } from 'fastify';
+import { getWeightService } from 'services/weight/get';
+
 export async function getWeightController(
   request: FastifyRequest<{
     Params: { id: string };
-  }>,
-  reply: FastifyReply
+  }>
 ) {
   try {
-    const weight = await prisma.weight.findUnique({
-      where: { id: request.params.id },
-    });
+    const { id } = request.params;
+
+    const weight = await getWeightService(id);
     if (!weight) {
-      return reply.code(404).send({ error: 'Weight entry not found' });
+      throw new ClientError('Weight entry not found');
     }
-    return reply.send(weight);
+    return weight;
   } catch (error) {
     throw error;
   }
