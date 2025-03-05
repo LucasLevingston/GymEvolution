@@ -3,6 +3,7 @@ import type { UserType } from '@/types/userType';
 import { useUserStore } from '@/store/user-store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
+
 export const useUser = () => {
 	const {
 		setUser,

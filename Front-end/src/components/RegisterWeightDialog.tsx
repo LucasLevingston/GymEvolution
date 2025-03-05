@@ -61,7 +61,7 @@ export function RegisterWeightDialog() {
 			};
 
 			await updateUser(updatedUser);
-			await getUser;
+			await getUser(updatedUser.id);
 
 			form.reset();
 			setIsOpen(false);
@@ -99,7 +99,6 @@ export function RegisterWeightDialog() {
 											type="number"
 											{...field}
 											onChange={(e) => {
-												// Parse the string value to a number
 												const value =
 													e.target.value === ''
 														? 0
@@ -123,7 +122,6 @@ export function RegisterWeightDialog() {
 											type="number"
 											{...field}
 											onChange={(e) => {
-												// Parse the string value to a number
 												const value =
 													e.target.value === ''
 														? 0
