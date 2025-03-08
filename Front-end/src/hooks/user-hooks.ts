@@ -2,122 +2,131 @@ import axios from 'axios';
 import type { UserType } from '@/types/userType';
 import { useUserStore } from '@/store/user-store';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}/users`;
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useUser = () => {
-	const {
-		setUser,
-		user,
-		clearUser,
-		updateUser: updateUserStore,
-		token,
-		setToken,
-	} = useUserStore();
+  const {
+    setUser,
+    user,
+    clearUser,
+    updateUser: updateUserStore,
+    token,
+    setToken,
+  } = useUserStore();
 
-	const getUser = async (id: string): Promise<UserType> => {
-		const response = await axios.get<UserType>(`${baseUrl}/${id}`);
-		if (!response.data) throw new Error('Error no get user');
+  const getUser = async (id: string): Promise<UserType> => {
+    const response = await axios.get<UserType>(`${baseUrl}/users/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-		if (response.data.id === user?.id) {
-			setUser(response.data);
-		}
-		return response.data;
-	};
+    if (!response.data) {
+      throw new Error('No data received from server');
+    }
 
-	const login = async (email: string, password: string): Promise<UserType> => {
-		const data = { email, password };
-		try {
-			const response = await axios.post<{ user: UserType; token: string }>(
-				`${baseUrl}/login`,
-				data
-			);
-			if (response.status !== 200) throw new Error('Error on login');
-			setUser(response.data.user);
-			setToken(response.data.token);
-			console.log('TESTE:', user, token);
-			return response.data.user;
-		} catch (error: any) {
-			throw new Error(error.response.data.message);
-		}
-	};
+    if (response.data.id === user?.id) {
+      setUser(response.data);
+    }
 
-	const createUser = async (newUser: {
-		email: string;
-		password: string;
-	}): Promise<UserType> => {
-		try {
-			const response = await axios.post<UserType>(`${baseUrl}/create`, newUser);
+    return response.data;
+  };
 
-			return response.data;
-		} catch (error: any) {
-			throw new Error(error.response.data.message);
-		}
-	};
+  const login = async (email: string, password: string): Promise<UserType> => {
+    const data = { email, password };
+    try {
+      const response = await axios.post<{ user: UserType; token: string }>(
+        `${baseUrl}/auth/login`,
+        data
+      );
+      if (response.status !== 200) throw new Error('Error on login');
+      setUser(response.data.user);
+      setToken(response.data.token);
 
-	const updateUser = async (
-		updatedUser: Partial<UserType>
-	): Promise<UserType> => {
-		try {
-			const response = await axios.put<UserType>(`${baseUrl}`, updatedUser, {
-				headers: { Authorization: `Bearer ${token}` },
-			});
+      return response.data.user;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
 
-			updateUserStore(response.data);
+  const createUser = async (newUser: {
+    name: string;
+    email: string;
+    password: string;
+  }): Promise<UserType> => {
+    try {
+      const response = await axios.post<UserType>(`${baseUrl}/auth/register`, newUser);
 
-			return response.data;
-		} catch (error: any) {
-			throw new Error(error.response.data.message);
-		}
-	};
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
 
-	const logout = () => {
-		clearUser();
-	};
+  const updateUser = async (updatedUser: Partial<UserType>): Promise<UserType> => {
+    try {
+      const response = await axios.put<UserType>(
+        `${baseUrl}/users/${updatedUser.id}`,
+        updatedUser,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-	const passwordRecover = async (email: string) => {
-		try {
-			const response = await axios.post<{ message: string }>(
-				`${baseUrl}/password-recover`,
-				{ email }
-			);
-			if (!response) {
-				throw new Error('Error on axios');
-			}
+      updateUserStore(response.data);
 
-			return response.data.message;
-		} catch (error: any) {
-			throw new Error(error.response.data.message);
-		}
-	};
-	const resetPassword = async (data: {
-		token: string;
-		newPassword: string;
-	}) => {
-		try {
-			const response = await axios.post<{ message: string }>(
-				`${baseUrl}/reset-password`,
-				data
-			);
-			if (!response) {
-				throw new Error('Error on axios');
-			}
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
 
-			return response.data.message;
-		} catch (error: any) {
-			throw new Error(error.response.data.message);
-		}
-	};
+  const logout = () => {
+    clearUser();
+  };
 
-	return {
-		user,
-		login,
-		logout,
-		createUser,
-		getUser,
-		updateUser,
-		passwordRecover,
-		resetPassword,
-	};
+  const passwordRecover = async (email: string) => {
+    try {
+      const response = await axios.post<{ message: string }>(
+        `${baseUrl}/password-recover`,
+        { email }
+      );
+      if (!response) {
+        throw new Error('Error on axios');
+      }
+
+      return response.data.message;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
+  const resetPassword = async (data: { token: string; newPassword: string }) => {
+    try {
+      const response = await axios.post<{ message: string }>(
+        `${baseUrl}/reset-password`,
+        data
+      );
+      if (!response) {
+        throw new Error('Error on axios');
+      }
+
+      return response.data.message;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
+
+  return {
+    user,
+    login,
+    logout,
+    createUser,
+    getUser,
+    updateUser,
+    passwordRecover,
+    resetPassword,
+    token,
+  };
 };
 
 export default useUser;

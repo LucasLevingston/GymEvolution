@@ -1,89 +1,89 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import Home from './Pages/Home';
-import { Treinando } from './Pages/Treinando';
-import Login from './Pages/Authentication/Login';
-import Register from './Pages/Authentication/Register';
-import MyInformationsSettings from './Pages/Settings/MyInformations';
-import CreateTraining from './Pages/NewTraining';
-import { useUserStore } from './store/user-store';
-import NotFound from './Pages/Not-Found';
-import { ThemeProvider } from './components/providers/ThemeProvider';
-import Profile from './Pages/Profile';
-import ThemeSettings from './Pages/Settings/ThemeSettings';
-import PastWorkouts from './Pages/PastWorkouts';
-import { CurrentWorkoutWeek } from './Pages/CurrentWorkoutWeek';
-import Progress from './Pages/Progress';
-import ResetPassword from './Pages/Authentication/ResetPassword';
-import PasswordRecovery from './Pages/Authentication/PasswordRecovery';
-import DietPlan from './Pages/Diet';
-import PastDiets from './Pages/PastDiets';
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import Home from './Pages/Home'
+import { Treinando } from './Pages/Treinando'
+import Login from './Pages/Authentication/Login'
+import Register from './Pages/Authentication/Register'
+import MyInformationsSettings from './Pages/Settings/MyInformations'
+import CreateTraining from './Pages/NewTraining'
+import { useUserStore } from './store/user-store'
+import NotFound from './Pages/Not-Found'
+import { ThemeProvider } from './components/providers/ThemeProvider'
+import Profile from './Pages/Profile'
+import ThemeSettings from './Pages/Settings/ThemeSettings'
+import PastWorkouts from './Pages/PastWorkouts'
+import { CurrentWorkoutWeek } from './Pages/CurrentWorkoutWeek'
+import Progress from './Pages/Progress'
+import ResetPassword from './Pages/Authentication/ResetPassword'
+import PasswordRecovery from './Pages/Authentication/PasswordRecovery'
+import DietPlan from './Pages/Diet'
+import PastDiets from './Pages/PastDiets'
 
 interface PrivateRouteProps {
-	element: JSX.Element;
+  element: JSX.Element
 }
 
 const PrivateRoute: React.FC<PrivateRouteProps> = ({ element }) => {
-	const { user } = useUserStore();
+  const { user } = useUserStore()
 
-	return user ? element : <Navigate to="/login" />;
-};
+  return user ? element : <Navigate to="/login" />
+}
 
 const App: React.FC = () => {
-	return (
-		<ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-			<BrowserRouter>
-				<Routes>
-					<Route path="/" element={<Home />} />
-					<Route path="/login" element={<Login />} />
-					<Route
-						path="/progress"
-						element={<PrivateRoute element={<Progress />} />}
-					/>
-					<Route
-						path="/new-training"
-						element={<PrivateRoute element={<CreateTraining />} />}
-					/>
+  return (
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/progress"
+            element={<PrivateRoute element={<Progress />} />}
+          />
+          <Route
+            path="/new-training"
+            element={<PrivateRoute element={<CreateTraining />} />}
+          />
 
-					<Route path="/register" element={<Register />} />
-					<Route path="/reset-password" element={<ResetPassword />} />
-					<Route path="/password-recovery" element={<PasswordRecovery />} />
-					<Route
-						path="/training/:treinoId"
-						element={<PrivateRoute element={<Treinando />} />}
-					/>
-					<Route
-						path="/profile"
-						element={<PrivateRoute element={<Profile />} />}
-					/>
-					<Route
-						path="/settings/theme"
-						element={<PrivateRoute element={<ThemeSettings />} />}
-					/>
-					<Route
-						path="/settings/my-informations"
-						element={<PrivateRoute element={<MyInformationsSettings />} />}
-					/>
-					<Route
-						path="/workout-week"
-						element={<PrivateRoute element={<CurrentWorkoutWeek />} />}
-					/>
-					<Route
-						path="/past-workouts"
-						element={<PrivateRoute element={<PastWorkouts />} />}
-					/>
-					<Route
-						path="/diet"
-						element={<PrivateRoute element={<DietPlan />} />}
-					/>
-					<Route
-						path="/past-diets"
-						element={<PrivateRoute element={<PastDiets />} />}
-					/>
-					<Route path="*" element={<NotFound />} />
-				</Routes>
-			</BrowserRouter>
-		</ThemeProvider>
-	);
-};
+          <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/password-recovery" element={<PasswordRecovery />} />
+          <Route
+            path="/training/:treinoId"
+            element={<PrivateRoute element={<Treinando />} />}
+          />
+          <Route
+            path="/profile"
+            element={<PrivateRoute element={<Profile />} />}
+          />
+          <Route
+            path="/settings/theme"
+            element={<PrivateRoute element={<ThemeSettings />} />}
+          />
+          <Route
+            path="/settings/my-informations"
+            element={<PrivateRoute element={<MyInformationsSettings />} />}
+          />
+          <Route
+            path="/workout-week"
+            element={<PrivateRoute element={<CurrentWorkoutWeek />} />}
+          />
+          <Route
+            path="/past-workouts"
+            element={<PrivateRoute element={<PastWorkouts />} />}
+          />
+          <Route
+            path="/diet"
+            element={<PrivateRoute element={<DietPlan />} />}
+          />
+          <Route
+            path="/past-diets"
+            element={<PrivateRoute element={<PastDiets />} />}
+          />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
+  )
+}
 
-export default App;
+export default App

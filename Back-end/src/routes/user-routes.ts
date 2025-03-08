@@ -1,14 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { User } from '@prisma/client';
 import { createUserController } from 'controllers/user/create';
-import { login } from 'controllers/user/login';
+import { login } from 'controllers/auth/login';
 import { updateUser } from 'controllers/user/update';
 import { getUser } from 'controllers/user/get';
 import { getHistoryController } from 'controllers/history/get';
 import { z } from 'zod';
 import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { passwordRecover } from 'controllers/user/password-recover';
-import { resetPassword } from 'controllers/user/reset-password';
+import { passwordRecover } from 'controllers/auth/password-recover';
+import { resetPassword } from 'controllers/auth/reset-password';
 import { userSchema } from 'schemas/userSchema';
 
 export async function userRoutes(app: FastifyInstance) {

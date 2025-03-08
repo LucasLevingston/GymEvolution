@@ -22,3 +22,13 @@ export const userSchema = z.object({
   oldWeights: z.array(weightSchema).optional(),
   diets: z.array(dietSchema).optional(),
 });
+
+export const userRoleSchema = z.enum(['STUDENT', 'NUTRITIONIST', 'TRAINER', 'ADMIN']);
+
+export const userResponseSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().nullable(),
+  email: z.string().email(),
+  role: userRoleSchema,
+  createdAt: z.date(),
+});

@@ -11,6 +11,7 @@ const envSchema = z.object({
   DATABASE_URL: z.string(),
   NODEMAILER_PASS: z.string(),
   FRONTEND_URL: z.string(),
+  HOST: z.string(),
 });
 
 export const env = {

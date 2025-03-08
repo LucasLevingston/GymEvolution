@@ -1,4 +1,4 @@
-import fastify, { FastifyInstance } from 'fastify';
+import fastify from 'fastify';
 import fastifySwagger from '@fastify/swagger';
 import fastifySwaggerUi from '@fastify/swagger-ui';
 import fastifyCors from '@fastify/cors';
@@ -20,11 +20,17 @@ import { serieRoutes } from 'routes/serie-routes';
 import { dietRoutes } from 'routes/diet-routes';
 import { mealRoutes } from 'routes/meal-routes';
 import { mealItemsRoutes } from 'routes/meal-items-routes';
+import fastifyJwt from 'fastify-jwt';
+import { authRoutes } from 'routes/auth-routes';
 
 const app = fastify().withTypeProvider<ZodTypeProvider>();
 
 app.register(fastifyCors, {
   origin: '*',
+});
+
+app.register(fastifyJwt, {
+  secret: process.env.JWT_SECRET || 'nutrition-training-secret',
 });
 
 app.register(fastifySwagger, {
@@ -51,12 +57,9 @@ app.setErrorHandler(errorHandler);
 app.setValidatorCompiler(validatorCompiler);
 app.setSerializerCompiler(serializerCompiler);
 
-app.register(userRoutes, {
-  prefix: '/users',
-});
-app.register(historyRoutes, {
-  prefix: '/history',
-});
+app.register(userRoutes, { prefix: '/users' });
+app.register(authRoutes, { prefix: '/auth' });
+app.register(historyRoutes, { prefix: '/history' });
 app.register(trainingWeekRoutes, { prefix: '/training-weeks' });
 app.register(weightRoutes, { prefix: '/weights' });
 app.register(trainingDayRoutes, { prefix: '/training-days' });
@@ -66,10 +69,13 @@ app.register(dietRoutes, { prefix: '/diets' });
 app.register(mealRoutes, { prefix: '/meals' });
 app.register(mealItemsRoutes, { prefix: '/meal-items' });
 
+const port = process.env.PORT ? Number.parseInt(process.env.PORT) : 3333;
+const host = process.env.HOST || '0.0.0.0';
+
 app.listen({ host: 'localhost', port: env.PORT }, (err) => {
   if (err) {
     console.error(err);
     process.exit(1);
   }
-  console.log(`Server listening on port ${env.PORT}`);
+  console.log(`Server is running on http://${host}:${port}`);
 });

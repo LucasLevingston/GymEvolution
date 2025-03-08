@@ -1,42 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import axios from 'axios';
-import { useUser } from '@/hooks/user-hooks';
-// import { UserType } from '@/types/userType';
-
-interface History {
-	event: string;
-	date: string;
-	userId: string;
-}
+import { HistoryType } from '@/types/userType';
+import useUser from './user-hooks';
 
 export const useHistory = () => {
-	const [history, setHistory] = useState<History[]>([]);
-	const [error, setError] = useState<string | null>(null);
-	const { user } = useUser();
+  const [history, setHistory] = useState<HistoryType[]>([]);
+  const { token } = useUser();
 
-	const baseUrl = `${import.meta.env.VITE_API_URL}/history`;
+  const baseUrl = `${import.meta.env.VITE_API_URL}/history`;
 
-	useEffect(() => {
-		if (user) {
-			getHistory(user.email);
-		}
-	}, [user]);
+  const getHistory = async () => {
+    try {
+      const response = await axios.get(`${baseUrl}/`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-	const getHistory = async (id: string) => {
-		try {
-			const response = await axios.get(`${baseUrl}/${id}`);
-			setHistory(response.data);
-			return response.data;
-		} catch (error) {
-			console.error('Error fetching history:', error);
-			setError('Error fetching history');
-			return [];
-		}
-	};
+      setHistory(response.data);
 
-	return {
-		history,
-		error,
-		getHistory,
-	};
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching history:', error);
+      return [];
+    }
+  };
+
+  return {
+    history,
+    getHistory,
+  };
 };

@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import bcrypt from 'bcryptjs';
 import { getUserByEmailService } from 'services/user/get-by-email';
 import { ClientError } from 'errors/client-error';
-import { generateToken } from 'utils/auth';
+import { comparePassword, generateToken } from 'utils/auth';
 import { loginService } from 'services/user/login';
 
 export async function login(
@@ -18,7 +18,7 @@ export async function login(
       throw new ClientError('User not found');
     }
 
-    const isPasswordCorrect = await bcrypt.compare(password, user.password);
+    const isPasswordCorrect = await comparePassword(password, user.password);
     if (!isPasswordCorrect) {
       throw new ClientError('Invalid password');
     }
