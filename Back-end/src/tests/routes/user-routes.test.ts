@@ -1,10 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { userRoutes } from "../../routes/user-routes"
-import { UserController } from "../../controllers/user-controller"
-import { mockUserService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { buildTestServer } from '../utils/test-server';
+import { userRoutes } from '../../routes/user-routes';
+import { mockUserService } from '../mocks/services';
+import { getAllUsersController } from 'controllers/user/get-all-users';
+import { getUserByIdController } from 'controllers/user/get-user-by-id';
+import { updateUserController } from 'controllers/user/update-user';
+import { deleteUserController } from 'controllers/user/delete-user';
+import { getAllNutritionistsController } from 'controllers/user/get-all-nutritionists';
+import { getAllTrainersController } from 'controllers/user/get-all-trainers';
+import { assignNutritionistController } from 'controllers/user/assign-nutritionist';
+import { assignTrainerController } from 'controllers/user/assign-trainer';
+import { getNutritionistStudentsController } from 'controllers/user/get-nutritionist-students';
+import { getTrainerStudentsController } from 'controllers/user/get-trainer-students';
 
-vi.mock("../../controllers/user-controller", () => {
+vi.mock('../../controllers/user-controller', () => {
   return {
     UserController: vi.fn().mockImplementation(() => ({
       getAllUsers: vi.fn(),
@@ -18,273 +27,272 @@ vi.mock("../../controllers/user-controller", () => {
       getNutritionistStudents: vi.fn(),
       getTrainerStudents: vi.fn(),
     })),
-  }
-})
+  };
+});
 
-describe("User Routes", () => {
-  let server: any
-  let userController: any
+describe('User Routes', () => {
+  let server: any;
 
   beforeEach(async () => {
-    server = buildTestServer()
+    server = buildTestServer();
 
     // Mock JWT verification
-    server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "ADMIN" })
+    server.jwt.verify = vi.fn().mockReturnValue({ id: 'user-id', role: 'ADMIN' });
 
-    await server.register(userRoutes)
+    await server.register(userRoutes);
 
     // Get the mocked controller instance
-    userController = (UserController as any).mock.results[0].value
 
     // Set up the mock implementations
-    userController.getAllUsers.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getAllUsers())
-    })
+    getAllUsersController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getAllUsers());
+    });
 
-    userController.getUserById.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getUserById())
-    })
+    getUserByIdController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getUserById());
+    });
 
-    userController.updateUser.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.updateUser())
-    })
+    updateUserController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.updateUser());
+    });
 
-    userController.deleteUser.mockImplementation(async (req, reply) => {
-      return reply.send({ message: "User deleted successfully" })
-    })
+    deleteUserController.mockImplementation(async (req, reply) => {
+      return reply.send({ message: 'User deleted successfully' });
+    });
 
-    userController.getAllNutritionists.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getAllNutritionists())
-    })
+    getAllNutritionistsController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getAllNutritionists());
+    });
 
-    userController.getAllTrainers.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getAllTrainers())
-    })
+    getAllTrainersController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getAllTrainers());
+    });
 
-    userController.assignNutritionist.mockImplementation(async (req, reply) => {
-      return reply.status(201).send(mockUserService.assignNutritionist())
-    })
+    assignNutritionistController.mockImplementation(async (req, reply) => {
+      return reply.status(201).send(mockUserService.assignNutritionist());
+    });
 
-    userController.assignTrainer.mockImplementation(async (req, reply) => {
-      return reply.status(201).send(mockUserService.assignTrainer())
-    })
+    assignTrainerController.mockImplementation(async (req, reply) => {
+      return reply.status(201).send(mockUserService.assignTrainer());
+    });
 
-    userController.getNutritionistStudents.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getNutritionistStudents())
-    })
+    getNutritionistStudentsController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getNutritionistStudents());
+    });
 
-    userController.getTrainerStudents.mockImplementation(async (req, reply) => {
-      return reply.send(mockUserService.getTrainerStudents())
-    })
-  })
+    getTrainerStudentsController.mockImplementation(async (req, reply) => {
+      return reply.send(mockUserService.getTrainerStudents());
+    });
+  });
 
-  describe("GET /", () => {
-    it("should get all users", async () => {
+  describe('GET /', () => {
+    it('should get all users', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/",
+        method: 'GET',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getAllUsers).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getAllUsersController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(Array.isArray(responseBody)).toBe(true)
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
 
-  describe("GET /:id", () => {
-    it("should get a user by ID", async () => {
+  describe('GET /:id', () => {
+    it('should get a user by ID', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/user-id",
+        method: 'GET',
+        url: '/user-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getUserById).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getUserByIdController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("email")
-      expect(responseBody).toHaveProperty("role")
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toHaveProperty('id');
+      expect(responseBody).toHaveProperty('name');
+      expect(responseBody).toHaveProperty('email');
+      expect(responseBody).toHaveProperty('role');
+    });
+  });
 
-  describe("PUT /:id", () => {
-    it("should update a user", async () => {
+  describe('PUT /:id', () => {
+    it('should update a user', async () => {
       const response = await server.inject({
-        method: "PUT",
-        url: "/user-id",
+        method: 'PUT',
+        url: '/user-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          name: "Updated Name",
-          currentWeight: "75",
+          name: 'Updated Name',
+          currentWeight: '75',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.updateUser).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(updateUserController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toHaveProperty('id');
+      expect(responseBody).toHaveProperty('name');
+    });
+  });
 
-  describe("DELETE /:id", () => {
-    it("should delete a user", async () => {
+  describe('DELETE /:id', () => {
+    it('should delete a user', async () => {
       const response = await server.inject({
-        method: "DELETE",
-        url: "/user-id",
+        method: 'DELETE',
+        url: '/user-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.deleteUser).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(deleteUserController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
-      expect(responseBody.message).toBe("User deleted successfully")
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toHaveProperty('message');
+      expect(responseBody.message).toBe('User deleted successfully');
+    });
+  });
 
-  describe("GET /role/nutritionists", () => {
-    it("should get all nutritionists", async () => {
+  describe('GET /role/nutritionists', () => {
+    it('should get all nutritionists', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/role/nutritionists",
+        method: 'GET',
+        url: '/role/nutritionists',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getAllNutritionists).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getAllNutritionistsController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(Array.isArray(responseBody)).toBe(true)
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
 
-  describe("GET /role/trainers", () => {
-    it("should get all trainers", async () => {
+  describe('GET /role/trainers', () => {
+    it('should get all trainers', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/role/trainers",
+        method: 'GET',
+        url: '/role/trainers',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getAllTrainers).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getAllTrainersController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(Array.isArray(responseBody)).toBe(true)
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
 
-  describe("POST /assign/nutritionist", () => {
-    it("should assign a nutritionist to a student", async () => {
+  describe('POST /assign/nutritionist', () => {
+    it('should assign a nutritionist to a student', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/assign/nutritionist",
+        method: 'POST',
+        url: '/assign/nutritionist',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          studentId: "student-id",
-          nutritionistId: "nutritionist-id",
+          studentId: 'student-id',
+          nutritionistId: 'nutritionist-id',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(201)
-      expect(userController.assignNutritionist).toHaveBeenCalled()
+      expect(response.statusCode).toBe(201);
+      expect(assignNutritionistController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("nutritionistId")
-      expect(responseBody).toHaveProperty("studentId")
-      expect(responseBody).toHaveProperty("status")
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toHaveProperty('id');
+      expect(responseBody).toHaveProperty('nutritionistId');
+      expect(responseBody).toHaveProperty('studentId');
+      expect(responseBody).toHaveProperty('status');
+    });
+  });
 
-  describe("POST /assign/trainer", () => {
-    it("should assign a trainer to a student", async () => {
+  describe('POST /assign/trainer', () => {
+    it('should assign a trainer to a student', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/assign/trainer",
+        method: 'POST',
+        url: '/assign/trainer',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          studentId: "student-id",
-          trainerId: "trainer-id",
+          studentId: 'student-id',
+          trainerId: 'trainer-id',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(201)
-      expect(userController.assignTrainer).toHaveBeenCalled()
+      expect(response.statusCode).toBe(201);
+      expect(assignTrainerController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("trainerId")
-      expect(responseBody).toHaveProperty("student2Id")
-      expect(responseBody).toHaveProperty("status")
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(responseBody).toHaveProperty('id');
+      expect(responseBody).toHaveProperty('trainerId');
+      expect(responseBody).toHaveProperty('student2Id');
+      expect(responseBody).toHaveProperty('status');
+    });
+  });
 
-  describe("GET /nutritionist/students", () => {
-    it("should get all students for a nutritionist", async () => {
+  describe('GET /nutritionist/students', () => {
+    it('should get all students for a nutritionist', async () => {
       // Mock JWT verification for nutritionist
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "nutritionist-id", role: "NUTRITIONIST" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'nutritionist-id', role: 'NUTRITIONIST' });
 
       const response = await server.inject({
-        method: "GET",
-        url: "/nutritionist/students",
+        method: 'GET',
+        url: '/nutritionist/students',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getNutritionistStudents).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getNutritionistStudentsController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(Array.isArray(responseBody)).toBe(true)
-    })
-  })
+      const responseBody = JSON.parse(response.body);
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
 
-  describe("GET /trainer/students", () => {
-    it("should get all students for a trainer", async () => {
+  describe('GET /trainer/students', () => {
+    it('should get all students for a trainer', async () => {
       // Mock JWT verification for trainer
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "trainer-id", role: "TRAINER" })
+      server.jwt.verify = vi.fn().mockReturnValue({ id: 'trainer-id', role: 'TRAINER' });
 
       const response = await server.inject({
-        method: "GET",
-        url: "/trainer/students",
+        method: 'GET',
+        url: '/trainer/students',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
-      })
+      });
 
-      expect(response.statusCode).toBe(200)
-      expect(userController.getTrainerStudents).toHaveBeenCalled()
+      expect(response.statusCode).toBe(200);
+      expect(getTrainerStudentsController).toHaveBeenCalled();
 
-      const responseBody = JSON.parse(response.body)
-      expect(Array.isArray(responseBody)).toBe(true)
-    })
-  })
-})
-
+      const responseBody = JSON.parse(response.body);
+      expect(Array.isArray(responseBody)).toBe(true);
+    });
+  });
+});

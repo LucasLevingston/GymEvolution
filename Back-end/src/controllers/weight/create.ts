@@ -1,14 +1,14 @@
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { addWeightRecord } from 'services/weight/add-weight-record';
+
 export async function createWeightController(
   request: FastifyRequest<{
     Body: { weight: string; date: string; bf: string; userId: string };
-  }>,
-  reply: FastifyReply
+  }>
 ) {
   try {
-    const weight = await prisma.weight.create({
-      data: request.body,
-    });
-    return reply.code(201).send(weight);
+    const weight = await addWeightRecord(request.body);
+    return weight;
   } catch (error) {
     throw error;
   }

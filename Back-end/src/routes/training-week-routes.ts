@@ -1,107 +1,232 @@
-import { createTrainingWeekController } from 'controllers/training-week/create';
-import { deleteTrainingWeekController } from 'controllers/training-week/delete';
-import { getTrainingWeekController } from 'controllers/training-week/get';
-import { updateTrainingWeekController } from 'controllers/training-week/update';
-import { FastifyInstance } from 'fastify';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { trainingWeekSchema } from 'schemas/newTrainingSchema';
+import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
+import { authenticate } from '../middlewares/authenticate';
+import { idParamSchema } from '../schemas/common-schemas';
+import { createTrainingWeekController } from 'controllers/training-week/create-training-week';
+import { getAllTrainingWeeksController } from 'controllers/training-week/get-all-training-weeks';
+import { getTrainingWeekByIdController } from 'controllers/training-week/get-training-week-by-id';
+import { updateTrainingWeekController } from 'controllers/training-week/update-training-week';
+import { deleteTrainingWeekController } from 'controllers/training-week/delete-training-week';
+import { errorResponseSchema } from 'schemas/error-schema';
 
 export async function trainingWeekRoutes(app: FastifyInstance) {
-  app
-    .withTypeProvider<ZodTypeProvider>()
-    .post(
-      '/',
-      {
-        schema: {
-          summary: 'Create a new training week',
-          description: 'This endpoint allows creation of a new training week.',
-          tags: ['Training Weeks'],
-          body: trainingWeekSchema,
-          response: {
-            201: trainingWeekSchema,
-            400: z.object({
-              error: z.string().optional(),
-              message: z.string().optional(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+  const server = app.withTypeProvider<ZodTypeProvider>();
+
+  server.addHook('onRequest', authenticate);
+
+  const createExerciseSchema = z.object({
+    name: z.string(),
+    variation: z.string().optional(),
+    repetitions: z.number().int().positive(),
+    sets: z.number().int().positive(),
+    done: z.boolean().default(false),
+  });
+
+  // Create training day schema
+  const createTrainingDaySchema = z.object({
+    group: z.string(),
+    dayOfWeek: z.string(),
+    comments: z.string().optional(),
+    done: z.boolean().default(false),
+    exercises: z.array(createExerciseSchema).optional(),
+  });
+
+  // Create training week schema
+  const createTrainingWeekSchema = z.object({
+    weekNumber: z.number().int().positive(),
+    information: z.string().optional(),
+    studentId: z.string().uuid().optional(),
+    trainingDays: z.array(createTrainingDaySchema).optional(),
+  });
+
+  const trainingWeekResponseSchema = z.object({
+    id: z.string().uuid(),
+    weekNumber: z.number(),
+    information: z.string().nullable(),
+    current: z.boolean(),
+    done: z.boolean(),
+    userId: z.string().uuid(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  });
+
+  server.post(
+    '/',
+    {
+      schema: {
+        body: createTrainingWeekSchema,
+        response: {
+          201: trainingWeekResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          409: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['training'],
+        summary: 'Create training week',
+        description: 'Create a new training week for a user',
+        security: [{ bearerAuth: [] }],
       },
-      createTrainingWeekController
-    )
-    .get(
-      '/:id',
-      {
-        schema: {
-          summary: 'Get a training week by ID',
-          description: 'This endpoint retrieves a training week by its ID.',
-          tags: ['Training Weeks'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          response: {
-            200: trainingWeekSchema,
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    createTrainingWeekController
+  );
+
+  // Get all training weeks schema
+  const getAllTrainingWeeksQuerySchema = z.object({
+    studentId: z.string().uuid().optional(),
+  });
+
+  const trainingDayResponseSchema = z.object({
+    id: z.string().uuid(),
+    group: z.string(),
+    dayOfWeek: z.string(),
+    done: z.boolean(),
+    comments: z.string().nullable(),
+    trainingWeekId: z.string().uuid(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  });
+
+  const getAllTrainingWeeksResponseSchema = z.array(
+    trainingWeekResponseSchema.extend({
+      trainingDays: z.array(trainingDayResponseSchema),
+    })
+  );
+
+  server.get(
+    '/',
+    {
+      schema: {
+        querystring: getAllTrainingWeeksQuerySchema,
+        response: {
+          200: getAllTrainingWeeksResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['training'],
+        summary: 'Get all training weeks',
+        description: 'Get all training weeks for a user',
+        security: [{ bearerAuth: [] }],
       },
-      getTrainingWeekController
-    )
-    .put(
-      '/:id',
-      {
-        schema: {
-          summary: 'Update a training week',
-          description: 'This endpoint allows updating an existing training week.',
-          tags: ['Training Weeks'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          body: trainingWeekSchema,
-          response: {
-            // 200: trainingWeekSchema,
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    getAllTrainingWeeksController
+  );
+
+  // Get training week by ID schema
+  const serieResponseSchema = z.object({
+    id: z.string().uuid(),
+    seriesIndex: z.number().nullable(),
+    repetitions: z.number().nullable(),
+    weight: z.number().nullable(),
+    exerciseId: z.string().uuid(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  });
+
+  const exerciseResponseSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    variation: z.string().nullable(),
+    repetitions: z.number(),
+    sets: z.number(),
+    done: z.boolean(),
+    trainingDayId: z.string().uuid(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+    seriesResults: z.array(serieResponseSchema),
+  });
+
+  const getTrainingWeekByIdResponseSchema = trainingWeekResponseSchema.extend({
+    trainingDays: z.array(
+      trainingDayResponseSchema.extend({
+        exercises: z.array(exerciseResponseSchema),
+      })
+    ),
+    user: z.object({
+      id: z.string().uuid(),
+      name: z.string().nullable(),
+    }),
+  });
+
+  server.get(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        response: {
+          200: getTrainingWeekByIdResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['training'],
+        summary: 'Get training week by ID',
+        description: 'Get a training week by ID',
+        security: [{ bearerAuth: [] }],
       },
-      updateTrainingWeekController
-    )
-    .delete(
-      '/:id',
-      {
-        schema: {
-          summary: 'Delete a training week',
-          description: 'This endpoint allows deletion of a training week.',
-          tags: ['Training Weeks'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          response: {
-            200: z.object({
-              message: z.string(),
-            }),
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    getTrainingWeekByIdController
+  );
+
+  // Update training week schema
+  const updateTrainingWeekSchema = z.object({
+    weekNumber: z.number().int().positive().optional(),
+    information: z.string().optional(),
+    current: z.boolean().optional(),
+    done: z.boolean().optional(),
+  });
+
+  server.put(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        body: updateTrainingWeekSchema,
+        response: {
+          200: trainingWeekResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['training'],
+        summary: 'Update training week',
+        description: 'Update a training week by ID',
+        security: [{ bearerAuth: [] }],
       },
-      deleteTrainingWeekController
-    );
+    },
+    updateTrainingWeekController
+  );
+
+  // Delete training week schema
+  const deleteTrainingWeekResponseSchema = z.object({
+    message: z.string(),
+  });
+
+  server.delete(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        response: {
+          200: deleteTrainingWeekResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
+        },
+        tags: ['training'],
+        summary: 'Delete training week',
+        description: 'Delete a training week by ID',
+        security: [{ bearerAuth: [] }],
+      },
+    },
+    deleteTrainingWeekController
+  );
 }

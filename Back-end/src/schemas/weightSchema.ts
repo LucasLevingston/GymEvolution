@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 export const weightSchema = z.object({
   id: z.string().uuid().optional(),
@@ -6,4 +6,4 @@ export const weightSchema = z.object({
   date: z.string().optional(),
   bf: z.string().optional(),
   userId: z.string().uuid().optional(),
-});
+})

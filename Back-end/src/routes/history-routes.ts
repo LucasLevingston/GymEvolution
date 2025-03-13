@@ -1,128 +1,45 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
-import { createHistoryController } from 'controllers/history/create';
+import { authenticate } from '../middlewares/authenticate';
 import { getHistoryController } from 'controllers/history/get';
-import { updateHistoryController } from 'controllers/history/update';
-import { deleteHistoryController } from 'controllers/history/delete';
-import { historySchema } from 'schemas/historySchema';
+import { errorResponseSchema } from 'schemas/error-schema';
 
 export async function historyRoutes(app: FastifyInstance) {
-  app
-    .withTypeProvider<ZodTypeProvider>()
-    .post<{ Body: { event: string; date: string; userId: string } }>(
-      '/create',
-      {
-        schema: {
-          summary: 'Create a new history entry',
-          description: 'This endpoint allows creation of a new history entry.',
-          tags: ['History'],
-          body: historySchema,
-          response: {
-            201: z.object({
-              id: z.string().uuid(),
-              event: z.string(),
-              date: z.string(),
-              userId: z.string().uuid(),
-            }),
-            400: z.object({
-              error: z.string().optional(),
-              message: z.string().optional(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
-        },
-      },
-      createHistoryController
-    );
-  app.get(
-    '/:id',
+  const server = app.withTypeProvider<ZodTypeProvider>();
+
+  server.addHook('onRequest', authenticate);
+
+  const getUserHistoryQuerySchema = z.object({
+    studentId: z.string().uuid().optional(),
+  });
+
+  const historyResponseSchema = z.object({
+    id: z.string().uuid(),
+    event: z.string(),
+    date: z.string(),
+    userId: z.string(),
+    createdAt: z.date(),
+  });
+
+  server.get(
+    '/',
     {
       schema: {
-        summary: 'Get a history entry by ID',
-        description: 'This endpoint retrieves a history entry by its ID.',
-        tags: ['History'],
-        params: z.object({
-          id: z.string().uuid(),
-        }),
+        querystring: getUserHistoryQuerySchema,
         response: {
-          200: z.array(
-            z.object({
-              id: z.string().uuid(),
-              event: z.string(),
-              date: z.string(),
-              userId: z.string().uuid(),
-            })
-          ),
-          404: z.object({
-            error: z.string(),
-          }),
-          500: z.object({
-            error: z.string(),
-          }),
+          200: z.array(historyResponseSchema),
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['history'],
+        summary: 'Get user history',
+        description: 'Get history for a user',
+        security: [{ bearerAuth: [] }],
       },
     },
     getHistoryController
-  );
-  app.put<{ Params: { id: string }; Body: { event?: string; date?: string } }>(
-    '/:id',
-    {
-      schema: {
-        summary: 'Update a history entry',
-        description: 'This endpoint allows updating an existing history entry.',
-        tags: ['History'],
-        params: z.object({
-          id: z.string().uuid(),
-        }),
-        body: z.object({
-          event: z.string().optional(),
-          date: z.string().optional(),
-        }),
-        response: {
-          200: z.object({
-            id: z.string().uuid(),
-            event: z.string(),
-            date: z.string(),
-            userId: z.string().uuid(),
-          }),
-          404: z.object({
-            error: z.string(),
-          }),
-          500: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-    updateHistoryController
-  );
-  app.delete(
-    '/:id',
-    {
-      schema: {
-        summary: 'Delete a history entry',
-        description: 'This endpoint allows deletion of a history entry.',
-        tags: ['History'],
-        params: z.object({
-          id: z.string().uuid(),
-        }),
-        response: {
-          200: z.object({
-            message: z.string(),
-          }),
-          404: z.object({
-            error: z.string(),
-          }),
-          500: z.object({
-            error: z.string(),
-          }),
-        },
-      },
-    },
-    deleteHistoryController
   );
 }

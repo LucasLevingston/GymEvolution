@@ -23,12 +23,41 @@ model User {
   currentWeight        String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
+  role                 String         @default("STUDENT")
   history              History[]
   oldWeights           Weight[]
   trainingWeeks        TrainingWeek[]
   diets                Diet[]
 
+  studentsAsNutritionist Relationship[] @relation("NutritionistToStudent")
+  studentsAsTrainer      Relationship[] @relation("TrainerToStudent")
+  nutritionistRelation   Relationship?  @relation("StudentToNutritionist")
+  trainerRelation        Relationship?  @relation("StudentToTrainer")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   @@map("users")
+}
+
+model Relationship {
+  id String @id @default(uuid())
+
+  nutritionist   User?   @relation("NutritionistToStudent", fields: [nutritionistId], references: [id])
+  nutritionistId String?
+  student        User?   @relation("StudentToNutritionist", fields: [studentId], references: [id], onDelete: SetNull)
+  studentId      String? @unique
+
+  trainer    User?   @relation("TrainerToStudent", fields: [trainerId], references: [id])
+  trainerId  String?
+  student2   User?   @relation("StudentToTrainer", fields: [student2Id], references: [id], onDelete: SetNull)
+  student2Id String? @unique
+
+  status    String   @default("PENDING")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("relationships")
 }
 
 model TrainingWeek {
@@ -37,30 +66,34 @@ model TrainingWeek {
   trainingDays TrainingDay[]
   current      Boolean       @default(false)
   information  String?
-  done         Boolean       @default(false)
+  isCompleted  Boolean       @default(false)
   user         User          @relation(fields: [userId], references: [id])
   userId       String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   @@map("trainingWeeks")
 }
 
 model History {
-  id     String @id @default(uuid())
-  event  String
-  date   String
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  event     String
+  date      String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 
   @@map("histories")
 }
 
 model Weight {
-  id     String @id @default(uuid())
-  weight String
-  date   String
-  bf     String
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  id        String   @id @default(uuid())
+  weight    String
+  date      String
+  bf        String
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
 
   @@map("weights")
 }
@@ -69,11 +102,13 @@ model TrainingDay {
   id             String       @id @default(uuid())
   group          String
   dayOfWeek      String
-  done           Boolean      @default(false)
+  isCompleted    Boolean      @default(false)
   comments       String?
   exercises      Exercise[]
   trainingWeek   TrainingWeek @relation(fields: [trainingWeekId], references: [id], onDelete: Cascade)
   trainingWeekId String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   @@map("trainingDays")
 }
@@ -84,40 +119,43 @@ model Exercise {
   variation     String?
   repetitions   Int
   sets          Int
-  done          Boolean      @default(false)
+  isCompleted   Boolean      @default(false)
   seriesResults Serie[]
   trainingDay   TrainingDay? @relation(fields: [trainingDayId], references: [id])
   trainingDayId String
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 
   @@map("exercises")
 }
 
 model Serie {
-  id          String @id @default(uuid())
+  id          String   @id @default(uuid())
   seriesIndex Int?
   repetitions Int?
   weight      Int?
-
-  exercise   Exercise @relation(fields: [exerciseId], references: [id])
-  exerciseId String
+  exercise    Exercise @relation(fields: [exerciseId], references: [id])
+  exerciseId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("series")
 }
 
 model Diet {
-  id                 String @id @default(uuid())
+  id                 String  @id @default(uuid())
   weekNumber         Int
   meals              Meal[]
   totalCalories      Int?
   totalProtein       Float?
   totalCarbohydrates Float?
   totalFat           Float?
+  isCurrent          Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  User   User?   @relation(fields: [userId], references: [id])
-  userId String?
+  User      User?    @relation(fields: [userId], references: [id])
+  userId    String?
 
   @@map("diets")
 }
@@ -135,12 +173,10 @@ model Meal {
   hour          String?
   isCompleted   Boolean?    @default(false)
   mealItems     MealItems[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  Diet   Diet?   @relation(fields: [dietId], references: [id])
-  dietId String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  Diet          Diet?       @relation(fields: [dietId], references: [id])
+  dietId        String?
 
   @@map("meals")
 }
@@ -152,6 +188,13 @@ model MealItems {
   calories      Int?
   protein       Float?
   carbohydrates Float?
-  Meal          Meal?   @relation(fields: [mealId], references: [id])
-  mealId        String?
+  fat           Float?
+  isCompleted   Boolean @default(false)
+
+  Meal      Meal?    @relation(fields: [mealId], references: [id])
+  mealId    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("mealItems")
 }

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { historyRoutes } from "../../routes/history-routes"
-import { HistoryController } from "../../controllers/history-controller"
-import { mockHistoryService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildTestServer } from '../utils/test-server'
+import { historyRoutes } from '../../routes/history-routes'
+import { HistoryController } from '../../controllers/history-controller'
+import { mockHistoryService } from '../mocks/services'
 
-vi.mock("../../controllers/history-controller", () => {
+vi.mock('../../controllers/history-controller', () => {
   return {
     HistoryController: vi.fn().mockImplementation(() => ({
       getUserHistory: vi.fn(),
@@ -12,7 +12,7 @@ vi.mock("../../controllers/history-controller", () => {
   }
 })
 
-describe("History Routes", () => {
+describe('History Routes', () => {
   let server: any
   let historyController: any
 
@@ -20,7 +20,9 @@ describe("History Routes", () => {
     server = buildTestServer()
 
     // Mock JWT verification
-    server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "STUDENT" })
+    server.jwt.verify = vi
+      .fn()
+      .mockReturnValue({ id: 'user-id', role: 'STUDENT' })
 
     await server.register(historyRoutes)
 
@@ -33,13 +35,13 @@ describe("History Routes", () => {
     })
   })
 
-  describe("GET /", () => {
-    it("should get user history", async () => {
+  describe('GET /', () => {
+    it('should get user history', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/",
+        method: 'GET',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -50,15 +52,17 @@ describe("History Routes", () => {
       expect(Array.isArray(responseBody)).toBe(true)
     })
 
-    it("should get history for a student", async () => {
+    it('should get history for a student', async () => {
       // Mock JWT verification for trainer
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "trainer-id", role: "TRAINER" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'trainer-id', role: 'TRAINER' })
 
       const response = await server.inject({
-        method: "GET",
-        url: "/?studentId=student-id",
+        method: 'GET',
+        url: '/?studentId=student-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -70,4 +74,3 @@ describe("History Routes", () => {
     })
   })
 })
-

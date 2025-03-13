@@ -1,3 +1,5 @@
+'use client';
+
 import { useNavigate } from 'react-router-dom';
 import useUser from '@/hooks/user-hooks';
 import { Button } from '@/components/ui/button';
@@ -11,6 +13,9 @@ export default function PastWorkouts() {
   const { user } = useUser();
   const navigate = useNavigate();
 
+  // Check if user has training weeks
+  const hasTrainingWeeks = user && user.trainingWeeks && user.trainingWeeks.length > 0;
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -23,8 +28,8 @@ export default function PastWorkouts() {
               View Current Week's Workout
             </Button>
           </div>
-          {user?.trainingWeeks[0] ? (
-            user?.trainingWeeks.map((week) => (
+          {hasTrainingWeeks ? (
+            user.trainingWeeks.map((week) => (
               <TrainingWeekComponent key={week.id} initialData={week} />
             ))
           ) : (

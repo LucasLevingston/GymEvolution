@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { userSchema } from './userSchema';
+import { z } from 'zod'
+import { userSchema } from './userSchema'
 
 export const historySchema = z.object({
   id: z.string().uuid().optional(),
@@ -7,4 +7,4 @@ export const historySchema = z.object({
   date: z.string().optional(),
   userId: z.string().optional(),
   user: userSchema.optional(),
-});
+})

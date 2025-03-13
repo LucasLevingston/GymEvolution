@@ -1,9 +1,9 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { ReloadIcon } from '@radix-ui/react-icons'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { ReloadIcon } from '@radix-ui/react-icons';
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -11,10 +11,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs'
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList } from '@/components/ui/tabs';
 import {
   Form,
   FormControl,
@@ -22,13 +22,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Link } from 'react-router-dom'
-import { toast } from 'sonner'
-import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5'
-import Container from '@/components/Container'
-import Header from '@/components/Header'
-import useUser from '@/hooks/user-hooks'
+} from '@/components/ui/form';
+import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
+import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5';
+import Container from '@/components/Container';
+import Header from '@/components/Header';
+import useUser from '@/hooks/user-hooks';
 
 const resetPasswordSchema = z
   .object({
@@ -38,17 +38,17 @@ const resetPasswordSchema = z
       .min(8, { message: 'Password must be at least 8 characters long' }),
     confirmPassword: z.string(),
   })
-  .refine(data => data.password === data.confirmPassword, {
+  .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ['confirmPassword'],
-  })
+  });
 
 export default function ResetPassword() {
-  const [passwordVisible, setPasswordVisible] = useState(false)
-  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false)
-  const { resetPassword } = useUser()
+  const [passwordVisible, setPasswordVisible] = useState(false);
+  const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
+  const { resetPassword } = useUser();
 
-  const token = new URLSearchParams(location.search).get('token')
+  const token = new URLSearchParams(location.search).get('token');
 
   const form = useForm<z.infer<typeof resetPasswordSchema>>({
     resolver: zodResolver(resetPasswordSchema),
@@ -57,30 +57,30 @@ export default function ResetPassword() {
       password: '',
       confirmPassword: '',
     },
-  })
+  });
 
   const togglePasswordVisibility = (field: 'password' | 'confirmPassword') => {
     if (field === 'password') {
-      setPasswordVisible(!passwordVisible)
+      setPasswordVisible(!passwordVisible);
     } else {
-      setConfirmPasswordVisible(!confirmPasswordVisible)
+      setConfirmPasswordVisible(!confirmPasswordVisible);
     }
-  }
+  };
 
   const onSubmit = async (values: z.infer<typeof resetPasswordSchema>) => {
     try {
       const result = await resetPassword({
-        newPassword: values.password,
+        password: values.password,
         token: values.token,
-      })
-      toast.success(result)
+      });
+      toast.success(result);
       setTimeout(() => {
-        window.location.href = '/login'
-      }, 2000)
+        window.location.href = '/login';
+      }, 2000);
     } catch (error) {
-      toast.error('Error')
+      toast.error('Error');
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -95,15 +95,10 @@ export default function ResetPassword() {
               <Card>
                 <CardHeader>
                   <CardTitle>Reset Your Password</CardTitle>
-                  <CardDescription>
-                    Enter your new password below.
-                  </CardDescription>
+                  <CardDescription>Enter your new password below.</CardDescription>
                 </CardHeader>
                 <Form {...form}>
-                  <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4"
-                  >
+                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <CardContent className="space-y-2">
                       <FormField
                         control={form.control}
@@ -118,9 +113,7 @@ export default function ResetPassword() {
                                   {...field}
                                 />
                                 <button
-                                  onClick={() =>
-                                    togglePasswordVisibility('password')
-                                  }
+                                  onClick={() => togglePasswordVisibility('password')}
                                   className="pl-3"
                                   type="button"
                                 >
@@ -145,9 +138,7 @@ export default function ResetPassword() {
                             <FormControl>
                               <div className="flex">
                                 <Input
-                                  type={
-                                    confirmPasswordVisible ? 'text' : 'password'
-                                  }
+                                  type={confirmPasswordVisible ? 'text' : 'password'}
                                   {...field}
                                 />
                                 <button
@@ -192,5 +183,5 @@ export default function ResetPassword() {
         </div>
       </Container>
     </div>
-  )
+  );
 }

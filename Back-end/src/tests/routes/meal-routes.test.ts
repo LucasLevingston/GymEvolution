@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { mealRoutes } from "../../routes/meal-routes"
-import { MealController } from "../../controllers/meal-controller"
-import { mockMealService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildTestServer } from '../utils/test-server'
+import { mealRoutes } from '../../routes/meal-routes'
+import { MealController } from '../../controllers/meal-controller'
+import { mockMealService } from '../mocks/services'
 
-vi.mock("../../controllers/meal-controller", () => {
+vi.mock('../../controllers/meal-controller', () => {
   return {
     MealController: vi.fn().mockImplementation(() => ({
       createMeal: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../controllers/meal-controller", () => {
   }
 })
 
-describe("Meal Routes", () => {
+describe('Meal Routes', () => {
   let server: any
   let mealController: any
 
@@ -24,7 +24,9 @@ describe("Meal Routes", () => {
     server = buildTestServer()
 
     // Mock JWT verification
-    server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "NUTRITIONIST" })
+    server.jwt.verify = vi
+      .fn()
+      .mockReturnValue({ id: 'user-id', role: 'NUTRITIONIST' })
 
     await server.register(mealRoutes)
 
@@ -45,29 +47,31 @@ describe("Meal Routes", () => {
     })
 
     mealController.deleteMeal.mockImplementation(async (req, reply) => {
-      return reply.send({ message: "Meal deleted successfully" })
+      return reply.send({ message: 'Meal deleted successfully' })
     })
 
-    mealController.markMealAsCompleted.mockImplementation(async (req, reply) => {
-      return reply.send(mockMealService.markMealAsCompleted())
-    })
+    mealController.markMealAsCompleted.mockImplementation(
+      async (req, reply) => {
+        return reply.send(mockMealService.markMealAsCompleted())
+      }
+    )
   })
 
-  describe("POST /", () => {
-    it("should create a meal", async () => {
+  describe('POST /', () => {
+    it('should create a meal', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          name: "Breakfast",
+          name: 'Breakfast',
           calories: 500,
           protein: 30,
           carbohydrates: 50,
           fat: 20,
-          dietId: "diet-id",
+          dietId: 'diet-id',
         },
       })
 
@@ -75,21 +79,21 @@ describe("Meal Routes", () => {
       expect(mealController.createMeal).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("calories")
-      expect(responseBody).toHaveProperty("protein")
-      expect(responseBody).toHaveProperty("carbohydrates")
-      expect(responseBody).toHaveProperty("fat")
-      expect(responseBody).toHaveProperty("dietId")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('calories')
+      expect(responseBody).toHaveProperty('protein')
+      expect(responseBody).toHaveProperty('carbohydrates')
+      expect(responseBody).toHaveProperty('fat')
+      expect(responseBody).toHaveProperty('dietId')
     })
 
-    it("should validate the request body", async () => {
+    it('should validate the request body', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
           // Missing name and dietId
@@ -101,13 +105,13 @@ describe("Meal Routes", () => {
     })
   })
 
-  describe("GET /:id", () => {
-    it("should get a meal by ID", async () => {
+  describe('GET /:id', () => {
+    it('should get a meal by ID', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/meal-id",
+        method: 'GET',
+        url: '/meal-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -115,23 +119,23 @@ describe("Meal Routes", () => {
       expect(mealController.getMealById).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("calories")
-      expect(responseBody).toHaveProperty("mealItems")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('calories')
+      expect(responseBody).toHaveProperty('mealItems')
     })
   })
 
-  describe("PUT /:id", () => {
-    it("should update a meal", async () => {
+  describe('PUT /:id', () => {
+    it('should update a meal', async () => {
       const response = await server.inject({
-        method: "PUT",
-        url: "/meal-id",
+        method: 'PUT',
+        url: '/meal-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          name: "Updated Breakfast",
+          name: 'Updated Breakfast',
           calories: 550,
           protein: 35,
         },
@@ -141,19 +145,19 @@ describe("Meal Routes", () => {
       expect(mealController.updateMeal).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("calories")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('calories')
     })
   })
 
-  describe("DELETE /:id", () => {
-    it("should delete a meal", async () => {
+  describe('DELETE /:id', () => {
+    it('should delete a meal', async () => {
       const response = await server.inject({
-        method: "DELETE",
-        url: "/meal-id",
+        method: 'DELETE',
+        url: '/meal-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -161,21 +165,23 @@ describe("Meal Routes", () => {
       expect(mealController.deleteMeal).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
-      expect(responseBody.message).toBe("Meal deleted successfully")
+      expect(responseBody).toHaveProperty('message')
+      expect(responseBody.message).toBe('Meal deleted successfully')
     })
   })
 
-  describe("PATCH /:id/complete", () => {
-    it("should mark a meal as completed", async () => {
+  describe('PATCH /:id/complete', () => {
+    it('should mark a meal as completed', async () => {
       // Mock JWT verification for student
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "STUDENT" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'user-id', role: 'STUDENT' })
 
       const response = await server.inject({
-        method: "PATCH",
-        url: "/meal-id/complete",
+        method: 'PATCH',
+        url: '/meal-id/complete',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -183,10 +189,9 @@ describe("Meal Routes", () => {
       expect(mealController.markMealAsCompleted).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("isCompleted")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('isCompleted')
       expect(responseBody.isCompleted).toBe(true)
     })
   })
 })
-

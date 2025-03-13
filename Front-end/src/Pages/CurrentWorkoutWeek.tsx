@@ -8,7 +8,7 @@ import type React from 'react';
 import { TrainingWeekComponent } from '@/components/TrainingWeekComponent';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
-import { TrainingWeekType } from '@/types/TrainingType';
+import type { TrainingWeekType } from '@/types/TrainingType';
 
 export const CurrentWorkoutWeek: React.FC = () => {
   const { user } = useUser();
@@ -18,9 +18,11 @@ export const CurrentWorkoutWeek: React.FC = () => {
   );
 
   useEffect(() => {
-    const currentWeek = user?.trainingWeeks.find((trainingWeek) => trainingWeek.current);
-    if (currentWeek) {
-      setCurrentTrainingWeek(currentWeek);
+    if (user && user.trainingWeeks && user.trainingWeeks.length > 0) {
+      const currentWeek = user.trainingWeeks.find((trainingWeek) => trainingWeek.current);
+      if (currentWeek) {
+        setCurrentTrainingWeek(currentWeek);
+      }
     }
   }, [user]);
 

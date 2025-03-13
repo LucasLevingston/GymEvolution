@@ -2,21 +2,20 @@ import { z } from 'zod';
 import { trainingWeekSchema } from './newTrainingSchema';
 import { weightSchema } from './weightSchema';
 import { dietSchema } from './dietSchema';
-import { historySchema } from './historySchema';
 
 export const userSchema = z.object({
   id: z.string().uuid(),
   email: z.string(),
-  name: z.string().optional(),
-  sex: z.string().optional(),
-  street: z.string().optional(),
-  number: z.string().optional(),
-  zipCode: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
-  birthDate: z.string().optional(),
-  phone: z.string().optional(),
-  currentWeight: z.string().optional(),
+  name: z.string().optional().nullable(),
+  sex: z.string().optional().nullable(),
+  street: z.string().optional().nullable(),
+  number: z.string().optional().nullable(),
+  zipCode: z.string().optional().nullable(),
+  city: z.string().optional().nullable(),
+  state: z.string().optional().nullable(),
+  birthDate: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  currentWeight: z.string().optional().nullable(),
   trainingWeeks: z.array(trainingWeekSchema).optional(),
   history: z.any().optional(),
   oldWeights: z.array(weightSchema).optional(),
@@ -29,6 +28,6 @@ export const userResponseSchema = z.object({
   id: z.string().uuid(),
   name: z.string().nullable(),
   email: z.string().email(),
-  role: userRoleSchema,
+  role: z.string(),
   createdAt: z.date(),
 });

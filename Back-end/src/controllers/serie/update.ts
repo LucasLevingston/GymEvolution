@@ -1,9 +1,9 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma } from 'utils/prisma';
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { prisma } from 'lib/prisma'
 export async function updateSerieController(
   request: FastifyRequest<{
-    Params: { id: string };
-    Body: { seriesIndex?: number; repetitions?: number; weight?: number };
+    Params: { id: string }
+    Body: { seriesIndex?: number; repetitions?: number; weight?: number }
   }>,
   reply: FastifyReply
 ) {
@@ -11,9 +11,9 @@ export async function updateSerieController(
     const serie = await prisma.serie.update({
       where: { id: request.params.id },
       data: request.body,
-    });
-    return reply.send(serie);
+    })
+    return reply.send(serie)
   } catch (error) {
-    throw error;
+    throw error
   }
 }

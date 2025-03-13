@@ -1,4 +1,4 @@
-import { vi } from "vitest"
+import { vi } from 'vitest'
 import {
   mockUser,
   mockTrainingWeek,
@@ -10,7 +10,7 @@ import {
   mockTrainingDay,
   mockWeight,
   mockHistory,
-} from "./data"
+} from './data'
 
 // Auth Service Mock
 export const mockAuthService = {
@@ -21,7 +21,7 @@ export const mockAuthService = {
       email: mockUser.email,
       role: mockUser.role,
     },
-    token: "mocked-token",
+    token: 'mocked-token',
   }),
   login: vi.fn().mockResolvedValue({
     user: {
@@ -30,14 +30,14 @@ export const mockAuthService = {
       email: mockUser.email,
       role: mockUser.role,
     },
-    token: "mocked-token",
+    token: 'mocked-token',
   }),
   forgotPassword: vi.fn().mockResolvedValue({
-    message: "Password reset link sent",
-    resetToken: "mocked-reset-token",
+    message: 'Password reset link sent',
+    resetToken: 'mocked-reset-token',
   }),
   resetPassword: vi.fn().mockResolvedValue({
-    message: "Password has been reset",
+    message: 'Password has been reset',
   }),
   getCurrentUser: vi.fn().mockResolvedValue({
     id: mockUser.id,
@@ -56,18 +56,18 @@ export const mockUserService = {
   getAllNutritionists: vi.fn().mockResolvedValue([mockUser]),
   getAllTrainers: vi.fn().mockResolvedValue([mockUser]),
   assignNutritionist: vi.fn().mockResolvedValue({
-    id: "relationship-id",
-    nutritionistId: "nutritionist-id",
-    studentId: "student-id",
-    status: "ACTIVE",
+    id: 'relationship-id',
+    nutritionistId: 'nutritionist-id',
+    studentId: 'student-id',
+    status: 'ACTIVE',
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
   assignTrainer: vi.fn().mockResolvedValue({
-    id: "relationship-id",
-    trainerId: "trainer-id",
-    student2Id: "student-id",
-    status: "ACTIVE",
+    id: 'relationship-id',
+    trainerId: 'trainer-id',
+    student2Id: 'student-id',
+    status: 'ACTIVE',
     createdAt: new Date(),
     updatedAt: new Date(),
   }),
@@ -191,4 +191,3 @@ export const mockHistoryService = {
   getUserHistory: vi.fn().mockResolvedValue([mockHistory]),
   createHistoryEntry: vi.fn().mockResolvedValue(mockHistory),
 }
-

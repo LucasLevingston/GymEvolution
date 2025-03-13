@@ -1,20 +1,22 @@
-import { FastifyInstance } from 'fastify';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { authenticate } from '@/middlewares/authenticate';
-import { AuthController } from '@/controllers/auth-controller';
+import { authenticate } from '../middlewares/authenticate';
+import { registerController } from '../controllers/auth/register';
+import { loginController } from '../controllers/auth/login';
+import { passwordRecover } from '../controllers/auth/password-recover';
+import { resetPasswordController } from '../controllers/auth/reset-password';
+import { getCurrentUserController } from '../controllers/auth/get-current-user';
 import { errorResponseSchema } from 'schemas/error-schema';
-import { userResponseSchema } from 'schemas/userSchema';
+import { userResponseSchema, userSchema } from 'schemas/userSchema';
 
 export async function authRoutes(app: FastifyInstance) {
-  const authController = new AuthController();
   const server = app.withTypeProvider<ZodTypeProvider>();
 
   const registerSchema = z.object({
     name: z.string().min(2),
     email: z.string().email(),
     password: z.string().min(6),
-    role: z.enum(['STUDENT', 'NUTRITIONIST', 'TRAINER']).default('STUDENT'),
   });
 
   const registerResponseSchema = z.object({
@@ -38,16 +40,16 @@ export async function authRoutes(app: FastifyInstance) {
         description: 'Register a new user with name, email, password, and role',
       },
     },
-    authController.register
+    registerController
   );
 
   const loginSchema = z.object({
-    email: z.string().email(),
-    password: z.string(),
+    email: z.string().email('Invalid email address'),
+    password: z.string().min(6, 'Password must be at least 6 characters long'),
   });
 
   const loginResponseSchema = z.object({
-    user: userResponseSchema,
+    user: userSchema,
     token: z.string(),
   });
 
@@ -67,10 +69,9 @@ export async function authRoutes(app: FastifyInstance) {
         description: 'Login a user with email and password',
       },
     },
-    authController.login
+    loginController
   );
 
-  // Forgot password schema
   const forgotPasswordSchema = z.object({
     email: z.string().email(),
   });
@@ -81,7 +82,7 @@ export async function authRoutes(app: FastifyInstance) {
   });
 
   server.post(
-    '/forgot-password',
+    '/password-recover',
     {
       schema: {
         body: forgotPasswordSchema,
@@ -95,10 +96,9 @@ export async function authRoutes(app: FastifyInstance) {
         description: 'Request a password reset link for a user',
       },
     },
-    authController.forgotPassword
+    passwordRecover
   );
 
-  // Reset password schema
   const resetPasswordSchema = z.object({
     token: z.string(),
     password: z.string().min(6),
@@ -123,10 +123,9 @@ export async function authRoutes(app: FastifyInstance) {
         description: 'Reset a user password with a valid token',
       },
     },
-    authController.resetPassword
+    resetPasswordController
   );
 
-  // Get current user schema
   server.get(
     '/me',
     {
@@ -144,6 +143,6 @@ export async function authRoutes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }],
       },
     },
-    authController.getCurrentUser
+    getCurrentUserController
   );
 }

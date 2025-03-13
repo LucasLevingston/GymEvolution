@@ -4,9 +4,10 @@ import type { trainingWeekSchema } from '@/schemas/trainingWeekSchema';
 import axios from 'axios';
 import { TrainingWeekType } from '@/types/TrainingType';
 import useUser from './user-hooks';
+import { env } from '@/env';
 
 type TrainingData = z.infer<typeof trainingWeekSchema>;
-const baseUrl = `${import.meta.env.VITE_API_URL}/training-weeks`;
+const baseUrl = `${env.VITE_API_URL}/training-weeks`;
 
 export function useTraining() {
   const [isLoading, setIsLoading] = useState(false);

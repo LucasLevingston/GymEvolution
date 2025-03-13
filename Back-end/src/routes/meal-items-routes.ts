@@ -1,161 +1,144 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import type { ZodTypeProvider } from 'fastify-type-provider-zod';
 import { z } from 'zod';
-import { getMealItemController } from 'controllers/meal-items/get';
+import { authenticate } from '../middlewares/authenticate';
+import { idParamSchema } from '../schemas/common-schemas';
 import { createMealItemController } from 'controllers/meal-items/create';
-import { ZodTypeProvider } from 'fastify-type-provider-zod';
+import { getMealItemController } from 'controllers/meal-items/get';
 import { updateMealItemController } from 'controllers/meal-items/update';
 import { deleteMealItemController } from 'controllers/meal-items/delete';
+import { errorResponseSchema } from 'schemas/error-schema';
 
 export async function mealItemsRoutes(app: FastifyInstance) {
-  app
-    .withTypeProvider<ZodTypeProvider>()
-    .post<{
-      Body: {
-        name: string;
-        quantity: number;
-        calories?: number;
-        protein?: number;
-        carbohydrates?: number;
-        mealId?: string;
-      };
-    }>(
-      '/create',
-      {
-        schema: {
-          summary: 'Create a new meal item',
-          description: 'This endpoint allows creation of a new meal item.',
-          tags: ['Meal Items'],
-          body: z.object({
-            name: z.string(),
-            quantity: z.number().int().positive(),
-            calories: z.number().positive().optional(),
-            protein: z.number().positive().optional(),
-            carbohydrates: z.number().positive().optional(),
-            mealId: z.string().uuid().optional(),
-          }),
-          response: {
-            201: z.object({
-              id: z.string().uuid(),
-              name: z.string(),
-              quantity: z.number(),
-              calories: z.number().nullable(),
-              protein: z.number().nullable(),
-              carbohydrates: z.number().nullable(),
-              mealId: z.string().uuid().nullable(),
-            }),
-            400: z.object({
-              error: z.string().optional(),
-              message: z.string().optional(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+  const server = app.withTypeProvider<ZodTypeProvider>();
+
+  // All routes require authentication
+  server.addHook('onRequest', authenticate);
+
+  // Create meal item schema
+  const createMealItemSchema = z.object({
+    name: z.string(),
+    quantity: z.number().int().positive(),
+    calories: z.number().int().optional(),
+    protein: z.number().optional(),
+    carbohydrates: z.number().optional(),
+    fat: z.number().optional(),
+    mealId: z.string().uuid(),
+  });
+
+  const mealItemResponseSchema = z.object({
+    id: z.string().uuid(),
+    name: z.string(),
+    quantity: z.number(),
+    calories: z.number().nullable(),
+    protein: z.number().nullable(),
+    carbohydrates: z.number().nullable(),
+    fat: z.number().nullable(),
+    mealId: z.string().uuid().nullable(),
+    createdAt: z.date(),
+    updatedAt: z.date(),
+  });
+
+  server.post(
+    '/',
+    {
+      schema: {
+        body: createMealItemSchema,
+        response: {
+          201: mealItemResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['meal-items'],
+        summary: 'Create meal item',
+        description: 'Create a new meal item for a meal',
+        security: [{ bearerAuth: [] }],
       },
-      createMealItemController
-    )
-    .get(
-      '/:id',
-      {
-        schema: {
-          summary: 'Get a meal item by ID',
-          description: 'This endpoint retrieves a meal item by its ID.',
-          tags: ['Meal Items'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          response: {
-            200: z.object({
-              id: z.string().uuid(),
-              name: z.string(),
-              quantity: z.number(),
-              calories: z.number().nullable(),
-              protein: z.number().nullable(),
-              carbohydrates: z.number().nullable(),
-              mealId: z.string().uuid().nullable(),
-            }),
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    createMealItemController
+  );
+
+  // Get meal item by ID schema
+  server.get(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        response: {
+          200: mealItemResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['meal-items'],
+        summary: 'Get meal item by ID',
+        description: 'Get a meal item by ID',
+        security: [{ bearerAuth: [] }],
       },
-      getMealItemController
-    )
-    .put<{
-      Params: { id: string };
-      Body: {
-        name?: string;
-        quantity?: number;
-        calories?: number;
-        protein?: number;
-        carbohydrates?: number;
-      };
-    }>(
-      '/:id',
-      {
-        schema: {
-          summary: 'Update a meal item',
-          description: 'This endpoint allows updating an existing meal item.',
-          tags: ['Meal Items'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          body: z.object({
-            name: z.string().optional(),
-            quantity: z.number().int().positive().optional(),
-            calories: z.number().positive().optional(),
-            protein: z.number().positive().optional(),
-            carbohydrates: z.number().positive().optional(),
-          }),
-          response: {
-            200: z.object({
-              id: z.string().uuid(),
-              name: z.string(),
-              quantity: z.number(),
-              calories: z.number().nullable(),
-              protein: z.number().nullable(),
-              carbohydrates: z.number().nullable(),
-              mealId: z.string().uuid().nullable(),
-            }),
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    getMealItemController
+  );
+
+  // Update meal item schema
+  const updateMealItemSchema = z.object({
+    name: z.string().optional(),
+    quantity: z.number().int().positive().optional(),
+    calories: z.number().int().optional(),
+    protein: z.number().optional(),
+    carbohydrates: z.number().optional(),
+    fat: z.number().optional(),
+  });
+
+  server.put(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        body: updateMealItemSchema,
+        response: {
+          200: mealItemResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          400: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['meal-items'],
+        summary: 'Update meal item',
+        description: 'Update a meal item by ID',
+        security: [{ bearerAuth: [] }],
       },
-      updateMealItemController
-    )
-    .delete(
-      '/:id',
-      {
-        schema: {
-          summary: 'Delete a meal item',
-          description: 'This endpoint allows deletion of a meal item.',
-          tags: ['Meal Items'],
-          params: z.object({
-            id: z.string().uuid(),
-          }),
-          response: {
-            200: z.object({
-              message: z.string(),
-            }),
-            404: z.object({
-              error: z.string(),
-            }),
-            500: z.object({
-              error: z.string(),
-            }),
-          },
+    },
+    updateMealItemController
+  );
+
+  // Delete meal item schema
+  const deleteMealItemResponseSchema = z.object({
+    message: z.string(),
+  });
+
+  server.delete(
+    '/:id',
+    {
+      schema: {
+        params: idParamSchema,
+        response: {
+          200: deleteMealItemResponseSchema,
+          401: errorResponseSchema,
+          403: errorResponseSchema,
+          404: errorResponseSchema,
+          500: errorResponseSchema,
         },
+        tags: ['meal-items'],
+        summary: 'Delete meal item',
+        description: 'Delete a meal item by ID',
+        security: [{ bearerAuth: [] }],
       },
-      deleteMealItemController
-    );
+    },
+    deleteMealItemController
+  );
 }

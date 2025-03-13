@@ -1,15 +1,15 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { prisma } from 'utils/prisma';
+import { FastifyReply, FastifyRequest } from 'fastify'
+import { prisma } from 'lib/prisma'
 export async function updateExerciseController(
   request: FastifyRequest<{
-    Params: { id: string };
+    Params: { id: string }
     Body: {
-      name?: string;
-      variation?: string;
-      repetitions?: number;
-      sets?: number;
-      done?: boolean;
-    };
+      name?: string
+      variation?: string
+      repetitions?: number
+      sets?: number
+      done?: boolean
+    }
   }>,
   reply: FastifyReply
 ) {
@@ -17,9 +17,9 @@ export async function updateExerciseController(
     const exercise = await prisma.exercise.update({
       where: { id: request.params.id },
       data: request.body,
-    });
-    return reply.send(exercise);
+    })
+    return reply.send(exercise)
   } catch (error) {
-    throw error;
+    throw error
   }
 }

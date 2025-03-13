@@ -28,7 +28,7 @@
         "useImportType":"off"
       },
       "suspicious": {
-        "noArrayIndexKey": "info",
+        "noArrayIndexKey": "off",
         "noExplicitAny": "off"
       }
     }

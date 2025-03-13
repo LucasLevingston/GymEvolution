@@ -1,25 +1,24 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
-import Header from '@/components/Header'
-import Container from '@/components/Container'
-import { DietComponent } from '@/components/DietComponent'
-import useUser from '@/hooks/user-hooks'
-import type { Diet } from '@/types/DietType'
-import { ClipboardIcon } from 'lucide-react'
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import Header from '@/components/Header';
+import Container from '@/components/Container';
+import { DietComponent } from '@/components/diet/DietComponent';
+import useUser from '@/hooks/user-hooks';
+import { ClipboardIcon } from 'lucide-react';
 
 export default function PastDiets() {
-  const { user } = useUser()
-  const navigate = useNavigate()
-  const [selectedDietId, setSelectedDietId] = useState<string | null>(null)
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const [selectedDietId, setSelectedDietId] = useState<string | null>(null);
 
   if (!user || user.diets.length === 0) {
     return (
@@ -40,11 +39,11 @@ export default function PastDiets() {
           </div>
         </Container>
       </div>
-    )
+    );
   }
 
   const selectedDiet =
-    user.diets.find(diet => diet.id === selectedDietId) || user.diets[0]
+    user.diets.find((diet) => diet.id === selectedDietId) || user.diets[0];
 
   return (
     <div className="min-h-screen bg-background">
@@ -64,14 +63,14 @@ export default function PastDiets() {
             </CardHeader>
             <CardContent>
               <Select
-                onValueChange={value => setSelectedDietId(value)}
+                onValueChange={(value) => setSelectedDietId(value)}
                 defaultValue={selectedDiet.id}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Select a diet plan" />
                 </SelectTrigger>
                 <SelectContent>
-                  {user.diets.map((diet: Diet) => (
+                  {user.diets.map((diet) => (
                     <SelectItem key={diet.id} value={diet.id}>
                       Week {diet.weekNumber} -{' '}
                       {new Date(diet.createdAt).toLocaleDateString()}
@@ -85,5 +84,5 @@ export default function PastDiets() {
         </div>
       </Container>
     </div>
-  )
+  );
 }

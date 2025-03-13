@@ -1,7 +1,7 @@
 import { ClientError } from 'errors/client-error';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { deleteWeightService } from 'services/weight/delete';
-import { getWeightService } from 'services/weight/get';
+import { getWeightHistory } from 'services/weight/get-weight-history';
 
 export async function deleteWeightController(
   request: FastifyRequest<{
@@ -12,8 +12,8 @@ export async function deleteWeightController(
   try {
     const { id } = request.params;
 
-    const weight = await getWeightService(id);
-    console.log(weight);
+    const weight = await getWeightHistory(id);
+
     if (!weight) {
       throw new ClientError('Weight not found');
     }

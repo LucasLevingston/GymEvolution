@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { authRoutes } from "../../routes/auth-routes"
-import { AuthController } from "../../controllers/auth-controller"
-import { mockAuthService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildTestServer } from '../utils/test-server'
+import { authRoutes } from '../../routes/auth-routes'
+import { AuthController } from '../../controllers/auth-controller'
+import { mockAuthService } from '../mocks/services'
 
-vi.mock("../../controllers/auth-controller", () => {
+vi.mock('../../controllers/auth-controller', () => {
   return {
     AuthController: vi.fn().mockImplementation(() => ({
       register: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../controllers/auth-controller", () => {
   }
 })
 
-describe("Auth Routes", () => {
+describe('Auth Routes', () => {
   let server: any
   let authController: any
 
@@ -49,16 +49,16 @@ describe("Auth Routes", () => {
     })
   })
 
-  describe("POST /register", () => {
-    it("should register a new user", async () => {
+  describe('POST /register', () => {
+    it('should register a new user', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/register",
+        method: 'POST',
+        url: '/register',
         payload: {
-          name: "Test User",
-          email: "test@example.com",
-          password: "password123",
-          role: "STUDENT",
+          name: 'Test User',
+          email: 'test@example.com',
+          password: 'password123',
+          role: 'STUDENT',
         },
       })
 
@@ -66,17 +66,17 @@ describe("Auth Routes", () => {
       expect(authController.register).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("user")
-      expect(responseBody).toHaveProperty("token")
+      expect(responseBody).toHaveProperty('user')
+      expect(responseBody).toHaveProperty('token')
     })
 
-    it("should validate the request body", async () => {
+    it('should validate the request body', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/register",
+        method: 'POST',
+        url: '/register',
         payload: {
           // Missing required fields
-          email: "test@example.com",
+          email: 'test@example.com',
         },
       })
 
@@ -84,14 +84,14 @@ describe("Auth Routes", () => {
     })
   })
 
-  describe("POST /login", () => {
-    it("should login a user", async () => {
+  describe('POST /login', () => {
+    it('should login a user', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/login",
+        method: 'POST',
+        url: '/login',
         payload: {
-          email: "test@example.com",
-          password: "password123",
+          email: 'test@example.com',
+          password: 'password123',
         },
       })
 
@@ -99,17 +99,17 @@ describe("Auth Routes", () => {
       expect(authController.login).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("user")
-      expect(responseBody).toHaveProperty("token")
+      expect(responseBody).toHaveProperty('user')
+      expect(responseBody).toHaveProperty('token')
     })
 
-    it("should validate the request body", async () => {
+    it('should validate the request body', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/login",
+        method: 'POST',
+        url: '/login',
         payload: {
           // Missing password
-          email: "test@example.com",
+          email: 'test@example.com',
         },
       })
 
@@ -117,13 +117,13 @@ describe("Auth Routes", () => {
     })
   })
 
-  describe("POST /forgot-password", () => {
-    it("should send a password reset link", async () => {
+  describe('POST /forgot-password', () => {
+    it('should send a password reset link', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/forgot-password",
+        method: 'POST',
+        url: '/forgot-password',
         payload: {
-          email: "test@example.com",
+          email: 'test@example.com',
         },
       })
 
@@ -131,19 +131,19 @@ describe("Auth Routes", () => {
       expect(authController.forgotPassword).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
-      expect(responseBody).toHaveProperty("resetToken")
+      expect(responseBody).toHaveProperty('message')
+      expect(responseBody).toHaveProperty('resetToken')
     })
   })
 
-  describe("POST /reset-password", () => {
-    it("should reset a user password", async () => {
+  describe('POST /reset-password', () => {
+    it('should reset a user password', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/reset-password",
+        method: 'POST',
+        url: '/reset-password',
         payload: {
-          token: "reset-token",
-          password: "new-password",
+          token: 'reset-token',
+          password: 'new-password',
         },
       })
 
@@ -151,20 +151,22 @@ describe("Auth Routes", () => {
       expect(authController.resetPassword).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
+      expect(responseBody).toHaveProperty('message')
     })
   })
 
-  describe("GET /me", () => {
-    it("should get the current user", async () => {
+  describe('GET /me', () => {
+    it('should get the current user', async () => {
       // Mock the JWT verification
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "STUDENT" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'user-id', role: 'STUDENT' })
 
       const response = await server.inject({
-        method: "GET",
-        url: "/me",
+        method: 'GET',
+        url: '/me',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -172,25 +174,24 @@ describe("Auth Routes", () => {
       expect(authController.getCurrentUser).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("email")
-      expect(responseBody).toHaveProperty("role")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('email')
+      expect(responseBody).toHaveProperty('role')
     })
 
-    it("should return 401 if not authenticated", async () => {
+    it('should return 401 if not authenticated', async () => {
       // Mock JWT verification to fail
       server.jwt.verify = vi.fn().mockImplementation(() => {
-        throw new Error("Unauthorized")
+        throw new Error('Unauthorized')
       })
 
       const response = await server.inject({
-        method: "GET",
-        url: "/me",
+        method: 'GET',
+        url: '/me',
       })
 
       expect(response.statusCode).toBe(401)
     })
   })
 })
-

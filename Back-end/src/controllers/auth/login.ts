@@ -1,13 +1,10 @@
-import { FastifyReply, FastifyRequest } from 'fastify';
-import bcrypt from 'bcryptjs';
-import { getUserByEmailService } from 'services/user/get-by-email';
+import { FastifyRequest } from 'fastify';
 import { ClientError } from 'errors/client-error';
-import { comparePassword, generateToken } from 'utils/auth';
-import { loginService } from 'services/user/login';
+import { comparePassword, generateToken } from 'utils/jwt';
+import { getUserByEmailService } from 'services/user/get-by-email';
 
-export async function login(
-  request: FastifyRequest<{ Body: { email: string; password: string } }>,
-  reply: FastifyReply
+export async function loginController(
+  request: FastifyRequest<{ Body: { email: string; password: string } }>
 ) {
   try {
     const { email, password } = request.body;
@@ -25,10 +22,8 @@ export async function login(
 
     const token = generateToken(user.id);
 
-    const result = await loginService(user.id);
-
     return {
-      user: result,
+      user,
       token,
     };
   } catch (error) {

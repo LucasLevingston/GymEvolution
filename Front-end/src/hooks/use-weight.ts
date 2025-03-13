@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { weightStore } from '@/store/weight-store';
 import type { WeightType } from '@/types/userType';
+import { env } from '@/env';
 
 export function useWeight() {
   const [state, setState] = useState(() => weightStore.getState());
@@ -15,7 +16,7 @@ export function useWeight() {
       unsubscribe();
     };
   }, []);
-  const baseUrl = `${import.meta.env.VITE_API_URL}/weights`;
+  const baseUrl = `${env.VITE_API_URL}/weights`;
   const fetchWeights = async () => {
     weightStore.setLoading(true);
     try {

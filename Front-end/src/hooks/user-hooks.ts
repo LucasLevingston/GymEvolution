@@ -1,8 +1,9 @@
 import axios from 'axios';
 import type { UserType } from '@/types/userType';
 import { useUserStore } from '@/store/user-store';
+import { env } from '@/env';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const baseUrl = `${env.VITE_API_URL}`;
 
 export const useUser = () => {
   const {
@@ -88,7 +89,7 @@ export const useUser = () => {
   const passwordRecover = async (email: string) => {
     try {
       const response = await axios.post<{ message: string }>(
-        `${baseUrl}/password-recover`,
+        `${baseUrl}/auth/password-recover`,
         { email }
       );
       if (!response) {
@@ -100,10 +101,10 @@ export const useUser = () => {
       throw new Error(error.response.data.message);
     }
   };
-  const resetPassword = async (data: { token: string; newPassword: string }) => {
+  const resetPassword = async (data: { token: string; password: string }) => {
     try {
       const response = await axios.post<{ message: string }>(
-        `${baseUrl}/reset-password`,
+        `${baseUrl}/auth/reset-password`,
         data
       );
       if (!response) {

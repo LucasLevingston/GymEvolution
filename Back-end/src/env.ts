@@ -1,9 +1,4 @@
-import z from 'zod';
-// import * as dotenv from 'dotenv';
-import { resolve } from 'path';
-
-// const envFile = process.env.NODE_ENV === 'test' ? '.testing.env' : '.env';
-// dotenv.config({ path: resolve(__dirname, envFile) });
+import { z } from 'zod'
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
@@ -12,8 +7,8 @@ const envSchema = z.object({
   NODEMAILER_PASS: z.string(),
   FRONTEND_URL: z.string(),
   HOST: z.string(),
-});
+})
 
 export const env = {
   ...envSchema.parse(process.env),
-};
+}

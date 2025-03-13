@@ -1,8 +1,8 @@
 import { History, User } from '@prisma/client';
-import { prisma } from 'utils/prisma';
+import { prisma } from 'lib/prisma';
 import { validateEvent } from 'utils/validate-event';
-import { getHistory } from './get';
-import { getUserByIdService } from 'services/user/get-by-id';
+import { getUserHistory } from './get-user-history';
+import { getUserByIdService } from 'services/user/get-user-by-id';
 
 export async function addToHistory(updatedUser: User): Promise<History[] | null> {
   try {
@@ -14,7 +14,7 @@ export async function addToHistory(updatedUser: User): Promise<History[] | null>
 
     await validateEvent(user, updatedUser);
 
-    return await getHistory(user.email);
+    return await getUserHistory(user.email);
   } catch (error) {
     throw new Error('Error adding to history');
   }

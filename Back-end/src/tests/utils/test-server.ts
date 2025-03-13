@@ -1,15 +1,19 @@
-import Fastify, { type FastifyInstance } from "fastify"
-import fastifyJwt from "@fastify/jwt"
-import { type ZodTypeProvider, serializerCompiler, validatorCompiler } from "fastify-type-provider-zod"
-import { errorHandler } from "../../utils/error-handler"
-import { vi } from "vitest"
+import Fastify, { type FastifyInstance } from 'fastify'
+import fastifyJwt from '@fastify/jwt'
+import {
+  type ZodTypeProvider,
+  serializerCompiler,
+  validatorCompiler,
+} from 'fastify-type-provider-zod'
+import { errorHandler } from '../../utils/error-handler'
+import { vi } from 'vitest'
 
 export function buildTestServer(): FastifyInstance {
   const server = Fastify().withTypeProvider<ZodTypeProvider>()
 
   // Register plugins
   server.register(fastifyJwt, {
-    secret: "test-secret",
+    secret: 'test-secret',
   })
 
   // Set up error handler and compilers
@@ -23,7 +27,7 @@ export function buildTestServer(): FastifyInstance {
 // Helper to create a mock request
 export function createMockRequest(overrides = {}) {
   return {
-    user: { id: "user-id", role: "STUDENT" },
+    user: { id: 'user-id', role: 'STUDENT' },
     params: {},
     query: {},
     body: {},
@@ -41,4 +45,3 @@ export function createMockReply() {
   }
   return reply
 }
-

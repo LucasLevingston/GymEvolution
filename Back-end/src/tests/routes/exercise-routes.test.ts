@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { exerciseRoutes } from "../../routes/exercise-routes"
-import { ExerciseController } from "../../controllers/exercise-controller"
-import { mockExerciseService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildTestServer } from '../utils/test-server'
+import { exerciseRoutes } from '../../routes/exercise-routes'
+import { ExerciseController } from '../../controllers/exercise-controller'
+import { mockExerciseService } from '../mocks/services'
 
-vi.mock("../../controllers/exercise-controller", () => {
+vi.mock('../../controllers/exercise-controller', () => {
   return {
     ExerciseController: vi.fn().mockImplementation(() => ({
       createExercise: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock("../../controllers/exercise-controller", () => {
   }
 })
 
-describe("Exercise Routes", () => {
+describe('Exercise Routes', () => {
   let server: any
   let exerciseController: any
 
@@ -24,7 +24,9 @@ describe("Exercise Routes", () => {
     server = buildTestServer()
 
     // Mock JWT verification
-    server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "TRAINER" })
+    server.jwt.verify = vi
+      .fn()
+      .mockReturnValue({ id: 'user-id', role: 'TRAINER' })
 
     await server.register(exerciseRoutes)
 
@@ -36,37 +38,41 @@ describe("Exercise Routes", () => {
       return reply.status(201).send(mockExerciseService.createExercise())
     })
 
-    exerciseController.getExerciseById.mockImplementation(async (req, reply) => {
-      return reply.send(mockExerciseService.getExerciseById())
-    })
+    exerciseController.getExerciseById.mockImplementation(
+      async (req, reply) => {
+        return reply.send(mockExerciseService.getExerciseById())
+      }
+    )
 
     exerciseController.updateExercise.mockImplementation(async (req, reply) => {
       return reply.send(mockExerciseService.updateExercise())
     })
 
     exerciseController.deleteExercise.mockImplementation(async (req, reply) => {
-      return reply.send({ message: "Exercise deleted successfully" })
+      return reply.send({ message: 'Exercise deleted successfully' })
     })
 
-    exerciseController.markExerciseAsDone.mockImplementation(async (req, reply) => {
-      return reply.send(mockExerciseService.markExerciseAsDone())
-    })
+    exerciseController.markExerciseAsDone.mockImplementation(
+      async (req, reply) => {
+        return reply.send(mockExerciseService.markExerciseAsDone())
+      }
+    )
   })
 
-  describe("POST /", () => {
-    it("should create an exercise", async () => {
+  describe('POST /', () => {
+    it('should create an exercise', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          name: "Bench Press",
-          variation: "Barbell",
+          name: 'Bench Press',
+          variation: 'Barbell',
           repetitions: 10,
           sets: 3,
-          trainingDayId: "training-day-id",
+          trainingDayId: 'training-day-id',
         },
       })
 
@@ -74,19 +80,19 @@ describe("Exercise Routes", () => {
       expect(exerciseController.createExercise).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("sets")
-      expect(responseBody).toHaveProperty("trainingDayId")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('sets')
+      expect(responseBody).toHaveProperty('trainingDayId')
     })
 
-    it("should validate the request body", async () => {
+    it('should validate the request body', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
           // Missing name and trainingDayId
@@ -99,13 +105,13 @@ describe("Exercise Routes", () => {
     })
   })
 
-  describe("GET /:id", () => {
-    it("should get an exercise by ID", async () => {
+  describe('GET /:id', () => {
+    it('should get an exercise by ID', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/exercise-id",
+        method: 'GET',
+        url: '/exercise-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -113,24 +119,24 @@ describe("Exercise Routes", () => {
       expect(exerciseController.getExerciseById).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("sets")
-      expect(responseBody).toHaveProperty("seriesResults")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('sets')
+      expect(responseBody).toHaveProperty('seriesResults')
     })
   })
 
-  describe("PUT /:id", () => {
-    it("should update an exercise", async () => {
+  describe('PUT /:id', () => {
+    it('should update an exercise', async () => {
       const response = await server.inject({
-        method: "PUT",
-        url: "/exercise-id",
+        method: 'PUT',
+        url: '/exercise-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
-          name: "Updated Bench Press",
+          name: 'Updated Bench Press',
           repetitions: 12,
           sets: 4,
         },
@@ -140,20 +146,20 @@ describe("Exercise Routes", () => {
       expect(exerciseController.updateExercise).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("name")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("sets")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('name')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('sets')
     })
   })
 
-  describe("DELETE /:id", () => {
-    it("should delete an exercise", async () => {
+  describe('DELETE /:id', () => {
+    it('should delete an exercise', async () => {
       const response = await server.inject({
-        method: "DELETE",
-        url: "/exercise-id",
+        method: 'DELETE',
+        url: '/exercise-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -161,21 +167,23 @@ describe("Exercise Routes", () => {
       expect(exerciseController.deleteExercise).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
-      expect(responseBody.message).toBe("Exercise deleted successfully")
+      expect(responseBody).toHaveProperty('message')
+      expect(responseBody.message).toBe('Exercise deleted successfully')
     })
   })
 
-  describe("PATCH /:id/done", () => {
-    it("should mark an exercise as done", async () => {
+  describe('PATCH /:id/done', () => {
+    it('should mark an exercise as done', async () => {
       // Mock JWT verification for student
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "STUDENT" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'user-id', role: 'STUDENT' })
 
       const response = await server.inject({
-        method: "PATCH",
-        url: "/exercise-id/done",
+        method: 'PATCH',
+        url: '/exercise-id/done',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -183,10 +191,9 @@ describe("Exercise Routes", () => {
       expect(exerciseController.markExerciseAsDone).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("done")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('done')
       expect(responseBody.done).toBe(true)
     })
   })
 })
-

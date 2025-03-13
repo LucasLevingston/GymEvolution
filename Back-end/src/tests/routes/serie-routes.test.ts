@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from "vitest"
-import { buildTestServer } from "../utils/test-server"
-import { serieRoutes } from "../../routes/serie-routes"
-import { SerieController } from "../../controllers/serie-controller"
-import { mockSerieService } from "../mocks/services"
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { buildTestServer } from '../utils/test-server'
+import { serieRoutes } from '../../routes/serie-routes'
+import { SerieController } from '../../controllers/serie-controller'
+import { mockSerieService } from '../mocks/services'
 
-vi.mock("../../controllers/serie-controller", () => {
+vi.mock('../../controllers/serie-controller', () => {
   return {
     SerieController: vi.fn().mockImplementation(() => ({
       createSerie: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock("../../controllers/serie-controller", () => {
   }
 })
 
-describe("Serie Routes", () => {
+describe('Serie Routes', () => {
   let server: any
   let serieController: any
 
@@ -23,7 +23,9 @@ describe("Serie Routes", () => {
     server = buildTestServer()
 
     // Mock JWT verification
-    server.jwt.verify = vi.fn().mockReturnValue({ id: "user-id", role: "STUDENT" })
+    server.jwt.verify = vi
+      .fn()
+      .mockReturnValue({ id: 'user-id', role: 'STUDENT' })
 
     await server.register(serieRoutes)
 
@@ -44,23 +46,23 @@ describe("Serie Routes", () => {
     })
 
     serieController.deleteSerie.mockImplementation(async (req, reply) => {
-      return reply.send({ message: "Serie deleted successfully" })
+      return reply.send({ message: 'Serie deleted successfully' })
     })
   })
 
-  describe("POST /", () => {
-    it("should create a serie", async () => {
+  describe('POST /', () => {
+    it('should create a serie', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
           seriesIndex: 0,
           repetitions: 10,
           weight: 100,
-          exerciseId: "exercise-id",
+          exerciseId: 'exercise-id',
         },
       })
 
@@ -68,19 +70,19 @@ describe("Serie Routes", () => {
       expect(serieController.createSerie).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("seriesIndex")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("weight")
-      expect(responseBody).toHaveProperty("exerciseId")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('seriesIndex')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('weight')
+      expect(responseBody).toHaveProperty('exerciseId')
     })
 
-    it("should validate the request body", async () => {
+    it('should validate the request body', async () => {
       const response = await server.inject({
-        method: "POST",
-        url: "/",
+        method: 'POST',
+        url: '/',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
           // Missing seriesIndex, repetitions, weight, and exerciseId
@@ -91,13 +93,13 @@ describe("Serie Routes", () => {
     })
   })
 
-  describe("GET /:id", () => {
-    it("should get a serie by ID", async () => {
+  describe('GET /:id', () => {
+    it('should get a serie by ID', async () => {
       const response = await server.inject({
-        method: "GET",
-        url: "/serie-id",
+        method: 'GET',
+        url: '/serie-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -105,21 +107,21 @@ describe("Serie Routes", () => {
       expect(serieController.getSerieById).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("seriesIndex")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("weight")
-      expect(responseBody).toHaveProperty("exerciseId")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('seriesIndex')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('weight')
+      expect(responseBody).toHaveProperty('exerciseId')
     })
   })
 
-  describe("PUT /:id", () => {
-    it("should update a serie", async () => {
+  describe('PUT /:id', () => {
+    it('should update a serie', async () => {
       const response = await server.inject({
-        method: "PUT",
-        url: "/serie-id",
+        method: 'PUT',
+        url: '/serie-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
         payload: {
           repetitions: 12,
@@ -131,23 +133,25 @@ describe("Serie Routes", () => {
       expect(serieController.updateSerie).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("id")
-      expect(responseBody).toHaveProperty("seriesIndex")
-      expect(responseBody).toHaveProperty("repetitions")
-      expect(responseBody).toHaveProperty("weight")
+      expect(responseBody).toHaveProperty('id')
+      expect(responseBody).toHaveProperty('seriesIndex')
+      expect(responseBody).toHaveProperty('repetitions')
+      expect(responseBody).toHaveProperty('weight')
     })
   })
 
-  describe("DELETE /:id", () => {
-    it("should delete a serie", async () => {
+  describe('DELETE /:id', () => {
+    it('should delete a serie', async () => {
       // Mock JWT verification for trainer
-      server.jwt.verify = vi.fn().mockReturnValue({ id: "trainer-id", role: "TRAINER" })
+      server.jwt.verify = vi
+        .fn()
+        .mockReturnValue({ id: 'trainer-id', role: 'TRAINER' })
 
       const response = await server.inject({
-        method: "DELETE",
-        url: "/serie-id",
+        method: 'DELETE',
+        url: '/serie-id',
         headers: {
-          authorization: "Bearer token",
+          authorization: 'Bearer token',
         },
       })
 
@@ -155,9 +159,8 @@ describe("Serie Routes", () => {
       expect(serieController.deleteSerie).toHaveBeenCalled()
 
       const responseBody = JSON.parse(response.body)
-      expect(responseBody).toHaveProperty("message")
-      expect(responseBody.message).toBe("Serie deleted successfully")
+      expect(responseBody).toHaveProperty('message')
+      expect(responseBody.message).toBe('Serie deleted successfully')
     })
   })
 })
-
