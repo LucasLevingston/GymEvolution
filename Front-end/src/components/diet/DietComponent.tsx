@@ -1,4 +1,7 @@
-import { useState } from 'react';
+'use client';
+
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -19,28 +22,43 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  CheckCircle2,
 } from 'lucide-react';
-import { DietType, MealItemType, MealType } from '@/types/DietType';
+import type { DietType, MealType } from '@/types/DietType';
 import { calculateCalories } from '@/lib/utils/calculateCalories';
 import { MacroNutrientsCard } from './MacroNutrientsComponent';
-import { MealCard } from './MealCard';
+import { AddMealForm } from './Forms/AddMealForm';
+import { MealComponent } from './MealCard';
 
 interface DietComponentProps {
   diet: DietType;
   onSave?: (updatedDiet: DietType) => void;
   readOnly?: boolean;
+  isCreating?: boolean;
 }
 
 export function DietComponent({
   diet: initialDiet,
   onSave,
   readOnly = false,
+  isCreating = false,
 }: DietComponentProps) {
   const [diet, setDiet] = useState<DietType>(initialDiet);
   const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [isEditing, setIsEditing] = useState<boolean>(false);
-  const [editingMealId, setEditingMealId] = useState<string | null>(null);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<boolean>(isCreating || false);
+  const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false);
+
+  // Update editing state when isCreating changes
+  useEffect(() => {
+    if (isCreating) {
+      setIsEditing(true);
+    }
+  }, [isCreating]);
+
+  // Update diet state when initialDiet changes
+  useEffect(() => {
+    setDiet(initialDiet);
+  }, [initialDiet]);
 
   const mealsForDay = diet.meals?.filter((meal) => meal.day === selectedDay) || [];
 
@@ -56,6 +74,11 @@ export function DietComponent({
     ? Math.min(100, (totalCaloriesConsumed / diet.totalCalories) * 100)
     : 0;
 
+  // Calculate completion stats
+  const completedMeals = sortedMeals.filter((meal) => meal.isCompleted).length;
+  const totalMeals = sortedMeals.length;
+  const completionPercentage = totalMeals > 0 ? (completedMeals / totalMeals) * 100 : 0;
+
   const navigateDay = (direction: 'prev' | 'next') => {
     if (direction === 'prev' && selectedDay > 1) {
       setSelectedDay(selectedDay - 1);
@@ -65,13 +88,21 @@ export function DietComponent({
   };
 
   const toggleEditMode = () => {
-    if (isEditing) {
+    if (isEditing && !isCreating) {
       onSave?.(diet);
     }
-    setIsEditing(!isEditing);
-    setEditingMealId(null);
-    setEditingItemId(null);
+    if (!isCreating) {
+      setIsEditing(!isEditing);
+      setShowAddMealForm(false);
+    }
   };
+
+  // Call onSave whenever diet changes if in creating mode
+  useEffect(() => {
+    if (isCreating) {
+      onSave?.(diet);
+    }
+  }, [diet, isCreating, onSave]);
 
   const updateDietMacros = (field: keyof DietType, value: number) => {
     setDiet((prev) => {
@@ -94,128 +125,56 @@ export function DietComponent({
     });
   };
 
-  const updateMeal = (mealId: string, field: keyof MealType, value: any) => {
-    setDiet((prev) => {
-      const updatedDiet = {
-        ...prev,
-        meals: prev.meals?.map((meal) =>
-          meal.id === mealId ? { ...meal, [field]: value } : meal
-        ),
-      };
-
-      if (field === 'protein' || field === 'carbohydrates' || field === 'fat') {
-        const mealToUpdate = updatedDiet.meals?.find((m) => m.id === mealId);
-        if (mealToUpdate) {
-          const calculatedCalories = calculateCalories(
-            mealToUpdate.protein || 0,
-            mealToUpdate.carbohydrates || 0,
-            mealToUpdate.fat || 0
-          );
-          updatedDiet.meals = updatedDiet.meals?.map((m) =>
-            m.id === mealId ? { ...m, calories: calculatedCalories } : m
-          );
-        }
-      }
-
-      return updatedDiet;
-    });
-  };
-
-  const updateMealItem = (
-    mealId: string,
-    itemId: string,
-    field: keyof MealItemType,
-    value: any
-  ) => {
-    setDiet((prev) => {
-      const updatedDiet = {
-        ...prev,
-        meals: prev.meals?.map((meal) =>
-          meal.id === mealId
-            ? {
-                ...meal,
-                mealItems: meal.mealItems?.map((item) =>
-                  item.id === itemId ? { ...item, [field]: value } : item
-                ),
-              }
-            : meal
-        ),
-      };
-
-      if (field === 'protein' || field === 'carbohydrates' || field === 'fat') {
-        const mealToUpdate = updatedDiet.meals?.find((m) => m.id === mealId);
-        const itemToUpdate = mealToUpdate?.mealItems?.find((i) => i.id === itemId);
-
-        if (itemToUpdate) {
-          const calculatedCalories = calculateCalories(
-            itemToUpdate.protein || 0,
-            itemToUpdate.carbohydrates || 0,
-            itemToUpdate.fat || 0
-          );
-
-          updatedDiet.meals = updatedDiet.meals?.map((m) =>
-            m.id === mealId
-              ? {
-                  ...m,
-                  mealItems: m.mealItems?.map((i) =>
-                    i.id === itemId ? { ...i, calories: calculatedCalories } : i
-                  ),
-                }
-              : m
-          );
-        }
-      }
-
-      return updatedDiet;
-    });
-  };
-
-  const deleteMealItem = (mealId: string, itemId: string) => {
-    setDiet((prev) => ({
-      ...prev,
-      meals: prev.meals?.map((meal) =>
-        meal.id === mealId
-          ? { ...meal, mealItems: meal.mealItems?.filter((item) => item.id !== itemId) }
-          : meal
-      ),
-    }));
-  };
-
-  const recalculateMealTotals = (mealId: string) => {
-    setDiet((prev) => {
-      const updatedMeals = prev.meals?.map((meal) => {
-        if (meal.id === mealId) {
-          const items = meal.mealItems || [];
-          const calories = items.reduce((sum, item) => sum + (item.calories || 0), 0);
-          const protein = items.reduce((sum, item) => sum + (item.protein || 0), 0);
-          const carbs = items.reduce((sum, item) => sum + (item.carbohydrates || 0), 0);
-          const fat = items.reduce((sum, item) => sum + (item.fat || 0), 0);
-
-          return {
-            ...meal,
-            calories,
-            protein,
-            carbohydrates: carbs,
-            fat,
-          };
-        }
-        return meal;
-      });
-
-      return { ...prev, meals: updatedMeals };
-    });
-  };
-
   const addNewMeal = () => {
-    console.log('addNewMeal function called');
+    setShowAddMealForm(true);
+  };
+
+  const handleAddMeal = (meal: { name: string; mealItems: any[] }) => {
+    const newMealId = `meal-${Date.now()}`;
+    setDiet((prev) => {
+      const newMeal: MealType = {
+        id: newMealId,
+        name: meal.name,
+        mealType: meal.name,
+        hour: '12:00',
+        day: selectedDay,
+        calories: 0,
+        protein: 0,
+        carbohydrates: 0,
+        fat: 0,
+        isCompleted: false,
+        mealItems: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      return {
+        ...prev,
+        meals: [...(prev.meals || []), newMeal],
+      };
+    });
+
+    setShowAddMealForm(false);
   };
 
   const deleteMeal = (mealId: string) => {
-    console.log('deleteMeal function called with mealId:', mealId);
+    setDiet((prev) => ({
+      ...prev,
+      meals: prev.meals?.filter((meal) => meal.id !== mealId),
+    }));
   };
 
-  const addMealItem = (mealId: string) => {
-    console.log('addMealItem function called with mealId:', mealId);
+  const handleUpdateMeal = (updatedMeal: MealType) => {
+    setDiet((prev) => {
+      const updatedMeals =
+        prev.meals?.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)) ||
+        [];
+
+      return {
+        ...prev,
+        meals: updatedMeals,
+      };
+    });
   };
 
   return (
@@ -246,7 +205,7 @@ export function DietComponent({
               </CardDescription>
             </div>
             <div className="flex items-center space-x-2">
-              {!readOnly && (
+              {!readOnly && !isCreating && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -319,44 +278,61 @@ export function DietComponent({
               </div>
               <Progress value={calorieProgress} className="h-2" />
             </div>
+
+            {totalMeals > 0 && (
+              <div className="mt-2 space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium flex items-center">
+                    <CheckCircle2 className="mr-1.5 h-4 w-4 text-green-500" />
+                    Completion
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {completedMeals} / {totalMeals} meals
+                  </span>
+                </div>
+                <Progress
+                  value={completionPercentage}
+                  className="h-2 bg-muted"
+                  style={
+                    {
+                      '--tw-progress-fill': 'var(--tw-colors-green-500)',
+                    } as React.CSSProperties
+                  }
+                />
+              </div>
+            )}
           </CardHeader>
 
           <CardContent>
             {isEditing && (
               <div className="mb-4">
-                <Button
-                  variant="outline"
-                  onClick={addNewMeal}
-                  className="w-full flex items-center justify-center gap-2"
-                >
-                  <Plus className="h-4 w-4" />
-                  Add New Meal for Day {selectedDay}
-                </Button>
+                {showAddMealForm ? (
+                  <AddMealForm
+                    addMeal={handleAddMeal}
+                    setShowAddMealForm={setShowAddMealForm}
+                  />
+                ) : (
+                  <Button
+                    variant="outline"
+                    onClick={addNewMeal}
+                    className="w-full flex items-center justify-center gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add New Meal for Day {selectedDay}
+                  </Button>
+                )}
               </div>
             )}
 
             {sortedMeals.length > 0 ? (
               <div className="space-y-4">
                 {sortedMeals.map((meal) => (
-                  <MealCard
+                  <MealComponent
                     key={meal.id}
                     meal={meal}
-                    isEditing={isEditing && editingMealId === meal.id}
-                    editingItemId={editingItemId}
-                    onEdit={() => setEditingMealId(meal.id)}
-                    onCancelEdit={() => setEditingMealId(null)}
-                    onDelete={() => deleteMeal(meal.id)}
-                    onUpdate={(field, value) => updateMeal(meal.id, field, value)}
-                    onAddItem={() => addMealItem(meal.id)}
-                    onUpdateItem={(itemId, field, value) =>
-                      updateMealItem(meal.id, itemId, field, value)
-                    }
-                    onDeleteItem={(itemId) => deleteMealItem(meal.id, itemId)}
-                    onEditItem={(itemId) => setEditingItemId(itemId)}
-                    onCancelEditItem={() => setEditingItemId(null)}
-                    onRecalculateTotals={() => recalculateMealTotals(meal.id)}
-                    readOnly={readOnly}
-                    showEditControls={isEditing}
+                    onUpdate={handleUpdateMeal}
+                    onDelete={deleteMeal}
+                    readOnly={!isEditing && readOnly}
                   />
                 ))}
               </div>
@@ -367,7 +343,7 @@ export function DietComponent({
                   <p className="text-sm text-muted-foreground mt-1">
                     There are no meals scheduled for day {selectedDay}.
                   </p>
-                  {isEditing && (
+                  {isEditing && !showAddMealForm && (
                     <Button variant="outline" onClick={addNewMeal} className="mt-4">
                       <Plus className="mr-2 h-4 w-4" />
                       Add Meal

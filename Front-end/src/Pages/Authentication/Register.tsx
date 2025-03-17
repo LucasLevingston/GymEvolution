@@ -15,8 +15,6 @@ import { toast } from 'sonner';
 import useUser from '@/hooks/user-hooks';
 import type { z } from 'zod';
 import { registerSchema } from '@/schemas/RegisterSchema';
-import Container from '@/components/Container';
-import Header from '@/components/Header';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +28,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useState } from 'react';
+import { ContainerRoot } from '@/components/Container';
 
 export default function Register() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -74,135 +73,132 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <Container>
-        <div className="flex h-full w-full items-center justify-center">
-          <Tabs defaultValue="account" className="w-[400px]">
-            <div className="flex w-full justify-center bg-background">
-              <h1 className="text-2xl font-bold">Register</h1>
-            </div>
-            <TabsContent value="account">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Registration</CardTitle>
-                </CardHeader>
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                    <CardContent className="space-y-2">
-                      <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="John Doe" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl>
-                              <Input placeholder="email@example.com" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl>
-                              <div className="flex">
-                                <Input
-                                  type={passwordVisible ? 'text' : 'password'}
-                                  {...field}
-                                />
-                                <button
-                                  onClick={togglePasswordVisible}
-                                  className="pl-3"
-                                  type="button"
-                                >
-                                  {passwordVisible ? (
-                                    <IoEyeOutline className="h-7 w-7" />
-                                  ) : (
-                                    <IoEyeSharp className="h-7 w-7" />
-                                  )}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <FormDescription>
-                              Password must be at least 8 characters long, include an
-                              uppercase letter and a special character.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control}
-                        name="confirmPassword"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
-                            <FormControl>
-                              <div className="flex">
-                                <Input
-                                  type={passwordVisible ? 'text' : 'password'}
-                                  {...field}
-                                />
-                                <button
-                                  onClick={togglePasswordVisible}
-                                  className="pl-3"
-                                  type="button"
-                                >
-                                  {passwordVisible ? (
-                                    <IoEyeOutline className="h-7 w-7" />
-                                  ) : (
-                                    <IoEyeSharp className="h-7 w-7" />
-                                  )}
-                                </button>
-                              </div>
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </CardContent>
-                    <CardFooter className="flex flex-col items-center justify-center">
-                      <Button type="submit">
-                        {form.formState.isSubmitting ? (
-                          <>
-                            <ReloadIcon className="h-4 w-4 animate-spin" />
-                            Loading...
-                          </>
-                        ) : (
-                          'Register'
-                        )}
-                      </Button>
-                      <br />
-                      <p className="text-sm">Already have an account?</p>
-                      <Link to="/login" className="text-[12px] text-mainColor">
-                        Log in here
-                      </Link>
-                    </CardFooter>
-                  </form>
-                </Form>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </Container>
-    </div>
+    <ContainerRoot>
+      <div className="flex h-full w-full items-center justify-center">
+        <Tabs defaultValue="account" className="w-[400px]">
+          <div className="flex w-full justify-center bg-background">
+            <h1 className="text-2xl font-bold">Register</h1>
+          </div>
+          <TabsContent value="account">
+            <Card>
+              <CardHeader>
+                <CardTitle>Registration</CardTitle>
+              </CardHeader>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  <CardContent className="space-y-2">
+                    <FormField
+                      control={form.control}
+                      name="name"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="John Doe" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input placeholder="email@example.com" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="flex">
+                              <Input
+                                type={passwordVisible ? 'text' : 'password'}
+                                {...field}
+                              />
+                              <button
+                                onClick={togglePasswordVisible}
+                                className="pl-3"
+                                type="button"
+                              >
+                                {passwordVisible ? (
+                                  <IoEyeOutline className="h-7 w-7" />
+                                ) : (
+                                  <IoEyeSharp className="h-7 w-7" />
+                                )}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormDescription>
+                            Password must be at least 8 characters long, include an
+                            uppercase letter and a special character.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="flex">
+                              <Input
+                                type={passwordVisible ? 'text' : 'password'}
+                                {...field}
+                              />
+                              <button
+                                onClick={togglePasswordVisible}
+                                className="pl-3"
+                                type="button"
+                              >
+                                {passwordVisible ? (
+                                  <IoEyeOutline className="h-7 w-7" />
+                                ) : (
+                                  <IoEyeSharp className="h-7 w-7" />
+                                )}
+                              </button>
+                            </div>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex flex-col items-center justify-center">
+                    <Button type="submit">
+                      {form.formState.isSubmitting ? (
+                        <>
+                          <ReloadIcon className="h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        'Register'
+                      )}
+                    </Button>
+                    <br />
+                    <p className="text-sm">Already have an account?</p>
+                    <Link to="/login" className="text-[12px] text-mainColor">
+                      Log in here
+                    </Link>
+                  </CardFooter>
+                </form>
+              </Form>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </ContainerRoot>
   );
 }

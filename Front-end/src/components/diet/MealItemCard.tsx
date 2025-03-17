@@ -1,9 +1,11 @@
+'use client';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { calculateCalories } from '@/lib/utils/calculateCalories';
-import { MealItemType } from '@/types/DietType';
+import type { MealItemType } from '@/types/DietType';
 import { Edit, Save, X, Trash2 } from 'lucide-react';
 
 interface MealItemProps {
@@ -11,7 +13,7 @@ interface MealItemProps {
   isEditing: boolean;
   showEditControls: boolean;
   onEdit: () => void;
-  onCancelEdit: () => void;
+  onCancelEdit?: () => void; // Adicionado o ? para tornar opcional
   onUpdate: (field: keyof MealItemType, value: any) => void;
   onDelete: () => void;
 }

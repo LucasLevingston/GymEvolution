@@ -19,7 +19,7 @@ export default function HistoryButton() {
       {user?.history && (
         <Sheet>
           <SheetTrigger>
-            <Button variant={'ghost'}>
+            <Button variant="secondary">
               <span>History</span>
               <BsJournalText className="h-5 w-5" />
             </Button>

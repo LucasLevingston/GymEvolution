@@ -1,13 +1,12 @@
-import { z } from 'zod'
-import { serieSchema } from './serieSchema'
+import { z } from 'zod';
+import { serieSchema } from './serieSchema';
 
 export const exerciseSchema = z.object({
-  id: z.string().uuid().optional(),
+  id: z.string().optional(),
   name: z.string(),
   variation: z.string().optional(),
-  repetitions: z.number().int().positive(),
-  sets: z.number().int().positive(),
-  done: z.boolean(),
-  seriesResults: z.array(serieSchema).optional(),
-  trainingDayId: z.string().uuid().optional(),
-})
+  repetitions: z.number(),
+  sets: z.number(),
+  isCompleted: z.boolean().default(false),
+  seriesResults: z.array(serieSchema).default([]),
+});

@@ -5,8 +5,12 @@ import useUser from '@/hooks/user-hooks';
 import type { WeightType } from '@/types/userType';
 import type { TrainingWeekType } from '@/types/TrainingType';
 import { TrainingProgressChart } from '@/components/progress/TraininProgressChart';
-import Header from '@/components/Header';
-import Container from '@/components/Container';
+import {
+  ContainerContent,
+  ContainerHeader,
+  ContainerRoot,
+  ContainerTitle,
+} from '@/components/Container';
 import { WeightChart } from '@/components/progress/WeightChart';
 
 export default function Progress() {
@@ -43,32 +47,32 @@ export default function Progress() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <Container>
-        <div className="space-y-6">
-          <h1 className="text-3xl font-bold">Your Progress</h1>
-          <Tabs defaultValue="weight">
-            <TabsList>
-              <TabsTrigger value="weight">Weight</TabsTrigger>
-              <TabsTrigger value="bodyFat">Body Fat %</TabsTrigger>
-              <TabsTrigger value="trainingProgress">Training Progress</TabsTrigger>
-            </TabsList>
+    <ContainerRoot>
+      <ContainerHeader>
+        <ContainerTitle className="text-3xl font-bold">Your Progress</ContainerTitle>
+      </ContainerHeader>
 
-            <TabsContent value="weight">
-              <WeightChart data={weights} onDataChange={handleDataChange} />
-            </TabsContent>
+      <ContainerContent>
+        <Tabs defaultValue="weight">
+          <TabsList>
+            <TabsTrigger value="weight">Weight</TabsTrigger>
+            <TabsTrigger value="bodyFat">Body Fat %</TabsTrigger>
+            <TabsTrigger value="trainingProgress">Training Progress</TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="bodyFat">
-              <BodyFatChart weights={weights} />
-            </TabsContent>
+          <TabsContent value="weight">
+            <WeightChart data={weights} onDataChange={handleDataChange} />
+          </TabsContent>
 
-            <TabsContent value="trainingProgress">
-              <TrainingProgressChart trainingWeeks={trainingWeeks} />
-            </TabsContent>
-          </Tabs>
-        </div>
-      </Container>
-    </div>
+          <TabsContent value="bodyFat">
+            <BodyFatChart weights={weights} />
+          </TabsContent>
+
+          <TabsContent value="trainingProgress">
+            <TrainingProgressChart trainingWeeks={trainingWeeks} />
+          </TabsContent>
+        </Tabs>
+      </ContainerContent>
+    </ContainerRoot>
   );
 }

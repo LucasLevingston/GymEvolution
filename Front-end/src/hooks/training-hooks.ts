@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import type { z } from 'zod';
-import type { trainingWeekSchema } from '@/schemas/trainingWeekSchema';
+import type {
+  TrainingWeekFormData,
+  trainingWeekSchema,
+} from '@/schemas/trainingWeekSchema';
 import axios from 'axios';
-import { TrainingWeekType } from '@/types/TrainingType';
 import useUser from './user-hooks';
 import { env } from '@/env';
+import api from '@/lib/api';
 
 type TrainingData = z.infer<typeof trainingWeekSchema>;
 const baseUrl = `${env.VITE_API_URL}/training-weeks`;
@@ -34,7 +37,7 @@ export function useTraining() {
       setIsLoading(false);
     }
   };
-  const updateTraining = async (data: TrainingWeekType) => {
+  const updateTraining = async (data: TrainingWeekFormData) => {
     setIsLoading(true);
     setError(null);
 
@@ -52,5 +55,25 @@ export function useTraining() {
     }
   };
 
-  return { createTraining, updateTraining, isLoading, error };
+  const setCurrentTraining = async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await api.put(`/training-weeks/${id}/set-current`, {});
+
+      if (!response) {
+        throw new Error('Failed to set as current training week');
+      }
+
+      return await response.data;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return { createTraining, updateTraining, setCurrentTraining, isLoading, error };
 }

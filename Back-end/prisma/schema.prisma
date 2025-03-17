@@ -21,6 +21,7 @@ model User {
   birthDate            String?
   phone                String?
   currentWeight        String?
+  currentBf            String?
   resetPasswordToken   String?
   resetPasswordExpires DateTime?
   role                 String         @default("STUDENT")
@@ -99,12 +100,15 @@ model Weight {
 }
 
 model TrainingDay {
-  id             String       @id @default(uuid())
-  group          String
-  dayOfWeek      String
-  isCompleted    Boolean      @default(false)
-  comments       String?
-  exercises      Exercise[]
+  id          String   @id @default(uuid())
+  group       String
+  dayOfWeek   String
+  isCompleted Boolean  @default(false)
+  comments    String?
+  day         DateTime
+
+  exercises Exercise[]
+
   trainingWeek   TrainingWeek @relation(fields: [trainingWeekId], references: [id], onDelete: Cascade)
   trainingWeekId String
   createdAt      DateTime     @default(now())
@@ -167,7 +171,6 @@ model Meal {
   protein       Float?
   carbohydrates Float?
   fat           Float?
-  servingSize   String?
   mealType      String?
   day           Int?
   hour          String?
@@ -185,11 +188,17 @@ model MealItems {
   id            String  @id @default(uuid())
   name          String
   quantity      Int
+  quantityType  String  @default("g")
   calories      Int?
   protein       Float?
   carbohydrates Float?
   fat           Float?
   isCompleted   Boolean @default(false)
+
+  isSubstitution Boolean     @default(false)
+  originalItem   MealItems?  @relation("ItemSubstitutions", fields: [originalItemId], references: [id])
+  originalItemId String?
+  substitutions  MealItems[] @relation("ItemSubstitutions")
 
   Meal      Meal?    @relation(fields: [mealId], references: [id])
   mealId    String?

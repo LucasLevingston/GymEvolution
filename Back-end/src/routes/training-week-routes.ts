@@ -173,7 +173,6 @@ export async function trainingWeekRoutes(app: FastifyInstance) {
     getTrainingWeekByIdController
   );
 
-  // Update training week schema
   const updateTrainingWeekSchema = z.object({
     weekNumber: z.number().int().positive().optional(),
     information: z.string().optional(),
@@ -204,7 +203,6 @@ export async function trainingWeekRoutes(app: FastifyInstance) {
     updateTrainingWeekController
   );
 
-  // Delete training week schema
   const deleteTrainingWeekResponseSchema = z.object({
     message: z.string(),
   });

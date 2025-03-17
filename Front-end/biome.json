@@ -14,12 +14,13 @@
       "jsxQuoteStyle": "double",
       "quoteStyle": "single",
       "semicolons": "asNeeded",
-      "trailingCommas": "es5"
+      "trailingCommas": "es5" 
     }
   },
   "linter": {
     "enabled": true,
     "rules": {
+      
       "recommended": true,
       "a11y": {
         "noSvgWithoutTitle": "off"
