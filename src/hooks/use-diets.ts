@@ -12,7 +12,7 @@ interface UseDietsReturn {
   fetchDiets: (userId?: string) => Promise<void>;
   fetchDietById: (dietId: string) => Promise<void>;
   createDiet: (diet: DietFormValues) => Promise<DietType>;
-  updateDiet: (dietId: string, diet: Partial<DietType>) => Promise<DietType>;
+  updateDiet: (diet: Partial<DietType>) => Promise<DietType>;
   deleteDiet: (dietId: string) => Promise<void>;
   markMealAsCompleted: (id: string) => Promise<MealType>;
 }
@@ -90,23 +90,24 @@ export function useDiets(): UseDietsReturn {
   /**
    * Update an existing diet
    */
-  const updateDiet = async (
-    dietId: string,
-    diet: Partial<DietType>
-  ): Promise<DietType> => {
+  const updateDiet = async (diet: Partial<DietType>): Promise<DietType> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.put(`/diets/${dietId}`, diet);
+      const response = await api.put(`/diets/${diet.id}`, diet, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-      // Update the diets list with the updated diet
+      console.log(diet);
       setDiets((prevDiets) =>
-        prevDiets.map((d) => (d.id === dietId ? response.data : d))
+        prevDiets.map((d) => (d.id === diet.id ? response.data : d))
       );
 
       // Update current diet if it's the one being edited
-      if (currentDiet?.id === dietId) {
+      if (currentDiet?.id === diet.id) {
         setCurrentDiet(response.data);
       }
 

@@ -1,9 +1,11 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Save, ArrowLeft, PlusCircleIcon } from 'lucide-react';
+import { AlertCircle, Save, ArrowLeft, PlusCircleIcon, Edit } from 'lucide-react';
 import { useDiets } from '@/hooks/use-diets';
 import { toast } from 'sonner';
 import type { DietType } from '@/types/DietType';
@@ -28,10 +30,8 @@ export default function DietPlan() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load diet from user data
   useEffect(() => {
-    if (user && user.diets && user.diets.length > 0) {
-      // Get the last diet or the specific diet by ID
+    if (user?.diets && user.diets.length > 0) {
       const dietToLoad = id
         ? user.diets.find((d) => d.id === id)
         : user.diets[user.diets.length - 1];
@@ -48,11 +48,15 @@ export default function DietPlan() {
   }, [user, id]);
 
   const handleDietUpdate = (updatedDiet: DietType) => {
+    console.log('Diet updated in DietComponent:', updatedDiet);
     setDiet(updatedDiet);
   };
 
   const handleSave = async () => {
-    if (!diet) return;
+    if (!diet) {
+      toast.error('No diet data to save');
+      return;
+    }
 
     const dietId = id || diet.id;
     if (!dietId) {
@@ -64,10 +68,14 @@ export default function DietPlan() {
       setIsSubmitting(true);
       setError(null);
 
-      await updateDiet(dietId, diet);
+      console.log('Saving diet from diet-plan.tsx:', diet);
+      const result = await updateDiet(diet);
+      console.log('Save result:', result);
+
       toast.success('Diet plan updated successfully!');
       setIsEditing(false);
     } catch (err: any) {
+      console.error('Error saving diet:', err);
       toast.error('Error updating diet plan');
       setError(err.response?.data?.message || 'Failed to update diet plan');
     } finally {
@@ -102,28 +110,12 @@ export default function DietPlan() {
     );
   }
 
-  if (!diet) {
-    return (
-      <ContainerRoot>
-        <div className="container mx-auto p-4">
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>{error || 'Diet plan not found'}</AlertDescription>
-          </Alert>
-          <Button onClick={() => navigate('/diet')} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Diet Plans
-          </Button>
-        </div>
-      </ContainerRoot>
-    );
-  }
-
   return (
     <ContainerRoot>
       <ContainerHeader>
-        <ContainerTitle>Diet Plan - Week {diet.weekNumber}</ContainerTitle>
+        <ContainerTitle>
+          Diet Plan{diet?.weekNumber ? ` - Week ${diet.weekNumber}` : ''}
+        </ContainerTitle>
         <section className="flex gap-2">
           {isEditing ? (
             <>
@@ -145,18 +137,47 @@ export default function DietPlan() {
             </>
           ) : (
             <>
+              {diet && (
+                <Button
+                  onClick={() => setIsEditing(true)}
+                  variant="outline"
+                  className="flex items-center gap-2"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit Diet
+                </Button>
+              )}
               <Button onClick={() => navigate('/create-diet')} variant="secondary">
                 Create new Diet
-                <PlusCircleIcon className="h-4 w-4" />
+                <PlusCircleIcon className="h-4 w-4 ml-2" />
               </Button>
-              <Button onClick={() => setIsEditing(true)}>Edit Diet Plan</Button>
+              <Button onClick={() => navigate('/past-diets')}>View past diets</Button>
             </>
           )}
         </section>
       </ContainerHeader>
 
       <ContainerContent>
-        <DietComponent diet={diet} onSave={handleDietUpdate} readOnly={!isEditing} />
+        {diet ? (
+          <DietComponent
+            diet={diet}
+            onSave={handleDietUpdate}
+            readOnly={!isEditing}
+            onSaveClick={handleSave}
+          />
+        ) : (
+          <div>
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>{error || 'Diet plan not found'}</AlertDescription>
+            </Alert>
+            <Button onClick={() => navigate('/diet')} className="mt-4">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Diet Plans
+            </Button>
+          </div>
+        )}
       </ContainerContent>
     </ContainerRoot>
   );

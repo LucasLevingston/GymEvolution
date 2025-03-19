@@ -8,7 +8,8 @@ import {
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Dumbbell, Wheat, Droplet, FileSpreadsheet } from 'lucide-react';
+import { Dumbbell, Wheat, Droplet, Flame } from 'lucide-react';
+import useUser from '@/hooks/user-hooks';
 
 interface MacroNutrientsCardProps {
   diet: {
@@ -20,6 +21,9 @@ interface MacroNutrientsCardProps {
 }
 
 export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
+  const { getBasalMetabolicRate } = useUser();
+  const bmr = getBasalMetabolicRate();
+
   const macroData = [
     { name: 'Protein', value: diet.totalProtein || 0, color: '#FF6384' },
     { name: 'Carbs', value: diet.totalCarbohydrates || 0, color: '#36A2EB' },
@@ -31,6 +35,7 @@ export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
     ...item,
     percentage: totalMacros > 0 ? Math.round((item.value / totalMacros) * 100) : 0,
   }));
+  const caloriePercentage = bmr ? (diet.totalCalories! / bmr) * 100 : 0;
 
   return (
     <Card className="md:col-span-1">
@@ -109,20 +114,20 @@ export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
                     />
                   </div>
                 ))}
-              </div>
-              <div className="space-y-1">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <FileSpreadsheet className="mr-2 h-4 w-4" />
-                    <span className="font-medium">Calories</span>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Flame className="mr-2 h-4 w-4 text-red" />
+                      <span className="font-medium">Calories</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm text-muted-foreground">
+                        {bmr ? Math.round(caloriePercentage) : 0}%
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <span className="text-sm text-muted-foreground">
-                      {diet.totalCalories} kcal
-                    </span>
-                  </div>
+                  <Progress value={caloriePercentage} className="h-2 bg-red" />
                 </div>
-                <Progress value={100} className="h-2" />
               </div>
             </CardContent>
           </>

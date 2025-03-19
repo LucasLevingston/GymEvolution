@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +32,7 @@ import {
   Trash2,
   Calendar,
   CheckCircle,
+  Copy,
 } from 'lucide-react';
 import { useTraining } from '@/hooks/training-hooks';
 import { Badge } from '@/components/ui/badge';
@@ -55,10 +54,18 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useNavigate } from 'react-router-dom';
+import { ExerciseType, TrainingDayType } from '@/types/TrainingType';
 
 interface TrainingWeekCardProps {
   initialData?: TrainingWeekFormData;
@@ -74,8 +81,18 @@ export function TrainingWeekCard({
   const [activeDayIndex, setActiveDayIndex] = useState<number | null>(null);
   const [isEditing, setIsEditing] = useState(isCreating);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [existingTrainingWeeks, setExistingTrainingWeeks] = useState<
+    TrainingWeekFormData[]
+  >([]);
   const { user } = useUser();
-  const { updateTraining, createTraining, deleteTraining } = useTraining();
+  const {
+    updateTraining,
+    createTraining,
+    deleteTraining,
+    getAllTrainingWeeks,
+    isCurrentWeek,
+    getTrainingWeek,
+  } = useTraining();
   const navigate = useNavigate();
 
   const form = useForm<TrainingWeekFormData>({
@@ -98,7 +115,21 @@ export function TrainingWeekCard({
     name: 'trainingDays',
   });
 
-  // Calculate completion stats
+  useEffect(() => {
+    if (isCreating) {
+      const loadTrainingWeeks = async () => {
+        try {
+          const weeks = await getAllTrainingWeeks();
+          setExistingTrainingWeeks(weeks);
+        } catch (error) {
+          console.error('Failed to load training weeks', error);
+        }
+      };
+
+      loadTrainingWeeks();
+    }
+  }, [isCreating, getAllTrainingWeeks]);
+
   const stats = {
     totalDays: trainingDays.length,
     completedDays: trainingDays.filter((day) =>
@@ -114,7 +145,6 @@ export function TrainingWeekCard({
     }, 0),
   };
 
-  // Check if all exercises in a day are completed and update day status
   useEffect(() => {
     trainingDays.forEach((day, dayIndex) => {
       const exercises = form.getValues(`trainingDays.${dayIndex}.exercises`) || [];
@@ -171,7 +201,7 @@ export function TrainingWeekCard({
       dayOfWeek: `Day ${trainingDays.length + 1}`,
       isCompleted: false,
       comments: '',
-      date: new Date(),
+      day: addDays(new Date(form.getValues().startDate), trainingDays.length),
       exercises: [],
     });
     setActiveTab(trainingDays.length.toString());
@@ -185,6 +215,11 @@ export function TrainingWeekCard({
   };
 
   const handleStartTraining = (dayIndex: number) => {
+    if (isCreating) {
+      toast.error('Please save your workout plan before starting training');
+      return;
+    }
+
     setTrainingNow(true);
     setActiveDayIndex(dayIndex);
     setActiveTab(dayIndex.toString());
@@ -208,23 +243,46 @@ export function TrainingWeekCard({
     }
   };
 
-  const isCurrentWeek = () => {
-    const startDate = form.watch('startDate');
-    if (!startDate) return false;
+  const handleTemplateSelect = async (templateId: string) => {
+    if (!templateId) return;
 
-    const today = new Date();
-    const weekStart = new Date(startDate);
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekEnd.getDate() + 6);
+    try {
+      const template = await getTrainingWeek(templateId);
 
-    return today >= weekStart && today <= weekEnd;
+      const currentStartDate = form.getValues().startDate;
+      const currentWeekNumber = form.getValues().weekNumber;
+
+      const newTrainingWeek = {
+        ...template,
+        id: undefined,
+        startDate: currentStartDate,
+        weekNumber: currentWeekNumber,
+        isCompleted: false,
+        trainingDays: template.trainingDays.map((day: TrainingDayType) => ({
+          ...day,
+          id: undefined,
+          isCompleted: false,
+          day: addDays(currentStartDate, template.trainingDays.indexOf(day)),
+          exercises: day.exercises.map((exercise: ExerciseType) => ({
+            ...exercise,
+            id: undefined,
+            isCompleted: false,
+            seriesResults: [],
+          })),
+        })),
+      };
+
+      form.reset(newTrainingWeek);
+      toast.success('Template applied successfully');
+    } catch (error) {
+      toast.error('Error applying template');
+    }
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Sidebar */}
           <TrainingSidebar
             stats={stats}
             trainingWeek={form.getValues()}
@@ -232,10 +290,10 @@ export function TrainingWeekCard({
             isTrainingNow={trainingNow}
             activeDayIndex={activeDayIndex}
             onEndTraining={handleEndTraining}
-            isCurrentWeek={isCurrentWeek()}
+            isCurrentWeek={isCurrentWeek(form.watch('startDate'))}
+            isCreating={isCreating}
           />
 
-          {/* Main Content */}
           <div className="flex-1">
             <Card className="shadow-lg border-t-4 border-t-primary">
               <CardHeader className="bg-muted/50 flex flex-row justify-between items-center">
@@ -244,7 +302,7 @@ export function TrainingWeekCard({
                     <CardTitle className="text-3xl font-bold text-primary">
                       {isCreating ? 'Create New Training Week' : 'Training Week'}
                     </CardTitle>
-                    {isCurrentWeek() && (
+                    {isCurrentWeek(form.watch('startDate')) && (
                       <Badge className="bg-green-600">Current Week</Badge>
                     )}
                     {trainingNow && (
@@ -309,6 +367,34 @@ export function TrainingWeekCard({
               </CardHeader>
 
               <CardContent className="p-6 space-y-8">
+                {isCreating && (
+                  <div className="mb-6 p-4 border rounded-md bg-muted/20">
+                    <h3 className="text-lg font-medium mb-2 flex items-center">
+                      <Copy className="h-4 w-4 mr-2" />
+                      Use Existing Template
+                    </h3>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      You can start with an existing training plan as a template
+                    </p>
+
+                    <div className="flex gap-2">
+                      <Select onValueChange={handleTemplateSelect}>
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select a template" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {existingTrainingWeeks.map((week) => (
+                            <SelectItem key={week.id} value={week.id || ''}>
+                              Week {week.weekNumber} -{' '}
+                              {week.information || 'No description'}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
                 <div className="grid md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
@@ -430,11 +516,11 @@ export function TrainingWeekCard({
                           const dayCompleted = form.watch(
                             `trainingDays.${index}.isCompleted`
                           );
-                          const dayDate = form.watch(`trainingDays.${index}.date`);
-                          const isToday =
-                            dayDate &&
-                            new Date().toDateString() ===
-                              new Date(dayDate).toDateString();
+                          const weekDay = form.watch(`trainingDays.${index}.weekDay`);
+                          const today = new Date().toLocaleDateString('en-US', {
+                            weekday: 'long',
+                          });
+                          const isToday = weekDay === today;
 
                           return (
                             <TabsTrigger
@@ -484,6 +570,7 @@ export function TrainingWeekCard({
                             form={form}
                             trainingNow={trainingNow && activeDayIndex === index}
                             isEditing={isEditing || isCreating}
+                            isCreating={isCreating}
                             onStartTraining={() => handleStartTraining(index)}
                           />
                         </TabsContent>
@@ -509,31 +596,7 @@ export function TrainingWeekCard({
                 </div>
               </CardContent>
 
-              <CardFooter className="bg-muted/30 flex justify-between p-6">
-                <FormField
-                  control={form.control}
-                  name="isCompleted"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-x-3 space-y-0">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          disabled={!isEditing && !isCreating}
-                        />
-                      </FormControl>
-                      <div>
-                        <FormLabel className="text-base">
-                          Mark Week as Completed
-                        </FormLabel>
-                        <FormDescription>
-                          This will archive the training week
-                        </FormDescription>
-                      </div>
-                    </FormItem>
-                  )}
-                />
-
+              <CardFooter className="bg-muted/30 flex justify-end p-6 ">
                 {(isEditing || isCreating) && (
                   <Button type="submit" className="bg-primary hover:bg-primary/90">
                     <SaveIcon className="mr-2 h-4 w-4" />

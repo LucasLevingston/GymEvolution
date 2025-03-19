@@ -7,6 +7,9 @@ import { env } from '@/env';
 export function useWeight() {
   const [state, setState] = useState(() => weightStore.getState());
 
+  const { VITE_API_URL } = env;
+  const baseUrl = `${VITE_API_URL}/weights`;
+
   useEffect(() => {
     const unsubscribe = weightStore.subscribe(() => {
       setState(weightStore.getState());
@@ -16,11 +19,11 @@ export function useWeight() {
       unsubscribe();
     };
   }, []);
-  const baseUrl = `${env.VITE_API_URL}/weights`;
+
   const fetchWeights = async () => {
     weightStore.setLoading(true);
     try {
-      const response = await axios.get('${baseUrl}');
+      const response = await axios.get(`${baseUrl}`);
       weightStore.setWeights(response.data);
       weightStore.setError(null);
       return response.data;
@@ -35,7 +38,7 @@ export function useWeight() {
   const addWeight = async (newWeight: Omit<WeightType, 'id'>) => {
     weightStore.setLoading(true);
     try {
-      const response = await axios.post('${baseUrl}', newWeight);
+      const response = await axios.post(`${baseUrl}`, newWeight);
       const updatedWeights = [...state.weights, response.data];
       weightStore.setWeights(updatedWeights);
       weightStore.setError(null);
@@ -87,12 +90,10 @@ export function useWeight() {
   };
 
   return {
-    // State
     weights: state.weights,
     isLoading: state.isLoading,
     error: state.error,
 
-    // Actions
     fetchWeights,
     addWeight,
     updateWeight,

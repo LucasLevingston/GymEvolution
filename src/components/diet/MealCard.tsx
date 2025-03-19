@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import type { MealType, MealItemType } from '@/types/DietType';
 import { calculateCalories } from '@/lib/utils/calculateCalories';
+import { MealItemForm, type AddMealItemFormValues } from './Forms/AddMealItemForm';
 import {
   Collapsible,
   CollapsibleContent,
@@ -40,7 +41,6 @@ import {
 } from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
-import { AddMealItemFormValues, MealItemForm } from './Forms/AddMealItemForm';
 
 interface MealComponentProps {
   meal: MealType;
@@ -141,16 +141,28 @@ export function MealComponent({
         })) || [],
     };
 
+    const updatedMealItems = [...(meal.mealItems || []), newItem];
+
     const updatedMeal = {
       ...meal,
-      mealItems: [...(meal.mealItems || []), newItem],
+      mealItems: updatedMealItems,
     };
 
     setMeal(updatedMeal);
     setShowAddMealItemForm(false);
 
     // Recalculate meal totals after adding the item
-    const finalMeal = recalculateMealTotals();
+    const finalMeal = {
+      ...updatedMeal,
+      calories: updatedMealItems.reduce((sum, item) => sum + (item.calories || 0), 0),
+      protein: updatedMealItems.reduce((sum, item) => sum + (item.protein || 0), 0),
+      carbohydrates: updatedMealItems.reduce(
+        (sum, item) => sum + (item.carbohydrates || 0),
+        0
+      ),
+      fat: updatedMealItems.reduce((sum, item) => sum + (item.fat || 0), 0),
+    };
+
     onUpdate?.(finalMeal);
   };
 
@@ -206,15 +218,26 @@ export function MealComponent({
   };
 
   const deleteMealItem = (itemId: string) => {
+    const updatedMealItems = meal.mealItems?.filter((item) => item.id !== itemId);
+
     const updatedMeal = {
       ...meal,
-      mealItems: meal.mealItems?.filter((item) => item.id !== itemId),
+      mealItems: updatedMealItems,
     };
 
     setMeal(updatedMeal);
 
     // Recalculate meal totals after deleting the item
-    const finalMeal = recalculateMealTotals();
+    const finalMeal = {
+      ...updatedMeal,
+      calories:
+        updatedMealItems?.reduce((sum, item) => sum + (item.calories || 0), 0) || 0,
+      protein: updatedMealItems?.reduce((sum, item) => sum + (item.protein || 0), 0) || 0,
+      carbohydrates:
+        updatedMealItems?.reduce((sum, item) => sum + (item.carbohydrates || 0), 0) || 0,
+      fat: updatedMealItems?.reduce((sum, item) => sum + (item.fat || 0), 0) || 0,
+    };
+
     onUpdate?.(finalMeal);
   };
 
@@ -516,7 +539,6 @@ export function MealComponent({
         </div>
       </CardHeader>
       <CardContent className="p-4">
-        {/* Meal Item Form for Adding */}
         {isEditing && showAddMealItemForm && (
           <MealItemForm
             mealId={meal.id}
@@ -525,7 +547,6 @@ export function MealComponent({
           />
         )}
 
-        {/* Meal Item Form for Editing */}
         {isEditing && editingItemId && (
           <MealItemForm
             mealId={meal.id}
@@ -539,7 +560,6 @@ export function MealComponent({
           />
         )}
 
-        {/* Add Meal Item Button */}
         {isEditing && !showAddMealItemForm && !editingItemId && (
           <Button
             onClick={() => setShowAddMealItemForm(true)}
@@ -551,7 +571,6 @@ export function MealComponent({
           </Button>
         )}
 
-        {/* Meal Items List */}
         {meal.mealItems && meal.mealItems.length > 0 ? (
           <div className="space-y-3">
             {meal.mealItems.map((item) => (

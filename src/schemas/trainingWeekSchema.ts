@@ -3,9 +3,9 @@ import { trainingDaySchema } from './trainingDaySchema';
 
 export const trainingWeekSchema = z.object({
   id: z.string().optional(),
-  weekNumber: z.number(),
-  information: z.string().optional(),
-  current: z.boolean().default(false),
+  weekNumber: z.number().default(1),
+  information: z.string().optional().default(''),
+  startDate: z.date().default(() => new Date()),
   isCompleted: z.boolean().default(false),
   userId: z.string().optional(),
   trainingDays: z.array(trainingDaySchema).default([]),

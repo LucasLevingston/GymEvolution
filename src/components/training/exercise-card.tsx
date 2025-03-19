@@ -1,6 +1,4 @@
-'use client';
-
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useFieldArray, type UseFormReturn } from 'react-hook-form';
 import { Trash, Check, X, PlusCircle, Dumbbell } from 'lucide-react';
 import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema';
@@ -28,7 +26,6 @@ interface ExerciseCardProps {
 }
 
 export function ExerciseCard({
-  exercise,
   dayIndex,
   exerciseIndex,
   form,
@@ -36,8 +33,6 @@ export function ExerciseCard({
   trainingNow = false,
   isEditing = false,
 }: ExerciseCardProps) {
-  const [showSeries, setShowSeries] = useState(trainingNow);
-
   const {
     fields: seriesFields,
     append: appendSeries,
@@ -46,6 +41,33 @@ export function ExerciseCard({
     control: form.control,
     name: `trainingDays.${dayIndex}.exercises.${exerciseIndex}.seriesResults`,
   });
+
+  // Check if all series are filled and update exercise completion status
+  useEffect(() => {
+    const targetSets = form.getValues(
+      `trainingDays.${dayIndex}.exercises.${exerciseIndex}.sets`
+    );
+    const series = form.getValues(
+      `trainingDays.${dayIndex}.exercises.${exerciseIndex}.seriesResults`
+    );
+
+    // Only mark as completed if all expected series are filled with both repetitions and weight
+    const allSeriesFilled =
+      series.length >= targetSets && series.every((s) => s.repetitions && s.weight);
+
+    if (trainingNow && allSeriesFilled) {
+      form.setValue(
+        `trainingDays.${dayIndex}.exercises.${exerciseIndex}.isCompleted`,
+        true
+      );
+    }
+  }, [
+    form,
+    dayIndex,
+    exerciseIndex,
+    trainingNow,
+    form.watch(`trainingDays.${dayIndex}.exercises.${exerciseIndex}.seriesResults`),
+  ]);
 
   const handleToggleComplete = () => {
     const currentValue = form.getValues(

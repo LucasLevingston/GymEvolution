@@ -117,6 +117,23 @@ export const useUser = () => {
     }
   };
 
+  const getBasalMetabolicRate = (): number | null => {
+    if (!user?.currentWeight || !user.height || !user.birthDate || !user.sex) {
+      return null;
+    }
+
+    const weight = Number.parseFloat(user.currentWeight);
+    const height = Number.parseFloat(user.height);
+    const birthDate = new Date(user.birthDate);
+    const age = new Date().getFullYear() - birthDate.getFullYear();
+
+    if (user.sex === 'male') {
+      return 88.362 + 13.397 * weight + 4.799 * height - 5.677 * age;
+    }
+
+    return 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
+  };
+
   return {
     user,
     login,
@@ -127,6 +144,7 @@ export const useUser = () => {
     passwordRecover,
     resetPassword,
     token,
+    getBasalMetabolicRate,
   };
 };
 

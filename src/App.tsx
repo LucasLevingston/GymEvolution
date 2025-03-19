@@ -9,8 +9,8 @@ import NotFound from './Pages/Not-Found';
 import { ThemeProvider } from './components/providers/ThemeProvider';
 import Profile from './Pages/Profile';
 import ThemeSettings from './Pages/Settings/ThemeSettings';
-import PastWorkouts from './Pages/Training/PastWorkouts';
-import { CurrentWorkoutWeek } from './Pages/Training/CurrentWorkoutWeek';
+import PastWorkouts from './Pages/Training/PastTrainings';
+import CurrentWorkoutWeek from './Pages/Training/TrainingWeekPlan';
 import Progress from './Pages/Progress';
 import ResetPassword from './Pages/Authentication/ResetPassword';
 import PasswordRecovery from './Pages/Authentication/PasswordRecovery';
@@ -59,7 +59,7 @@ const App: React.FC = () => {
             element={<PrivateRoute element={<CurrentWorkoutWeek />} />}
           />
           <Route
-            path="/past-workouts"
+            path="/training-weeks"
             element={<PrivateRoute element={<PastWorkouts />} />}
           />
           <Route path="/diet" element={<PrivateRoute element={<DietPlan />} />} />

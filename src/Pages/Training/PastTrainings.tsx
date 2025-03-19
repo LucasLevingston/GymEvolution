@@ -1,5 +1,3 @@
-'use client';
-
 import { useNavigate } from 'react-router-dom';
 import useUser from '@/hooks/user-hooks';
 import { Button } from '@/components/ui/button';
@@ -17,7 +15,7 @@ export default function PastWorkouts() {
   const { user } = useUser();
   const navigate = useNavigate();
 
-  const hasTrainingWeeks = user && user.trainingWeeks && user.trainingWeeks.length > 0;
+  const hasTrainingWeeks = user?.trainingWeeks && user.trainingWeeks.length > 0;
 
   return (
     <ContainerRoot>
@@ -32,7 +30,7 @@ export default function PastWorkouts() {
       <ContainerContent>
         {hasTrainingWeeks ? (
           user.trainingWeeks.map((week) => (
-            <div className=" p-2 rounded-md border-[2px] shadow-md">
+            <div className=" p-2 rounded-md border-[2px] shadow-md" key={week.id}>
               <TrainingWeekCard key={week.id} initialData={week} />
             </div>
           ))
@@ -41,7 +39,7 @@ export default function PastWorkouts() {
             <p className="text-center text-muted-foreground">No workouts found!</p>
             <Button variant="outline" onClick={() => navigate('/create-training')}>
               <PlusCircleIcon className="mr-2 h-4 w-4" />
-              Record new workout
+              Create new workout
             </Button>
           </CardContent>
         )}

@@ -111,11 +111,6 @@ export function MealItemForm({
     },
   });
 
-  // Log the existingItem and defaultValues for debugging
-  console.log('Existing Item:', existingItem);
-  console.log('Default Values:', mealItemForm.getValues());
-  console.log('Substitutions:', substitutions);
-
   const { handleSubmit, reset, watch } = mealItemForm;
   const {
     handleSubmit: handleSubstitutionSubmit,
@@ -123,7 +118,6 @@ export function MealItemForm({
     watch: watchSubstitution,
   } = substitutionForm;
 
-  // Use watch to get real-time values for calculating calories
   const protein = watch('protein');
   const carbohydrates = watch('carbohydrates');
   const fat = watch('fat');

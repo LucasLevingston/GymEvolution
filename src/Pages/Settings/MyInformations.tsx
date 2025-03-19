@@ -7,7 +7,7 @@ import useUser from '@/hooks/user-hooks';
 import type { UserType } from '@/types/userType';
 import { UserSchema } from '@/schemas/UserSchema';
 import DataCard from '@/components/DataCard';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import SiedbarComponent from '@/components/sidebar/SiedbarComponent';
 import { toast } from 'sonner';
 import { Loader2 } from 'lucide-react';
@@ -27,6 +27,7 @@ const userFields = [
   'phone',
   'birthDate',
   'currentWeight',
+  'currentHeight',
 ];
 
 export default function MyInformations() {
@@ -83,47 +84,45 @@ export default function MyInformations() {
 
   return (
     <SiedbarComponent>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex justify-between">
-            My Information
-            <HistoryButton />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {userFields.map((fieldName) => (
-                <DataCard
-                  key={fieldName}
-                  fieldName={fieldName}
-                  fieldLabel={fieldName.split(/(?=[A-Z])/).join(' ')}
-                  register={register}
-                  editMode={editMode}
-                  handleEditClick={() => handleEditClick(fieldName)}
-                  errors={errors}
-                />
-              ))}
-            </div>
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={!isDirty || !isValid || isSubmitting}
-                className="min-w-[140px]"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : (
-                  'Save Changes'
-                )}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+      <CardHeader>
+        <CardTitle className="flex justify-between">
+          My Information
+          <HistoryButton />
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {userFields.map((fieldName) => (
+              <DataCard
+                key={fieldName}
+                fieldName={fieldName}
+                fieldLabel={fieldName.split(/(?=[A-Z])/).join(' ')}
+                register={register}
+                editMode={editMode}
+                handleEditClick={() => handleEditClick(fieldName)}
+                errors={errors}
+              />
+            ))}
+          </div>
+          <div className="flex justify-end">
+            <Button
+              type="submit"
+              disabled={!isDirty || !isValid || isSubmitting}
+              className="min-w-[140px]"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
     </SiedbarComponent>
   );
 }

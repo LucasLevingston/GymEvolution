@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Save } from 'lucide-react';
+import { PanelsLeftRightIcon, Save } from 'lucide-react';
 import { useDiets } from '@/hooks/use-diets';
 import { toast } from 'sonner';
 import type { DietType } from '@/types/DietType';
@@ -98,14 +98,20 @@ export default function CreateDiet() {
     <ContainerRoot>
       <ContainerHeader className="flex justify-between items-center mb-6">
         <ContainerTitle>Create New Diet Plan</ContainerTitle>
-        <Button
-          onClick={onSubmit}
-          disabled={isSubmitting}
-          className="flex items-center gap-2"
-        >
-          <Save className="h-4 w-4" />
-          {isSubmitting ? 'Saving...' : 'Save Diet Plan'}
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => navigate('/past-diets')} disabled={isSubmitting}>
+            <PanelsLeftRightIcon className="h-4 w-4" />
+            Past Diets
+          </Button>
+          <Button
+            onClick={onSubmit}
+            disabled={isSubmitting}
+            className="flex items-center gap-2"
+          >
+            <Save className="h-4 w-4" />
+            {isSubmitting ? 'Saving...' : 'Save Diet Plan'}
+          </Button>
+        </div>
       </ContainerHeader>
 
       <ContainerContent>

@@ -15,6 +15,7 @@ export default function Home() {
     const fetchUser = async () => {
       if (user) {
         const result = await getUser(user.id);
+        console.log(result);
         if (!result) {
           toast.error('error');
         }
@@ -24,10 +25,9 @@ export default function Home() {
     fetchUser();
   }, [user, getUser]);
 
-  const currentTraining =
-    user && user.trainingWeeks
-      ? user.trainingWeeks.find((trainingWeek) => trainingWeek.current)
-      : null;
+  const currentTraining = user?.trainingWeeks
+    ? user.trainingWeeks.find((trainingWeek) => trainingWeek.weekNumber)
+    : null;
 
   return (
     <ContainerRoot>

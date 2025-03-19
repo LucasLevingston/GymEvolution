@@ -1,12 +1,11 @@
 'use client';
 
-import { PlusCircle, CheckCircle, Calendar } from 'lucide-react';
+import { PlusCircle, CheckCircle } from 'lucide-react';
 import { useFieldArray, type UseFormReturn } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   FormControl,
   FormDescription,
@@ -16,10 +15,13 @@ import {
 } from '@/components/ui/form';
 import { ExerciseCard } from './exercise-card';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
-import { format } from 'date-fns';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 interface TrainingDayCardProps {
   day: TrainingWeekFormData['trainingDays'][number];
@@ -27,15 +29,16 @@ interface TrainingDayCardProps {
   form: UseFormReturn<TrainingWeekFormData>;
   trainingNow?: boolean;
   isEditing?: boolean;
+  isCreating?: boolean;
   onStartTraining: () => void;
 }
 
 export function TrainingDayCard({
-  day,
   index,
   form,
   trainingNow = false,
   isEditing = false,
+  isCreating = false,
   onStartTraining,
 }: TrainingDayCardProps) {
   const {
@@ -54,8 +57,18 @@ export function TrainingDayCard({
     form.setValue(`trainingDays.${index}.isCompleted`, true);
   };
 
+  const weekDays = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-yellow-50">
       <div className="grid md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
@@ -66,7 +79,7 @@ export function TrainingDayCard({
               <FormControl>
                 <Input
                   {...field}
-                  placeholder="e.g., Monday, Upper Body, etc."
+                  placeholder="e.g., Upper Body, Chest Day, etc."
                   className="text-base"
                   disabled={!isEditing}
                 />
@@ -96,46 +109,38 @@ export function TrainingDayCard({
         />
       </div>
 
-      <FormField
-        control={form.control}
-        name={`trainingDays.${index}.date`}
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel className="text-base font-semibold">Training Date</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
+      <div className="grid md:grid-cols-2 gap-6">
+        <FormField
+          control={form.control}
+          name={`trainingDays.${index}.weekDay`}
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold">Day of Week</FormLabel>
+              <Select
+                disabled={!isEditing}
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+              >
                 <FormControl>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      'w-full pl-3 text-left font-normal',
-                      !field.value && 'text-muted-foreground'
-                    )}
-                    disabled={!isEditing}
-                  >
-                    {field.value ? (
-                      format(new Date(field.value), 'PPP')
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                    <Calendar className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a day of the week" />
+                  </SelectTrigger>
                 </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={field.value ? new Date(field.value) : undefined}
-                  onSelect={field.onChange}
-                  disabled={!isEditing}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-            <FormDescription>Set the specific day for this training</FormDescription>
-          </FormItem>
-        )}
-      />
+                <SelectContent>
+                  {weekDays.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {day}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Which day of the week is this training scheduled for
+              </FormDescription>
+            </FormItem>
+          )}
+        />
+      </div>
 
       <FormField
         control={form.control}
@@ -156,27 +161,7 @@ export function TrainingDayCard({
       />
 
       <div className="flex justify-between items-center">
-        <FormField
-          control={form.control}
-          name={`trainingDays.${index}.isCompleted`}
-          render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={!isEditing}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel className="text-base">Completed</FormLabel>
-                <FormDescription>Mark this day as completed</FormDescription>
-              </div>
-            </FormItem>
-          )}
-        />
-
-        {!trainingNow && !isEditing && (
+        {!trainingNow && !isEditing && !isCreating && (
           <Button
             type="button"
             variant="outline"

@@ -4,7 +4,7 @@ export type TrainingWeekType = {
   id?: string;
   weekNumber: number;
   trainingDays: TrainingDayType[];
-  current: boolean;
+  startDate: Date;
   information?: string;
   isCompleted: boolean;
   user?: UserType;
@@ -27,6 +27,7 @@ export type TrainingDayType = {
   id?: string;
   group: string;
   dayOfWeek: string;
+  day: Date;
   isCompleted: boolean;
   comments?: string;
   exercises: ExerciseType[];

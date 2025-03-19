@@ -26,15 +26,16 @@ import {
 } from 'lucide-react';
 import type { DietType, MealType } from '@/types/DietType';
 import { calculateCalories } from '@/lib/utils/calculateCalories';
-import { MacroNutrientsCard } from './MacroNutrientsComponent';
-import { AddMealForm } from './Forms/AddMealForm';
-import { MealComponent } from './MealCard';
+import { MacroNutrientsCard } from '../diet/MacroNutrientsComponent';
+import { AddMealForm } from '@/components/diet/Forms/AddMealForm';
+import { MealComponent } from '@/components/diet/MealCard';
 
 interface DietComponentProps {
   diet: DietType;
   onSave?: (updatedDiet: DietType) => void;
   readOnly?: boolean;
   isCreating?: boolean;
+  onSaveClick?: () => void;
 }
 
 export function DietComponent({
@@ -42,18 +43,21 @@ export function DietComponent({
   onSave,
   readOnly = false,
   isCreating = false,
+  onSaveClick,
 }: DietComponentProps) {
   const [diet, setDiet] = useState<DietType>(initialDiet);
   const [selectedDay, setSelectedDay] = useState<number>(1);
   const [isEditing, setIsEditing] = useState<boolean>(isCreating || false);
   const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false);
 
-  // Update editing state when isCreating changes
+  // Update editing state when isCreating or readOnly changes
   useEffect(() => {
     if (isCreating) {
       setIsEditing(true);
+    } else {
+      setIsEditing(!readOnly);
     }
-  }, [isCreating]);
+  }, [isCreating, readOnly]);
 
   // Update diet state when initialDiet changes
   useEffect(() => {
@@ -74,7 +78,6 @@ export function DietComponent({
     ? Math.min(100, (totalCaloriesConsumed / diet.totalCalories) * 100)
     : 0;
 
-  // Calculate completion stats
   const completedMeals = sortedMeals.filter((meal) => meal.isCompleted).length;
   const totalMeals = sortedMeals.length;
   const completionPercentage = totalMeals > 0 ? (completedMeals / totalMeals) * 100 : 0;
@@ -89,15 +92,35 @@ export function DietComponent({
 
   const toggleEditMode = () => {
     if (isEditing && !isCreating) {
+      console.log('Sending updated diet to parent:', diet);
       onSave?.(diet);
+
+      if (onSaveClick) {
+        console.log('Calling external save handler directly');
+        setTimeout(() => {
+          onSaveClick();
+        }, 0);
+        return;
+      }
     }
+
     if (!isCreating) {
       setIsEditing(!isEditing);
       setShowAddMealForm(false);
     }
   };
 
-  // Call onSave whenever diet changes if in creating mode
+  // Direct save function that bypasses toggleEditMode
+  const handleDirectSave = () => {
+    console.log('Direct save clicked, updating parent with diet:', diet);
+    onSave?.(diet);
+
+    if (onSaveClick) {
+      console.log('Calling external save handler directly from direct save');
+      onSaveClick();
+    }
+  };
+
   useEffect(() => {
     if (isCreating) {
       onSave?.(diet);
@@ -332,7 +355,7 @@ export function DietComponent({
                     meal={meal}
                     onUpdate={handleUpdateMeal}
                     onDelete={deleteMeal}
-                    readOnly={!isEditing && readOnly}
+                    readOnly={!isEditing}
                   />
                 ))}
               </div>
@@ -355,6 +378,16 @@ export function DietComponent({
           </CardContent>
         </Card>
       </div>
+
+      {/* Direct save button at the bottom */}
+      {isEditing && !isCreating && onSaveClick && (
+        <div className="flex justify-end">
+          <Button onClick={handleDirectSave} size="lg" className="gap-2">
+            <Save className="h-5 w-5" />
+            Save Diet Plan
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

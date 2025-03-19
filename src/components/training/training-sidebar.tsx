@@ -1,5 +1,3 @@
-'use client';
-
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -29,6 +27,7 @@ interface TrainingSidebarProps {
   isTrainingNow: boolean;
   activeDayIndex: number | null;
   isCurrentWeek: boolean;
+  isCreating?: boolean;
 }
 
 export function TrainingSidebar({
@@ -39,6 +38,7 @@ export function TrainingSidebar({
   isTrainingNow,
   activeDayIndex,
   isCurrentWeek,
+  isCreating = false,
 }: TrainingSidebarProps) {
   const daysProgress =
     stats.totalDays > 0 ? Math.round((stats.completedDays / stats.totalDays) * 100) : 0;
@@ -48,11 +48,10 @@ export function TrainingSidebar({
       ? Math.round((stats.completedExercises / stats.totalExercises) * 100)
       : 0;
 
-  // Get today's training day
-  const today = new Date().toDateString();
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
   const todayTrainingDay = trainingWeek.trainingDays
     .map((day, index) => ({ ...day, index }))
-    .find((day) => day.date && new Date(day.date).toDateString() === today);
+    .find((day) => day.dayOfWeek === today);
 
   // Get incomplete days
   const incompleteDays = trainingWeek.trainingDays
@@ -172,15 +171,18 @@ export function TrainingSidebar({
                       {todayTrainingDay.group}
                     </span>
                   </div>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    onClick={() => onStartTraining(todayTrainingDay.index)}
-                    className="h-8 bg-blue-600 hover:bg-blue-700"
-                  >
-                    <Dumbbell className="h-3 w-3 mr-1" />
-                    Train Now
-                  </Button>
+
+                  {!isCreating && (
+                    <Button
+                      variant="default"
+                      size="sm"
+                      onClick={() => onStartTraining(todayTrainingDay.index)}
+                      className="h-8 bg-blue-600 hover:bg-blue-700"
+                    >
+                      <Dumbbell className="h-3 w-3 mr-1" />
+                      Train Now
+                    </Button>
+                  )}
                 </div>
               </div>
             )}
@@ -194,19 +196,20 @@ export function TrainingSidebar({
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{day.dayOfWeek}</span>
                         <span className="text-xs text-muted-foreground">
-                          {day.date ? format(new Date(day.date), 'MMM d') : ''} -{' '}
-                          {day.group}
+                          {day.dayOfWeek} - {day.group}
                         </span>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onStartTraining(day.index)}
-                        className="h-8"
-                      >
-                        <Dumbbell className="h-3 w-3 mr-1" />
-                        Train
-                      </Button>
+                      {!isCreating && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onStartTraining(day.index)}
+                          className="h-8"
+                        >
+                          <Dumbbell className="h-3 w-3 mr-1" />
+                          Train
+                        </Button>
+                      )}
                     </div>
                   ))}
               </div>
