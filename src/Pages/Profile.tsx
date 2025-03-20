@@ -6,7 +6,6 @@ import HistoryButton from '@/components/HistoryButton';
 import {
   ContainerContent,
   ContainerHeader,
-  ContainerRoot,
   ContainerTitle,
 } from '@/components/Container';
 
@@ -15,7 +14,7 @@ export default function Profile() {
 
   if (!user) {
     return (
-      <ContainerRoot>
+      <>
         <div className="flex h-screen flex-col items-center justify-center space-y-4">
           <div className="text-xl font-semibold text-foreground">
             Please log in to view your profile
@@ -24,12 +23,12 @@ export default function Profile() {
             <Link to="/login">Log in</Link>
           </Button>
         </div>
-      </ContainerRoot>
+      </>
     );
   }
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader>
         <ContainerTitle>Profile</ContainerTitle>
         <HistoryButton />
@@ -56,7 +55,7 @@ export default function Profile() {
           </Button>
         </div>
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }
 

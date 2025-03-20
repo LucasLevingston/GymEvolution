@@ -73,7 +73,7 @@ export default function Register() {
   }
 
   return (
-    <ContainerRoot>
+    <>
       <div className="flex h-full w-full items-center justify-center">
         <Tabs defaultValue="account" className="w-[400px]">
           <div className="flex w-full justify-center bg-background">
@@ -199,6 +199,6 @@ export default function Register() {
           </TabsContent>
         </Tabs>
       </div>
-    </ContainerRoot>
+    </>
   );
 }

@@ -1,7 +1,4 @@
-'use client';
-
 import type React from 'react';
-import { Toaster } from 'sonner';
 import { cn } from '@/lib/utils';
 import Header from './Header';
 
@@ -21,7 +18,6 @@ export function ContainerRoot({ children, className }: ContainerRootProps): JSX.
         )}
       >
         {children}
-        <Toaster richColors position="top-right" />
       </div>
     </div>
   );

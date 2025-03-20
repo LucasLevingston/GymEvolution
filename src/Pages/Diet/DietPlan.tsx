@@ -85,7 +85,7 @@ export default function DietPlan() {
 
   if (isLoading) {
     return (
-      <ContainerRoot>
+      <>
         <div className="container mx-auto p-4">
           <div className="flex items-center mb-6">
             <Button variant="ghost" onClick={() => navigate('/diet')} className="mr-4">
@@ -106,12 +106,12 @@ export default function DietPlan() {
             </CardContent>
           </Card>
         </div>
-      </ContainerRoot>
+      </>
     );
   }
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader>
         <ContainerTitle>
           Diet Plan{diet?.weekNumber ? ` - Week ${diet.weekNumber}` : ''}
@@ -179,6 +179,6 @@ export default function DietPlan() {
           </div>
         )}
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

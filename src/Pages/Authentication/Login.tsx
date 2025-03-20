@@ -61,7 +61,7 @@ export default function Login() {
   };
 
   return (
-    <ContainerRoot>
+    <>
       <div className="flex h-full w-full items-center justify-center">
         <Tabs defaultValue="account" className="w-[400px]">
           <div className="flex w-full justify-center bg-background">
@@ -144,6 +144,6 @@ export default function Login() {
           </TabsContent>
         </Tabs>
       </div>
-    </ContainerRoot>
+    </>
   );
 }

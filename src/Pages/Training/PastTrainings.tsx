@@ -18,7 +18,7 @@ export default function PastWorkouts() {
   const hasTrainingWeeks = user?.trainingWeeks && user.trainingWeeks.length > 0;
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader>
         <ContainerTitle>Your Weekly Workouts</ContainerTitle>
         <Button variant="outline" onClick={() => navigate('/workout-week')}>
@@ -44,6 +44,6 @@ export default function PastWorkouts() {
           </CardContent>
         )}
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

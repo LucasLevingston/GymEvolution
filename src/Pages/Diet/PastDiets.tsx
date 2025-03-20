@@ -35,7 +35,7 @@ export default function PastDiets() {
 
   if (!user || !user.diets.length) {
     return (
-      <ContainerRoot>
+      <>
         <div className="container mx-auto p-4">
           <h1 className="mb-6 text-3xl font-bold">Past Diets</h1>
           <p>No past diets available.</p>
@@ -48,7 +48,7 @@ export default function PastDiets() {
             View Current Diet
           </Button>
         </div>
-      </ContainerRoot>
+      </>
     );
   }
 
@@ -103,8 +103,6 @@ export default function PastDiets() {
         const updatedDiets = user.diets.map((diet) =>
           diet.id === dietId ? currentDiet : diet
         );
-        // This assumes your user context has a way to update the user object
-        // If not, you might need to refresh the page or fetch the user data again
       }
     } catch (err: any) {
       console.error('Error saving diet:', err);
@@ -119,7 +117,7 @@ export default function PastDiets() {
   };
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader className="mb-6 flex items-center justify-between">
         <ContainerTitle>Past Diets</ContainerTitle>
         <div className="flex gap-2">
@@ -191,6 +189,6 @@ export default function PastDiets() {
           />
         )}
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

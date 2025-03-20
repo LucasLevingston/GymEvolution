@@ -1,4 +1,5 @@
 import { DietType } from './DietType';
+import { Notification } from './NotificationType';
 import { TrainingWeekType } from './TrainingType';
 
 export type UserType = {
@@ -20,6 +21,8 @@ export type UserType = {
   oldWeights: WeightType[];
   trainingWeeks: TrainingWeekType[];
   diets: DietType[];
+  notifications: Notification[];
+  role: 'STUDENT' | 'NUTRITIONIST' | 'TRAINER' | 'ADMIN';
 };
 
 export type HistoryType = {

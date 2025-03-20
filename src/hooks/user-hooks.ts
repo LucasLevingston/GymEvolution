@@ -2,6 +2,8 @@ import axios from 'axios';
 import type { UserType } from '@/types/userType';
 import { useUserStore } from '@/store/user-store';
 import { env } from '@/env';
+import api from '@/lib/api';
+import { Professional } from '@/types/ProfessionalType';
 
 const baseUrl = `${env.VITE_API_URL}`;
 
@@ -21,6 +23,7 @@ export const useUser = () => {
         Authorization: `Bearer ${token}`,
       },
     });
+    console.log(response);
 
     if (!response.data) {
       throw new Error('No data received from server');
@@ -31,6 +34,24 @@ export const useUser = () => {
     }
 
     return response.data;
+  };
+
+  const getNutritionists = async (): Promise<Professional[]> => {
+    try {
+      const response = await api.get('/users/role/nutritionists');
+      console.log(response);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
+  const getTrainers = async (): Promise<Professional[]> => {
+    try {
+      const response = await api.get('/users/role/trainers');
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
   };
 
   const login = async (email: string, password: string): Promise<UserType> => {
@@ -134,6 +155,41 @@ export const useUser = () => {
     return 447.593 + 9.247 * weight + 3.098 * height - 4.33 * age;
   };
 
+  interface RelationshipData {
+    studentId: string;
+    nutritionistId?: string;
+    trainerId?: string;
+    status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  }
+  const createRelationship = async (data: RelationshipData): Promise<any> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log('Relationship data:', data);
+    return { success: true };
+  };
+
+  const getRelationships = async (userId: string): Promise<any[]> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log('Fetching relationships for user ID:', userId);
+    return [];
+  };
+
+  const updateRelationship = async (
+    relationshipId: string,
+    data: { status: 'PENDING' | 'ACCEPTED' | 'REJECTED' }
+  ): Promise<void> => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    console.log(`Updating relationship ${relationshipId} with data:`, data);
+  };
+
+  const getProfessional = async (id: string): Promise<Professional> => {
+    try {
+      const response = await axios.get<Professional>(`/users/get-professional/${id}`);
+      return response.data;
+    } catch (error: any) {
+      throw new Error(error.response.data.message);
+    }
+  };
+
   return {
     user,
     login,
@@ -145,6 +201,12 @@ export const useUser = () => {
     resetPassword,
     token,
     getBasalMetabolicRate,
+    getNutritionists,
+    getTrainers,
+    createRelationship,
+    getRelationships,
+    updateRelationship,
+    getProfessional,
   };
 };
 

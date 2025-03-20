@@ -13,7 +13,7 @@ export default function CreateTraining() {
   const navigate = useNavigate();
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader>
         <ContainerTitle>Create a new Training</ContainerTitle>
         <div className="flex gap-2">
@@ -26,6 +26,6 @@ export default function CreateTraining() {
       <ContainerContent>
         <TrainingWeekCard isCreating={true} />
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

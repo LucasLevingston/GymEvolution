@@ -13,6 +13,7 @@ import {
 import type { TrainingWeekType } from '@/types/TrainingType';
 import { useTraining } from '@/hooks/training-hooks';
 import { useNavigate } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 
 export default function CurrentWorkoutWeek() {
   const { user } = useUser();
@@ -40,7 +41,9 @@ export default function CurrentWorkoutWeek() {
   }, [user, isCurrentWeek]);
 
   return (
-    <ContainerRoot>
+    <>
+      <Helmet title="Training Week" />
+
       <ContainerHeader>
         <ContainerTitle>This Week's Training</ContainerTitle>
         <Button variant="outline" onClick={() => router('/training-weeks')}>
@@ -76,6 +79,6 @@ export default function CurrentWorkoutWeek() {
           </CardContent>
         )}
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

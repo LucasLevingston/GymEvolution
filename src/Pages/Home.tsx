@@ -5,8 +5,8 @@ import useUser from '@/hooks/user-hooks';
 import { useEffect } from 'react';
 import { TrainingWeekCard } from '@/components/training/training-week-card';
 import { toast } from 'sonner';
-import { ContainerRoot } from '@/components/Container';
 import FeatureCard from '@/components/FeatureCard';
+import { Helmet } from 'react-helmet-async';
 
 export default function Home() {
   const { user, getUser } = useUser();
@@ -23,14 +23,15 @@ export default function Home() {
     };
 
     fetchUser();
-  }, [user, getUser]);
+  });
 
   const currentTraining = user?.trainingWeeks
     ? user.trainingWeeks.find((trainingWeek) => trainingWeek.weekNumber)
     : null;
 
   return (
-    <ContainerRoot>
+    <>
+      <Helmet title="Home" />
       <main className="py-12">
         <section className="mb-16 text-center">
           <h1 className="mb-4 text-4xl font-bold tracking-tight text-primary sm:text-5xl md:text-6xl">
@@ -101,6 +102,6 @@ export default function Home() {
           </Button>
         </section>
       </main>
-    </ContainerRoot>
+    </>
   );
 }

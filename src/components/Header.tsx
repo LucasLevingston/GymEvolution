@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,33 +7,26 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import {
-  LogOut,
-  Settings,
-  User,
-  Home,
-  Dumbbell,
-  BarChart,
-  Utensils,
-} from 'lucide-react'
-import useUser from '@/hooks/user-hooks'
-import { toast } from 'sonner'
-import { ModeToggle } from './toggle/ModeToggle'
-import logoDivision from '../assets/logo.png'
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { LogOut, Settings, User, Home, Dumbbell, BarChart, Utensils } from 'lucide-react';
+import useUser from '@/hooks/user-hooks';
+import { toast } from 'sonner';
+import { ModeToggle } from './toggle/ModeToggle';
+import logoDivision from '../assets/logo.png';
+import { NotificationDropdown } from './notifications/NotificationDropdown';
 
 export default function Header() {
-  const { logout, user } = useUser()
-  const navigate = useNavigate()
+  const { logout, user } = useUser();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    toast.warning('Logged out of the account.')
+    logout();
+    toast.warning('Logged out of the account.');
     setTimeout(() => {
-      navigate('/login')
-    }, 2000)
-  }
+      navigate('/login');
+    }, 2000);
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,9 +38,7 @@ export default function Header() {
             width={40}
             height={40}
           />
-          <span className="font-saira-stencil text-xl font-bold">
-            GymEvolution
-          </span>
+          <span className="font-saira-stencil text-xl font-bold">GymEvolution</span>
         </Link>
 
         <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
@@ -63,40 +54,36 @@ export default function Header() {
                 Workout Week
               </Link>
 
-              <Link
-                to="/progress"
-                className="transition-colors hover:text-foreground/80"
-              >
+              <Link to="/progress" className="transition-colors hover:text-foreground/80">
                 Progress
               </Link>
+              <Link to="/diet" className="transition-colors hover:text-foreground/80">
+                Diet
+              </Link>
               <Link
-                to="/diet"
+                to="/professionals"
                 className="transition-colors hover:text-foreground/80"
               >
-                Diet
+                Professionals
               </Link>
             </>
           )}
         </nav>
 
         <div className="flex items-center space-x-4">
+          <NotificationDropdown />
           <ModeToggle />
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="relative h-8 w-8 rounded-full"
-                >
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <User className="h-5 w-5" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {user.name}
-                    </p>
+                    <p className="text-sm font-medium leading-none">{user.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
@@ -105,10 +92,7 @@ export default function Header() {
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link
-                      to="/profile"
-                      className="flex cursor-pointer items-center"
-                    >
+                    <Link to="/profile" className="flex cursor-pointer items-center">
                       <User className="mr-2 h-4 w-4" />
                       <span>Profile</span>
                     </Link>
@@ -120,28 +104,19 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      to="/workout-week"
-                      className="flex cursor-pointer items-center"
-                    >
+                    <Link to="/workout-week" className="flex cursor-pointer items-center">
                       <Dumbbell className="mr-2 h-4 w-4" />
                       <span>Workout Week</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      to="/diet"
-                      className="flex cursor-pointer items-center"
-                    >
+                    <Link to="/diet" className="flex cursor-pointer items-center">
                       <Utensils className="mr-2 h-4 w-4" />
                       <span>Diet</span>
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      to="/progress"
-                      className="flex cursor-pointer items-center"
-                    >
+                    <Link to="/progress" className="flex cursor-pointer items-center">
                       <BarChart className="mr-2 h-4 w-4" />
                       <span>Progress</span>
                     </Link>
@@ -180,5 +155,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }

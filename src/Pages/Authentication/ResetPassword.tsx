@@ -82,7 +82,7 @@ export default function ResetPassword() {
   };
 
   return (
-    <ContainerRoot>
+    <>
       <div className="flex h-full w-full items-center justify-center">
         <Tabs defaultValue="reset" className="w-[400px]">
           <TabsList className="grid w-full bg-background">
@@ -178,6 +178,6 @@ export default function ResetPassword() {
           </TabsContent>
         </Tabs>
       </div>
-    </ContainerRoot>
+    </>
   );
 }

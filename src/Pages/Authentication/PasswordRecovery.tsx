@@ -55,7 +55,7 @@ export default function PasswordRecovery() {
   };
 
   return (
-    <ContainerRoot>
+    <>
       <div className="flex h-full w-full items-center justify-center">
         <Tabs defaultValue="recover" className="w-[400px]">
           <TabsList className="grid w-full bg-background">
@@ -110,6 +110,6 @@ export default function PasswordRecovery() {
           </TabsContent>
         </Tabs>
       </div>
-    </ContainerRoot>
+    </>
   );
 }

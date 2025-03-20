@@ -8,10 +8,10 @@ import { TrainingProgressChart } from '@/components/progress/TraininProgressChar
 import {
   ContainerContent,
   ContainerHeader,
-  ContainerRoot,
   ContainerTitle,
 } from '@/components/Container';
 import { WeightChart } from '@/components/progress/WeightChart';
+import { Helmet } from 'react-helmet-async';
 
 export default function Progress() {
   const { user, updateUser } = useUser();
@@ -47,11 +47,11 @@ export default function Progress() {
   };
 
   return (
-    <ContainerRoot>
+    <>
+      <Helmet title="Progress" />
       <ContainerHeader>
         <ContainerTitle className="text-3xl font-bold">Your Progress</ContainerTitle>
       </ContainerHeader>
-
       <ContainerContent>
         <Tabs defaultValue="weight">
           <TabsList>
@@ -73,6 +73,6 @@ export default function Progress() {
           </TabsContent>
         </Tabs>
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

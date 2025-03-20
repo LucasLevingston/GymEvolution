@@ -95,7 +95,7 @@ export default function CreateDiet() {
   };
 
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader className="flex justify-between items-center mb-6">
         <ContainerTitle>Create New Diet Plan</ContainerTitle>
         <div className="flex gap-2">
@@ -122,6 +122,6 @@ export default function CreateDiet() {
           isCreating={true}
         />
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }

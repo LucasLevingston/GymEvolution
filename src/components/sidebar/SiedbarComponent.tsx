@@ -10,7 +10,7 @@ import {
 
 export default function SiedbarComponent({ children }: { children: React.ReactNode }) {
   return (
-    <ContainerRoot>
+    <>
       <ContainerHeader>
         <ContainerTitle>Settings</ContainerTitle>
       </ContainerHeader>
@@ -22,6 +22,6 @@ export default function SiedbarComponent({ children }: { children: React.ReactNo
           <main className="flex-1 p-6">{children}</main>
         </Card>
       </ContainerContent>
-    </ContainerRoot>
+    </>
   );
 }
