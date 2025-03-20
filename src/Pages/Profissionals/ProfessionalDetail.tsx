@@ -22,6 +22,7 @@ import useUser from '@/hooks/user-hooks';
 import { useNotifications } from '@/components/notifications/NotificationProvider';
 import { Professional } from '@/types/ProfessionalType';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import { useProfessionals } from '@/hooks/professional-hooks';
 
 export default function ProfessionalDetail() {
   const { id } = useParams();
@@ -29,7 +30,8 @@ export default function ProfessionalDetail() {
   const [loading, setLoading] = useState(false);
   const [professional, setProfessional] = useState<Professional | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { user, getUser, createRelationship, getProfessional } = useUser();
+  const { user, createRelationship } = useUser();
+  const { getProfessionalById } = useProfessionals();
   const { addNotification } = useNotifications();
 
   if (!id) {
@@ -41,35 +43,20 @@ export default function ProfessionalDetail() {
       try {
         setIsLoading(true);
 
-        const isNutritionist = professional?.role === 'NUTRITIONIST';
-
-        let data: Professional;
-        if (isNutritionist) {
-          data = await getProfessional(id);
-        } else {
-          data = await getProfessional(id);
-        }
-
-        if (!data) {
+        const professional = await getProfessionalById(id);
+        if (!professional) {
           throw new Error('Professional not found');
         }
-
-        setProfessional(data);
+        setProfessional(professional);
       } catch (error) {
         console.error('Error fetching professional:', error);
-        toast.error('Failed to load professional details');
-        addNotification({
-          title: 'Error',
-          message: 'Failed to load professional details',
-          type: 'error',
-        });
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchProfessional();
-  }, [id, getUser, addNotification]);
+  }, []);
 
   const handleHire = async () => {
     if (!user) {
@@ -110,7 +97,6 @@ export default function ProfessionalDetail() {
         throw new Error('Failed to send request');
       }
     } catch (error) {
-      console.error('Error hiring professional:', error);
       toast.error('Failed to send request');
       addNotification({
         title: 'Request Failed',

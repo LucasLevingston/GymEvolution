@@ -22,7 +22,7 @@ import ProfessionalDetail from './Pages/Profissionals/ProfessionalDetail';
 import { NotificationProvider } from './components/notifications/NotificationProvider';
 import { ContainerRoot } from './components/Container';
 import RegisterProfessional from './Pages/Profissionals/RegisterProfessional';
-import HiringFlow from './Pages/Profissionals/HiringFlow';
+import HiringFlow from './Pages/HiringFlow';
 import ProfessionalDashboard from './Pages/Admin/Professional-Dashboard';
 import PurchaseSuccess from './Pages/Purchase/PurchaseSuccess';
 import PurchaseCancel from './Pages/Purchase/PurchaseCancel';

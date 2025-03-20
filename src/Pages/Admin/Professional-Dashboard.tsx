@@ -37,8 +37,9 @@ import {
 import { useNotifications } from '@/hooks/use-notifications';
 import { toast } from 'sonner';
 import { ContainerRoot } from '@/components/Container';
-import useUser from '@/hooks/user-hooks';
+import { useRelationships } from '@/hooks/relationship-hooks';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import useUser from '@/hooks/user-hooks';
 
 interface Student {
   id: string;
@@ -53,103 +54,61 @@ interface Student {
 
 export default function ProfessionalDashboard() {
   const [students, setStudents] = useState<Student[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const { addNotification } = useNotifications();
-  const { user, getRelationships, updateRelationship } = useUser();
+  const { user } = useUser();
+  const { getStudents, updateRelationship, isLoading } = useRelationships();
 
   useEffect(() => {
     const fetchStudents = async () => {
       if (!user) return;
 
       try {
-        setLoading(true);
-        // In a real app, you would fetch this from your API
-        // const data = await getStudents(user.id);
+        const data = await getStudents();
 
-        // Simulated data
-        const mockStudents: Student[] = [
-          {
-            id: '1',
-            name: 'João Silva',
-            email: 'joao.silva@example.com',
-            status: 'ACCEPTED',
-            since: '2023-10-15',
-            lastActivity: '2023-11-20',
-            hasDiet: true,
-            hasTraining: true,
-          },
-          {
-            id: '2',
-            name: 'Maria Oliveira',
-            email: 'maria.oliveira@example.com',
-            status: 'ACCEPTED',
-            since: '2023-11-05',
-            lastActivity: '2023-11-18',
-            hasDiet: true,
-            hasTraining: false,
-          },
-          {
-            id: '3',
-            name: 'Pedro Santos',
-            email: 'pedro.santos@example.com',
-            status: 'PENDING',
-            since: '2023-11-22',
-            hasDiet: false,
-            hasTraining: false,
-          },
-          {
-            id: '4',
-            name: 'Ana Costa',
-            email: 'ana.costa@example.com',
-            status: 'ACCEPTED',
-            since: '2023-09-10',
-            lastActivity: '2023-11-15',
-            hasDiet: false,
-            hasTraining: true,
-          },
-          {
-            id: '5',
-            name: 'Lucas Ferreira',
-            email: 'lucas.ferreira@example.com',
-            status: 'PENDING',
-            since: '2023-11-23',
-            hasDiet: false,
-            hasTraining: false,
-          },
-        ];
+        const transformedStudents: Student[] = data.map((student: any) => ({
+          id: student.id,
+          name: student.name || 'Unknown',
+          email: student.email,
+          status: student.status,
+          since: student.createdAt,
+          lastActivity: student.lastActivity,
+          hasDiet: student.hasDiet || false,
+          hasTraining: student.hasTraining || false,
+        }));
 
-        setStudents(mockStudents);
+        setStudents(transformedStudents);
       } catch (error) {
         console.error('Error fetching students:', error);
         toast.error('Falha ao carregar alunos');
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchStudents();
-  }, [user]);
+  }, [user, getStudents]);
 
   const handleAcceptStudent = async (studentId: string) => {
     try {
-      // In a real app, you would call your API
-      // await updateRelationship(relationshipId, { status: 'ACCEPTED' });
+      const student = students.find((s) => s.id === studentId);
+      if (!student) return;
 
-      // Update local state
-      setStudents((prev) =>
-        prev.map((student) =>
-          student.id === studentId ? { ...student, status: 'ACCEPTED' } : student
-        )
-      );
+      const result = await updateRelationship(student.id, { status: 'ACCEPTED' });
 
-      toast.success('Aluno aceito com sucesso');
-      addNotification({
-        title: 'Novo Aluno',
-        message: 'Você aceitou um novo aluno. Crie um plano personalizado para ele.',
-        type: 'success',
-      });
+      if (result) {
+        setStudents((prev) =>
+          prev.map((student) =>
+            student.id === studentId ? { ...student, status: 'ACCEPTED' } : student
+          )
+        );
+
+        toast.success('Aluno aceito com sucesso');
+        addNotification({
+          title: 'Novo Aluno',
+          message: 'Você aceitou um novo aluno. Crie um plano personalizado para ele.',
+          type: 'success',
+        });
+      }
     } catch (error) {
       console.error('Error accepting student:', error);
       toast.error('Falha ao aceitar aluno');
@@ -158,22 +117,28 @@ export default function ProfessionalDashboard() {
 
   const handleRejectStudent = async (studentId: string) => {
     try {
-      // In a real app, you would call your API
-      // await updateRelationship(relationshipId, { status: 'REJECTED' });
+      // Find the relationship ID for this student
+      const student = students.find((s) => s.id === studentId);
+      if (!student) return;
 
-      // Update local state
-      setStudents((prev) =>
-        prev.map((student) =>
-          student.id === studentId ? { ...student, status: 'REJECTED' } : student
-        )
-      );
+      // Update the relationship status
+      const result = await updateRelationship(student.id, { status: 'REJECTED' });
 
-      toast.success('Solicitação rejeitada');
-      addNotification({
-        title: 'Solicitação Rejeitada',
-        message: 'Você rejeitou a solicitação de um aluno.',
-        type: 'info',
-      });
+      if (result) {
+        // Update local state
+        setStudents((prev) =>
+          prev.map((student) =>
+            student.id === studentId ? { ...student, status: 'REJECTED' } : student
+          )
+        );
+
+        toast.success('Solicitação rejeitada');
+        addNotification({
+          title: 'Solicitação Rejeitada',
+          message: 'Você rejeitou a solicitação de um aluno.',
+          type: 'info',
+        });
+      }
     } catch (error) {
       console.error('Error rejecting student:', error);
       toast.error('Falha ao rejeitar solicitação');
@@ -332,7 +297,7 @@ export default function ProfessionalDashboard() {
           </TabsList>
 
           <TabsContent value="all" className="mt-6">
-            {loading ? (
+            {isLoading ? (
               <LoadingSpinner />
             ) : filteredStudents.length === 0 ? (
               <Card>
@@ -467,7 +432,7 @@ export default function ProfessionalDashboard() {
           </TabsContent>
 
           <TabsContent value="active" className="mt-6">
-            {loading ? (
+            {isLoading ? (
               <LoadingSpinner />
             ) : filteredStudents.filter((s) => s.status === 'ACCEPTED').length === 0 ? (
               <Card>
@@ -574,7 +539,7 @@ export default function ProfessionalDashboard() {
           </TabsContent>
 
           <TabsContent value="pending" className="mt-6">
-            {loading ? (
+            {isLoading ? (
               <LoadingSpinner />
             ) : filteredStudents.filter((s) => s.status === 'PENDING').length === 0 ? (
               <Card>

@@ -23,7 +23,7 @@ export default function Home() {
     };
 
     fetchUser();
-  });
+  }, []);
 
   const currentTraining = user?.trainingWeeks
     ? user.trainingWeeks.find((trainingWeek) => trainingWeek.weekNumber)
