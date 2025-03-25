@@ -17,16 +17,24 @@ import PasswordRecovery from './Pages/Authentication/PasswordRecovery';
 import DietPlan from './Pages/Diet/DietPlan';
 import PastDiets from './Pages/Diet/PastDiets';
 import CreateDiet from './Pages/Diet/CreateDiet';
-import ProfessionalsList from './Pages/Profissionals/ProfessionalsList';
-import ProfessionalDetail from './Pages/Profissionals/ProfessionalDetail';
+import ProfessionalsList from './Pages/Professionals/ProfessionalsList';
+import ProfessionalDetail from './Pages/Professionals/ProfessionalDetail';
 import { NotificationProvider } from './components/notifications/NotificationProvider';
 import { ContainerRoot } from './components/Container';
-import RegisterProfessional from './Pages/Profissionals/RegisterProfessional';
+import RegisterProfessional from './Pages/Professionals/RegisterProfessional';
 import HiringFlow from './Pages/HiringFlow';
-import ProfessionalDashboard from './Pages/Admin/Professional-Dashboard';
+import AdminDashboard from './Pages/Admin/Admin-Dashboard';
 import PurchaseSuccess from './Pages/Purchase/PurchaseSuccess';
 import PurchaseCancel from './Pages/Purchase/PurchaseCancel';
-import RelationshipManagement from './Pages/Profissionals/RelationshipManagement';
+import RelationshipManagement from './Pages/Professionals/RelationshipManagement';
+import CreatePlan from './Pages/Professionals/Plan/CreatePlan';
+import EditPlan from './Pages/Professionals/Plan/EditPlan';
+// import Meetings from './Pages/Meetings/Meetings';
+import ScheduleMeeting from './Pages/Meetings/ScheduleMeeting';
+import ProfessionalPlans from './Pages/Professionals/Plan/ProfessionalPlans';
+import Purchases from './Pages/Purchase/Purchases';
+import PurchaseDetails from './Pages/Purchase/PurchaseDetails';
+import ProfessionalDashboard from './Pages/Professionals/ProfessionalDashboard';
 
 interface PrivateRouteProps {
   element: JSX.Element;
@@ -46,7 +54,6 @@ const ProfessionalRoute = ({ element }: PrivateRouteProps) => {
   );
 };
 
-// Rotas de Autenticação
 const AuthRoutes = [
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
@@ -54,7 +61,6 @@ const AuthRoutes = [
   { path: '/reset-password', element: <ResetPassword /> },
 ];
 
-// Rotas de Profissionais
 const ProfessionalRoutes = [
   { path: '/professionals', element: <ProfessionalsList /> },
   { path: '/professionals/:id', element: <ProfessionalDetail /> },
@@ -66,7 +72,6 @@ const ProfessionalRoutes = [
   },
 ];
 
-// Rotas de Configurações
 const SettingsRoutes = [
   { path: '/settings/theme', element: <PrivateRoute element={<ThemeSettings />} /> },
   {
@@ -75,22 +80,31 @@ const SettingsRoutes = [
   },
 ];
 
-// Rotas de Treinamento
 const TrainingRoutes = [
   { path: '/workout-week', element: <PrivateRoute element={<CurrentWorkoutWeek />} /> },
   { path: '/training-weeks', element: <PrivateRoute element={<PastWorkouts />} /> },
   { path: '/create-training', element: <PrivateRoute element={<CreateTraining />} /> },
 ];
 
-// Rotas de Dieta
 const DietRoutes = [
   { path: '/diet', element: <PrivateRoute element={<DietPlan />} /> },
   { path: '/past-diets', element: <PrivateRoute element={<PastDiets />} /> },
   { path: '/create-diet', element: <PrivateRoute element={<CreateDiet />} /> },
 ];
 
-// Rotas de Compras
 const PurchaseRoutes = [
+  {
+    path: '/admin-dashboard',
+    element: <PrivateRoute element={<AdminDashboard />} />,
+  },
+  {
+    path: '/purchases',
+    element: <PrivateRoute element={<Purchases />} />,
+  },
+  {
+    path: '/purchases/:id',
+    element: <PrivateRoute element={<PurchaseDetails />} />,
+  },
   {
     path: '/purchase-success/:professionalId/:planId',
     element: <PrivateRoute element={<PurchaseSuccess />} />,
@@ -99,11 +113,32 @@ const PurchaseRoutes = [
     path: '/purchase-cancel/:relationshipId',
     element: <PrivateRoute element={<PurchaseCancel />} />,
   },
+  {
+    path: '/professional-plans/:id',
+    element: <PrivateRoute element={<ProfessionalPlans />} />,
+  },
+  {
+    path: '/create-plan',
+    element: <PrivateRoute element={<CreatePlan />} />,
+  },
+  {
+    path: '/edit-plan/:id',
+    element: <PrivateRoute element={<EditPlan />} />,
+  },
+  // {
+  //   path: '/meetings',
+  //   element: <PrivateRoute element={<Meetings />} />,
+  // },
+  {
+    path: '/schedule-meeting/:professionalId',
+    element: <PrivateRoute element={<ScheduleMeeting />} />,
+  },
 ];
 
 const GeneralRoutes = [
   { path: '/', element: <Home /> },
   { path: '/progress', element: <PrivateRoute element={<Progress />} /> },
+  { path: '/profile', element: <PrivateRoute element={<Profile />} /> },
   {
     path: '/relationships',
     element: <PrivateRoute element={<RelationshipManagement />} />,

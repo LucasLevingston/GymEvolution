@@ -1,227 +1,184 @@
-'use client';
-
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useUserStore } from '@/store/user-store';
 import { toast } from 'sonner';
 import api from '@/lib/api';
-import { useUserStore } from '@/store/user-store';
-import type {
-  Purchase,
-  CreatePurchaseDto,
-  UpdatePurchaseDto,
-  CancelPurchaseDto,
-  CompletePurchaseDto,
-} from '@/types/purchase';
-import { useNotifications } from './use-notifications';
+import { Purchase } from '@/types/PurchaseType';
 
-export const usePurchases = () => {
+interface PaymentResult {
+  purchaseId: string;
+  paymentId: string;
+  paymentUrl: string;
+  status: string;
+}
+
+export function usePurchases() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { user, token } = useUserStore();
-  const { addNotification } = useNotifications();
+  const { token, user } = useUserStore();
 
-  const createPurchase = async (data: CreatePurchaseDto): Promise<Purchase | null> => {
-    if (!user) {
-      toast.error('Você precisa estar logado para realizar uma compra');
-      return null;
-    }
+  const createPurchase = useCallback(
+    async (newPurchase: {
+      planId: string;
+      successUrl: string;
+      cancelUrl: string;
+      paymentMethod: string;
+      amount: number;
+      professonalId: string;
+    }): Promise<PaymentResult | null> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
+        const response = await api.post('/purchases', {
+          ...newPurchase,
+          buyerId: user?.id,
+        });
+
+        return response.data;
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error || 'Falha ao criar compra';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [token]
+  );
+
+  const getUserPurchases = useCallback(async (): Promise<Purchase[]> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.post('/purchases', data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Falha ao criar compra');
-      }
-
-      // Show success notification
-      addNotification({
-        title: 'Compra Realizada',
-        message: `Você adquiriu o plano ${data.planName}. Aguarde a confirmação do profissional.`,
-        type: 'success',
-        link: `/purchase-success/${data.professionalId}/${data.planId}`,
-      });
-
-      return response.data;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Falha ao criar compra';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getPurchaseById = async (id: string): Promise<Purchase | null> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await api.get(`/purchases/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Compra não encontrada');
-      }
-
-      return response.data;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Falha ao buscar compra';
-      setError(errorMessage);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const getUserPurchases = async (
-    role: 'buyer' | 'professional' = 'buyer'
-  ): Promise<Purchase[]> => {
-    if (!user) return [];
-
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const queryParam = role === 'buyer' ? 'buyerId' : 'professionalId';
-      const response = await api.get(`/purchases?${queryParam}=${user.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Falha ao buscar compras');
-      }
+      const response = await api.get(`/purchases/user/${user?.id}`);
 
       return response.data;
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Falha ao buscar compras';
       setError(errorMessage);
+      toast.error(errorMessage);
       return [];
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
-  const updatePurchase = async (
-    id: string,
-    data: UpdatePurchaseDto
-  ): Promise<Purchase | null> => {
+  /**
+   * Get all sales for the current professional
+   */
+  const getProfessionalSales = useCallback(async (): Promise<Purchase[]> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.patch(`/purchases/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Falha ao atualizar compra');
-      }
-
+      const response = await api.get('/purchases/professional');
       return response.data;
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Falha ao atualizar compra';
+      const errorMessage = err.response?.data?.error || 'Falha ao buscar vendas';
       setError(errorMessage);
       toast.error(errorMessage);
-      return null;
+      return [];
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [token]);
 
-  const cancelPurchase = async (
-    id: string,
-    data: CancelPurchaseDto
-  ): Promise<Purchase | null> => {
+  /**
+   * Get purchase by ID
+   */
+  const getPurchaseById = useCallback(
+    async (purchaseId: string): Promise<Purchase | null> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const response = await api.get(`/purchases/${purchaseId}`);
+        return response.data;
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error || 'Falha ao buscar compra';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [token]
+  );
+
+  const cancelPurchase = useCallback(async (id: string, reason: string) => {
     try {
       setIsLoading(true);
-      setError(null);
-
-      const response = await api.post(`/purchases/${id}/cancel`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Falha ao cancelar compra');
-      }
-
-      // Show success notification
-      addNotification({
-        title: 'Compra Cancelada',
-        message: 'Sua compra foi cancelada com sucesso.',
-        type: 'info',
-      });
-
-      return response.data;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Falha ao cancelar compra';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      return null;
+      await api.put(`/purchases/${id}/cancel`, { reason });
+      toast.success('Compra cancelada com sucesso');
+      return true;
+    } catch (error) {
+      console.error('Error cancelling purchase:', error);
+      toast.error('Falha ao cancelar compra');
+      return false;
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const completePurchase = async (
-    id: string,
-    data: CompletePurchaseDto
-  ): Promise<Purchase | null> => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const response = await api.post(`/purchases/${id}/complete`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.data) {
-        throw new Error('Falha ao completar compra');
+  const retryPayment = useCallback(
+    async (
+      purchaseId: string,
+      paymentMethod: string,
+      successUrl: string,
+      cancelUrl: string
+    ) => {
+      try {
+        setIsLoading(true);
+        const response = await api.post(`/purchases/${purchaseId}/retry-payment`, {
+          paymentMethod,
+          successUrl,
+          cancelUrl,
+        });
+        return response.data;
+      } catch (error) {
+        console.error('Error retrying payment:', error);
+        toast.error('Falha ao processar pagamento');
+        return null;
+      } finally {
+        setIsLoading(false);
       }
+    },
+    []
+  );
 
-      // Show success notification
-      addNotification({
-        title: 'Pagamento Confirmado',
-        message: 'Seu pagamento foi confirmado com sucesso.',
-        type: 'success',
-      });
+  const refundPurchase = useCallback(
+    async (purchaseId: string): Promise<boolean> => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-      return response.data;
-    } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 'Falha ao completar compra';
-      setError(errorMessage);
-      toast.error(errorMessage);
-      return null;
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        await api.put(`/purchases/${purchaseId}/refund`);
+        toast.success('Reembolso solicitado com sucesso');
+        return true;
+      } catch (err: any) {
+        const errorMessage = err.response?.data?.error || 'Falha ao solicitar reembolso';
+        setError(errorMessage);
+        toast.error(errorMessage);
+        return false;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [token]
+  );
 
   return {
+    createPurchase,
+    retryPayment,
+    getUserPurchases,
+    getProfessionalSales,
+    getPurchaseById,
+    cancelPurchase,
+    refundPurchase,
     isLoading,
     error,
-    createPurchase,
-    getPurchaseById,
-    getUserPurchases,
-    updatePurchase,
-    cancelPurchase,
-    completePurchase,
   };
-};
+}

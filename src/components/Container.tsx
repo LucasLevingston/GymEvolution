@@ -1,6 +1,6 @@
 import type React from 'react';
-import { cn } from '@/lib/utils';
 import Header from './Header';
+import { twMerge } from 'tailwind-merge';
 
 interface ContainerRootProps {
   children: React.ReactNode;
@@ -12,7 +12,7 @@ export function ContainerRoot({ children, className }: ContainerRootProps): JSX.
     <div className="min-h-screen bg-background">
       <Header />
       <div
-        className={cn(
+        className={twMerge(
           'mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-8 md:py-10 lg:px-8',
           className
         )}
@@ -34,7 +34,7 @@ export function ContainerHeader({
 }: ContainerHeaderProps): JSX.Element {
   return (
     <div
-      className={cn(
+      className={twMerge(
         'flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4',
         className
       )}
@@ -47,7 +47,7 @@ export function ContainerTitle({
   children,
   className,
 }: ContainerHeaderProps): JSX.Element {
-  return <h1 className={cn('text-3xl font-bold', className)}>{children}</h1>;
+  return <h1 className={twMerge('text-3xl font-bold', className)}>{children}</h1>;
 }
 
 interface ContainerContentProps {
@@ -59,5 +59,7 @@ export function ContainerContent({
   children,
   className,
 }: ContainerContentProps): JSX.Element {
-  return <div className={cn('w-full flex flex-col gap-4', className)}>{children}</div>;
+  return (
+    <div className={twMerge('w-full flex flex-col gap-4', className)}>{children}</div>
+  );
 }

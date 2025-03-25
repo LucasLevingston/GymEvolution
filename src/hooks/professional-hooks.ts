@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import api from '@/lib/api';
 import { useUserStore } from '@/store/user-store';
 import type { Professional } from '@/types/ProfessionalType';
@@ -10,22 +10,22 @@ export const useProfessionals = () => {
   const [error, setError] = useState<string | null>(null);
   const { token } = useUserStore();
 
-  const getNutritionists = useCallback(async (): Promise<Professional[]> => {
+  const getNutritionists = async (): Promise<Professional[]> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get('/users/role/nutritionists', {
+      const { data } = await api.get('/professional/nutritionists', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.data) {
+      if (!data) {
         throw new Error('Falha ao buscar nutricionistas');
       }
 
-      return response.data;
+      return data;
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Falha ao buscar nutricionistas';
       setError(errorMessage);
@@ -33,24 +33,24 @@ export const useProfessionals = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  };
 
-  const getTrainers = useCallback(async (): Promise<Professional[]> => {
+  const getTrainers = async (): Promise<Professional[]> => {
     try {
       setIsLoading(true);
       setError(null);
 
-      const response = await api.get('/users/role/trainers', {
+      const { data } = await api.get('/professional/trainers', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.data) {
+      if (!data) {
         throw new Error('Falha ao buscar treinadores');
       }
 
-      return response.data;
+      return data;
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Falha ao buscar treinadores';
       setError(errorMessage);
@@ -58,36 +58,55 @@ export const useProfessionals = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  };
 
-  const getProfessionalById = useCallback(
-    async (id: string): Promise<Professional | null> => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  const getProfessionalById = async (id: string): Promise<Professional | null> => {
+    try {
+      setIsLoading(true);
+      setError(null);
 
-        const response = await api.get(`/professionals/${id}`);
+      const { data } = await api.get(`/professionals/${id}`);
 
-        if (!response.data) {
-          throw new Error('Profissional não encontrado');
-        }
-
-        return response.data;
-      } catch (err: any) {
-        const errorMessage = err.response?.data?.error || 'Falha ao buscar profissional';
-        setError(errorMessage);
-        return null;
-      } finally {
-        setIsLoading(false);
+      if (!data) {
+        throw new Error('Profissional não encontrado');
       }
-    },
-    [token]
-  );
+
+      return data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Falha ao buscar profissional';
+      setError(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getProfessionals = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const { data } = await api.get('/professionals');
+
+      if (!data) {
+        throw new Error('Error on request of get professionals');
+      }
+
+      return data;
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error;
+      setError(errorMessage);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return {
     isLoading,
     error,
     getNutritionists,
+    getProfessionals,
     getTrainers,
     getProfessionalById,
   };

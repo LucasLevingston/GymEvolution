@@ -1,59 +1,70 @@
-export type PurchaseStatus = 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
+import { Meeting } from './MeetingType';
+import { Plan } from './PlanType';
+import { Relationship } from './RelationshipType';
+import { UserType } from './userType';
+
+export type paymentStatusType = 'PENDING' | 'COMPLETED' | 'CANCELLED' | 'REFUNDED';
+export type statusPurchaseType =
+  | 'WAITINGPAYMENT'
+  | 'SCHEDULEMEETING'
+  | 'SCHEDULEDMEETING'
+  | 'WAITINGSPREADSHEET'
+  | 'SPREADSHEET SENT'
+  | 'SCHEDULE RETURN'
+  | 'FINALIZED';
 
 export interface Purchase {
   id: string;
+
+  buyer: UserType;
   buyerId: string;
+  professional: UserType;
   professionalId: string;
+
   planId: string;
-  planName: string;
-  planDescription?: string;
+  Plan: Plan;
   amount: number;
-  status: PurchaseStatus;
-  paymentMethod?: string;
-  paymentId?: string;
-  cancelReason?: string;
-  cancelComment?: string;
-  cancelledAt?: string;
-  relationshipId?: string;
-  createdAt: string;
-  updatedAt: string;
-  buyer?: {
-    id: string;
-    name?: string;
-    email: string;
-  };
-  professional?: {
-    id: string;
-    name?: string;
-    email: string;
-    role: string;
-  };
-  relationship?: {
-    id: string;
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-  };
+  status: statusPurchaseType;
+  paymentStatus: paymentStatusType;
+  paymentMethod: string;
+  paymentId?: string | null;
+
+  // Cancellation details
+  cancelReason?: string | null;
+  cancelComment?: string | null;
+  cancelledAt?: Date | string | null;
+
+  // Relationship connection
+  relationship?: Relationship | null;
+  relationshipId?: string | null;
+
+  // Additional connections
+  meetings?: Meeting[];
+  User?: UserType | null;
+  userId?: string | null;
+
+  // Timestamps
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface CreatePurchaseDto {
   buyerId: string;
   professionalId: string;
   planId: string;
-  planName: string;
-  planDescription?: string;
   amount: number;
   paymentMethod?: string;
   paymentId?: string;
 }
 
 export interface UpdatePurchaseDto {
-  status?: PurchaseStatus;
+  paymentStatusType?: paymentStatusType;
+  status?: statusPurchaseType;
   paymentMethod?: string;
   paymentId?: string;
   cancelReason?: string;
   cancelComment?: string;
-  cancelledAt?: Date;
+  cancelledAt?: Date | string;
 }
 
 export interface CancelPurchaseDto {

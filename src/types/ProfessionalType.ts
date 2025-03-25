@@ -14,7 +14,7 @@ export interface Professional {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: 'NUTRITIONIST' | 'TRAINER';
   bio?: string;
   city?: string;
   state?: string;
@@ -23,7 +23,6 @@ export interface Professional {
   location: string;
   specialty: string;
   experience?: number;
-  rating?: number;
   available: boolean;
   specialties?: string[];
   certifications?: string[];

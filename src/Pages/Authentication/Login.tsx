@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -29,7 +28,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { loginSchema } from '@/schemas/LogInSchema';
-import { ContainerRoot } from '@/components/Container';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
@@ -49,7 +47,7 @@ export default function Login() {
 
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     try {
-      await login(values.email, values.password);
+      await login({ email: values.email, password: values.password });
 
       toast.success('Login successfully!');
       setTimeout(() => {
@@ -71,7 +69,6 @@ export default function Login() {
             <Card>
               <CardHeader>
                 <CardTitle>Login</CardTitle>
-                <CardDescription></CardDescription>
               </CardHeader>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

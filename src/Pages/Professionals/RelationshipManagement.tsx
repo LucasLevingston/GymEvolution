@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, XCircle, UserRound } from 'lucide-react';
@@ -19,6 +17,11 @@ import { toast } from 'sonner';
 import useUser from '@/hooks/user-hooks';
 import { useNotifications } from '@/components/notifications/NotificationProvider';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import {
+  ContainerContent,
+  ContainerHeader,
+  ContainerTitle,
+} from '@/components/Container';
 
 interface Relationship {
   id: string;
@@ -143,12 +146,15 @@ export default function RelationshipManagement() {
 
   return (
     <>
-      <div className="py-12 max-w-4xl mx-auto">
-        <h1 className="mb-2 text-3xl font-bold">My Professionals</h1>
-        <p className="mb-8 text-muted-foreground">
-          Manage your relationships with nutritionists and trainers
-        </p>
-
+      <ContainerHeader>
+        <div>
+          <ContainerTitle>My Professionals</ContainerTitle>
+          <p className="mb-8 text-muted-foreground">
+            Manage your relationships with nutritionists and trainers
+          </p>
+        </div>
+      </ContainerHeader>
+      <ContainerContent>
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="active">Active</TabsTrigger>
@@ -388,8 +394,8 @@ export default function RelationshipManagement() {
               </div>
             )}
           </TabsContent>
-        </Tabs>
-      </div>
+        </Tabs>{' '}
+      </ContainerContent>
     </>
   );
 }

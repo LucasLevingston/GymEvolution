@@ -9,7 +9,16 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { LogOut, Settings, User, Home, Dumbbell, BarChart, Utensils } from 'lucide-react';
+import {
+  LogOut,
+  Settings,
+  User,
+  Home,
+  Dumbbell,
+  BarChart,
+  Utensils,
+  DollarSign,
+} from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
 import { toast } from 'sonner';
 import { ModeToggle } from './toggle/ModeToggle';
@@ -71,77 +80,90 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center space-x-4">
-          <NotificationDropdown />
           <ModeToggle />
+
           {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <User className="h-5 w-5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56" align="end" forceMount>
-                <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.name}</p>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuGroup>
+            <>
+              <NotificationDropdown />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{user.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex cursor-pointer items-center">
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/" className="flex cursor-pointer items-center">
+                        <Home className="mr-2 h-4 w-4" />
+                        <span>Home</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link
+                        to="/workout-week"
+                        className="flex cursor-pointer items-center"
+                      >
+                        <Dumbbell className="mr-2 h-4 w-4" />
+                        <span>Workout Week</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/diet" className="flex cursor-pointer items-center">
+                        <Utensils className="mr-2 h-4 w-4" />
+                        <span>Diet</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link to="/progress" className="flex cursor-pointer items-center">
+                        <BarChart className="mr-2 h-4 w-4" />
+                        <span>Progress</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/profile" className="flex cursor-pointer items-center">
-                      <User className="mr-2 h-4 w-4" />
-                      <span>Profile</span>
+                    <Link
+                      to="/settings/my-informations"
+                      className="flex cursor-pointer items-center"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link to="/" className="flex cursor-pointer items-center">
-                      <Home className="mr-2 h-4 w-4" />
-                      <span>Home</span>
+                    <Link to="/purchases" className="flex cursor-pointer items-center">
+                      <DollarSign className="mr-2 h-4 w-4" />
+                      <span>Purchases</span>
                     </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/workout-week" className="flex cursor-pointer items-center">
-                      <Dumbbell className="mr-2 h-4 w-4" />
-                      <span>Workout Week</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/diet" className="flex cursor-pointer items-center">
-                      <Utensils className="mr-2 h-4 w-4" />
-                      <span>Diet</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to="/progress" className="flex cursor-pointer items-center">
-                      <BarChart className="mr-2 h-4 w-4" />
-                      <span>Progress</span>
-                    </Link>
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link
-                    to="/settings/my-informations"
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleLogout}
                     className="flex cursor-pointer items-center"
                   >
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className="flex cursor-pointer items-center"
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log Out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log Out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <div className="flex cursor-pointer items-center space-x-2">
               <Button asChild variant="ghost">

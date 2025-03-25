@@ -1,11 +1,8 @@
-import axios from 'axios';
 import type { UserType } from '@/types/userType';
 import { useUserStore } from '@/store/user-store';
-import { env } from '@/env';
 import api from '@/lib/api';
 import { Professional } from '@/types/ProfessionalType';
-
-const baseUrl = `${env.VITE_API_URL}`;
+import { useEffect } from 'react';
 
 export const useUser = () => {
   const {
@@ -17,55 +14,89 @@ export const useUser = () => {
     setToken,
   } = useUserStore();
 
+  useEffect(() => {
+    if (token) {
+      validateToken();
+    }
+  }, [token]);
+
+  const validateToken = async (): Promise<boolean> => {
+    try {
+      if (!token) {
+        return false;
+      }
+
+      const { data } = await api.post(
+        '/auth/validate-token',
+        { token },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!data) {
+        logout();
+        return false;
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Token validation error:', error);
+      logout();
+      return false;
+    }
+  };
+
   const getUser = async (id: string): Promise<UserType> => {
-    const response = await axios.get<UserType>(`${baseUrl}/users/${id}`, {
+    const { data } = await api.get<UserType>(`/users/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    console.log(response);
 
-    if (!response.data) {
+    if (!data) {
       throw new Error('No data received from server');
     }
 
-    if (response.data.id === user?.id) {
-      setUser(response.data);
+    if (data.id === user?.id) {
+      setUser(data);
     }
 
-    return response.data;
+    return data;
   };
 
   const getNutritionists = async (): Promise<Professional[]> => {
     try {
-      const response = await api.get('/users/role/nutritionists');
-      console.log(response);
-      return response.data;
+      const { data } = await api.get('/users/role/nutritionists');
+
+      return data;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
   };
   const getTrainers = async (): Promise<Professional[]> => {
     try {
-      const response = await api.get('/users/role/trainers');
-      return response.data;
+      const { data } = await api.get('/users/role/trainers');
+      return data;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
   };
 
-  const login = async (email: string, password: string): Promise<UserType> => {
-    const data = { email, password };
+  const login = async (loginData: {
+    email: string;
+    password: string;
+  }): Promise<UserType> => {
     try {
-      const response = await axios.post<{ user: UserType; token: string }>(
-        `${baseUrl}/auth/login`,
-        data
-      );
-      if (response.status !== 200) throw new Error('Error on login');
-      setUser(response.data.user);
-      setToken(response.data.token);
+      const { data } = await api.post('/auth/login', loginData);
 
-      return response.data.user;
+      if (!data) throw new Error('Error on request to login');
+      setUser(data.user);
+      setToken(data.token);
+
+      return data.user;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
@@ -77,9 +108,9 @@ export const useUser = () => {
     password: string;
   }): Promise<UserType> => {
     try {
-      const response = await axios.post<UserType>(`${baseUrl}/auth/register`, newUser);
+      const { data } = await api.post('/auth/register', newUser);
 
-      return response.data;
+      return data;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
@@ -87,17 +118,13 @@ export const useUser = () => {
 
   const updateUser = async (updatedUser: Partial<UserType>): Promise<UserType> => {
     try {
-      const response = await axios.put<UserType>(
-        `${baseUrl}/users/${updatedUser.id}`,
-        updatedUser,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      const { data } = await api.put(`/users/${updatedUser.id}`, updatedUser, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-      updateUserStore(response.data);
+      updateUserStore(data);
 
-      return response.data;
+      return data;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
@@ -109,30 +136,24 @@ export const useUser = () => {
 
   const passwordRecover = async (email: string) => {
     try {
-      const response = await axios.post<{ message: string }>(
-        `${baseUrl}/auth/password-recover`,
-        { email }
-      );
-      if (!response) {
-        throw new Error('Error on axios');
+      const { data } = await api.post('/auth/password-recover', { email });
+      if (!data) {
+        throw new Error('Error on request to password recover');
       }
 
-      return response.data.message;
+      return data.message;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
   };
-  const resetPassword = async (data: { token: string; password: string }) => {
+  const resetPassword = async (newPassword: { token: string; password: string }) => {
     try {
-      const response = await axios.post<{ message: string }>(
-        `${baseUrl}/auth/reset-password`,
-        data
-      );
-      if (!response) {
-        throw new Error('Error on axios');
+      const { data } = await api.post('/auth/reset-password', newPassword);
+      if (!data) {
+        throw new Error('Error on request to reset password');
       }
 
-      return response.data.message;
+      return data.message;
     } catch (error: any) {
       throw new Error(error.response.data.message);
     }
@@ -181,15 +202,6 @@ export const useUser = () => {
     console.log(`Updating relationship ${relationshipId} with data:`, data);
   };
 
-  const getProfessional = async (id: string): Promise<Professional> => {
-    try {
-      const response = await axios.get<Professional>(`/users/get-professional/${id}`);
-      return response.data;
-    } catch (error: any) {
-      throw new Error(error.response.data.message);
-    }
-  };
-
   return {
     user,
     login,
@@ -206,7 +218,6 @@ export const useUser = () => {
     createRelationship,
     getRelationships,
     updateRelationship,
-    getProfessional,
   };
 };
 

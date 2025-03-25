@@ -53,6 +53,20 @@ export const NotificationDropdown: React.FC = () => {
     }
   };
 
+  // Helper function to safely format dates
+  const formatDate = (dateString: string | number | Date) => {
+    try {
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return 'Invalid date';
+      }
+      return formatDistanceToNow(date, { addSuffix: true });
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
@@ -91,7 +105,7 @@ export const NotificationDropdown: React.FC = () => {
           <>
             <ScrollArea className="h-[300px]">
               <DropdownMenuGroup>
-                {notifications.map((notification) => (
+                {notifications?.map((notification) => (
                   <DropdownMenuItem
                     key={notification.id}
                     className={`flex cursor-pointer flex-col items-start p-4 ${
@@ -131,9 +145,7 @@ export const NotificationDropdown: React.FC = () => {
                       {notification.message}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatDistanceToNow(new Date(notification.createdAt), {
-                        addSuffix: true,
-                      })}
+                      {formatDate(notification.createdAt)}
                     </p>
                     {notification.link && (
                       <Link
