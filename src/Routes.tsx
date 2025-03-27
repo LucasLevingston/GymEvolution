@@ -29,11 +29,12 @@ import PurchaseCancel from './Pages/Purchase/PurchaseCancel';
 import RelationshipManagement from './Pages/Professionals/RelationshipManagement';
 import CreatePlan from './Pages/Professionals/Plan/CreatePlan';
 import EditPlan from './Pages/Professionals/Plan/EditPlan';
-// import Meetings from './Pages/Meetings/Meetings';
+import Meetings from './Pages/Meetings/Meetings';
 import ScheduleMeeting from './Pages/Meetings/ScheduleMeeting';
 import ProfessionalPlans from './Pages/Professionals/Plan/ProfessionalPlans';
 import Purchases from './Pages/Purchase/Purchases';
 import PurchaseDetails from './Pages/Purchase/PurchaseDetails';
+import ConnectGooglePage from './Pages/Settings/ConnectGoogle';
 import ProfessionalDashboard from './Pages/Professionals/ProfessionalDashboard';
 
 interface PrivateRouteProps {
@@ -73,6 +74,10 @@ const ProfessionalRoutes = [
 ];
 
 const SettingsRoutes = [
+  {
+    path: '/settings/google-connect',
+    element: <PrivateRoute element={<ConnectGooglePage />} />,
+  },
   { path: '/settings/theme', element: <PrivateRoute element={<ThemeSettings />} /> },
   {
     path: '/settings/my-informations',
@@ -125,12 +130,12 @@ const PurchaseRoutes = [
     path: '/edit-plan/:id',
     element: <PrivateRoute element={<EditPlan />} />,
   },
-  // {
-  //   path: '/meetings',
-  //   element: <PrivateRoute element={<Meetings />} />,
-  // },
   {
-    path: '/schedule-meeting/:professionalId',
+    path: '/meetings',
+    element: <PrivateRoute element={<Meetings />} />,
+  },
+  {
+    path: '/schedule-meeting/:purchaseId',
     element: <PrivateRoute element={<ScheduleMeeting />} />,
   },
 ];

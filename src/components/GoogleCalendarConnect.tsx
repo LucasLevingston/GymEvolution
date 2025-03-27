@@ -37,6 +37,7 @@ export function GoogleCalendarConnect() {
 
   const handleConnect = async () => {
     const authUrl = await getAuthUrl();
+    console.log(authUrl);
     if (authUrl) {
       const width = 600;
       const height = 700;

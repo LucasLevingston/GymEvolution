@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import {
   Calendar,
@@ -60,6 +58,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useNotifications } from '@/hooks/use-notifications';
 import { useUser } from '@/hooks/user-hooks';
 import { useNavigate } from 'react-router-dom';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 export const purchaseStatusEnum = z.enum([
   'WAITINGPAYMENT',
@@ -238,7 +237,7 @@ const ProfessionalDashboard = () => {
   const [selectedTime, setSelectedTime] = useState('');
   const [meetingTitle, setMeetingTitle] = useState('');
   const [meetingDescription, setMeetingDescription] = useState('');
-  const [availability, setAvailability] = useState<Availability[]>([]);
+  const [availability] = useState<Availability[]>([]);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
 
   const [dietWeekNumber, setDietWeekNumber] = useState(1);
@@ -419,7 +418,7 @@ const ProfessionalDashboard = () => {
 
     try {
       const startTime = new Date(`${selectedDate}T${selectedTime}`);
-      const endTime = new Date(startTime.getTime() + meetingDuration * 60000);
+      const endTime = new Date(startTime.getTime() * 60000);
 
       const meetResponse = await fetch('/api/google-meet/create', {
         method: 'POST',
@@ -761,14 +760,7 @@ const ProfessionalDashboard = () => {
   };
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {
@@ -1132,7 +1124,7 @@ const ProfessionalDashboard = () => {
                       <div className="grid gap-2">
                         <Label htmlFor="duration">Duração (minutos)</Label>
                         <Select
-                          value={meetingDuration.toString()}
+                          value={0}
                           onValueChange={(value) =>
                             setMeetingDuration(Number.parseInt(value))
                           }

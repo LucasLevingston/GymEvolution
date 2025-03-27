@@ -398,7 +398,7 @@ export default function PurchaseDetails() {
       case 'SCHEDULEMEETING':
         return (
           <Button
-            onClick={() => navigate(`/schedule-meeting/${purchase?.professionalId}`)}
+            onClick={() => navigate(`/schedule-meeting/${purchase?.id}`)}
             className="gap-1"
           >
             <Calendar className="h-4 w-4" />
@@ -469,11 +469,11 @@ export default function PurchaseDetails() {
 
   if (isLoading) {
     return (
-      <ContainerRoot>
+      <>
         <div className="flex justify-center items-center min-h-[60vh]">
           <LoadingSpinner />
         </div>
-      </ContainerRoot>
+      </>
     );
   }
 
@@ -494,7 +494,7 @@ export default function PurchaseDetails() {
   }
 
   const planFeatures = purchase.Plan?.features ? JSON.parse(purchase.Plan.features) : [];
-  const isProfessional = user?.role === 'PROFESSIONAL';
+  const isProfessional = user?.role === 'NUTRITIONIST' || user?.role === 'TRAINER';
   const isStudent = user?.role === 'STUDENT';
   const actionNeeded = getProfessionalActionNeeded(purchase.status);
 

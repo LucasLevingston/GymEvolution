@@ -1,384 +1,278 @@
-// 'use client';
+import { useEffect, useState } from 'react';
+import { Calendar, momentLocalizer, Views, View } from 'react-big-calendar';
+import moment from 'moment';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { useGoogleCalendar } from '@/hooks/use-google-calendar';
+import { Button } from '@/components/ui/button';
+import { RefreshCw } from 'lucide-react';
+import { toast } from 'sonner';
+import { Card, CardContent } from '@/components/ui/card';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-// import { useState, useEffect } from 'react';
-// import { Link } from 'react-router-dom';
-// import {
-//   Calendar,
-//   Clock,
-//   Video,
-//   Users,
-//   CheckCircle,
-//   XCircle,
-//   Plus,
-//   ExternalLink,
-// } from 'lucide-react';
+const localizer = momentLocalizer(moment);
 
-// import { Button } from '@/components/ui/button';
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from '@/components/ui/card';
-// import { Badge } from '@/components/ui/badge';
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// import { useUserStore } from '@/store/user-store';
-// import { ContainerRoot } from '@/components/Container';
-// import { useMeetings, type Meeting } from '@/hooks/use-google-calendar';
-// import LoadingSpinner from '@/components/LoadingSpinner';
+interface GoogleCalendarEvent {
+  id: string;
+  summary?: string;
+  start?: {
+    dateTime?: string;
+    date?: string;
+  };
+  end?: {
+    dateTime?: string;
+    date?: string;
+  };
+  location?: string;
+  description?: string;
+  recurrence?: string[];
+  colorId?: string;
+}
 
-// export default function Meetings() {
-//   const { user } = useUserStore();
-//   const { getUserMeetings, cancelMeeting, completeMeeting, isLoading } = useMeetings();
-//   const [meetings, setMeetings] = useState<Meeting[]>([]);
-//   const [activeTab, setActiveTab] = useState('upcoming');
+interface CalendarEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  allDay: boolean;
+  resource?: {
+    location?: string;
+    description?: string;
+    color?: string;
+  };
+}
 
-//   useEffect(() => {
-//     const fetchMeetings = async () => {
-//       if (!user) return;
+export default function Meetings() {
+  const { getUserCalendar, isLoading } = useGoogleCalendar();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [view, setView] = useState<View>(Views.MONTH);
+  const [date, setDate] = useState<Date>(new Date());
 
-//       const role =
-//         user.role === 'NUTRITIONIST' || user.role === 'TRAINER'
-//           ? 'professional'
-//           : 'student';
-//       const data = await getUserMeetings(role);
-//       setMeetings(data);
-//     };
+  const transformEvents = (
+    googleEvents: GoogleCalendarEvent[] | undefined
+  ): CalendarEvent[] => {
+    if (!googleEvents || !Array.isArray(googleEvents)) return [];
 
-//     fetchMeetings();
-//   }, [user, getUserMeetings]);
+    const transformedEvents = googleEvents.map((event: GoogleCalendarEvent) => ({
+      id: event.id,
+      title: event.summary || 'No Title',
+      start: new Date(event.start?.dateTime || event.start?.date || ''),
+      end: new Date(event.end?.dateTime || event.end?.date || ''),
+      allDay: !event.start?.dateTime,
+      resource: {
+        location: event.location || '',
+        description: event.description || '',
+        color: event.colorId ? getColorForId(event.colorId) : '#1aaa55',
+      },
+    }));
 
-//   const handleCancelMeeting = async (id: string) => {
-//     if (window.confirm('Tem certeza que deseja cancelar esta reunião?')) {
-//       const result = await cancelMeeting(id);
-//       if (result) {
-//         setMeetings(
-//           meetings.map((meeting) =>
-//             meeting.id === id ? { ...meeting, status: 'CANCELLED' } : meeting
-//           )
-//         );
-//       }
-//     }
-//   };
+    console.log('Transformed events:', transformedEvents);
+    return transformedEvents;
+  };
 
-//   const handleCompleteMeeting = async (id: string) => {
-//     if (window.confirm('Marcar esta reunião como concluída?')) {
-//       const result = await completeMeeting(id);
-//       if (result) {
-//         setMeetings(
-//           meetings.map((meeting) =>
-//             meeting.id === id ? { ...meeting, status: 'COMPLETED' } : meeting
-//           )
-//         );
-//       }
-//     }
-//   };
+  const getColorForId = (colorId: string): string => {
+    const colorMap: Record<string, string> = {
+      '1': '#7986cb',
+      '2': '#33b679',
+      '3': '#8e24aa',
+      '4': '#e67c73',
+      '5': '#f6bf26',
+      '6': '#f4511e',
+      '7': '#039be5',
+      '8': '#616161',
+      '9': '#3f51b5',
+      '10': '#0b8043',
+      '11': '#d50000',
+    };
 
-//   const isProfessional = user?.role === 'NUTRITIONIST' || user?.role === 'TRAINER';
+    return colorMap[colorId] || '#1aaa55';
+  };
 
-//   const upcomingMeetings = meetings.filter(
-//     (meeting) =>
-//       meeting.status === 'SCHEDULED' && new Date(meeting.startTime) > new Date()
-//   );
+  const loadCalendarEvents = async (): Promise<void> => {
+    try {
+      setRefreshing(true);
+      const calendarData: GoogleCalendarEvent[] = await getUserCalendar();
 
-//   const pastMeetings = meetings.filter(
-//     (meeting) =>
-//       meeting.status === 'COMPLETED' || new Date(meeting.startTime) < new Date()
-//   );
+      if (calendarData) {
+        const transformedEvents = transformEvents(calendarData);
+        setEvents(transformedEvents);
+      } else {
+        setEvents([]);
+      }
+    } catch (err) {
+      console.error('Failed to load calendar events:', err);
+      toast.error('Failed to load calendar events');
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
-//   const cancelledMeetings = meetings.filter((meeting) => meeting.status === 'CANCELLED');
+  useEffect(() => {
+    loadCalendarEvents();
+  }, []);
 
-//   if (!user) {
-//     return (
-//       <ContainerRoot>
-//         <div className="py-20 text-center">
-//           <h2 className="text-2xl font-bold mb-4">Por favor, faça login</h2>
-//           <p className="text-muted-foreground mb-8">
-//             Você precisa estar logado para acessar esta página.
-//           </p>
-//           <Button asChild>
-//             <Link to="/login">Fazer Login</Link>
-//           </Button>
-//         </div>
-//       </ContainerRoot>
-//     );
-//   }
+  const handleRefresh = (): void => {
+    loadCalendarEvents();
+  };
 
-//   return (
-//     <>
-//       <div className="flex justify-between items-center mb-6">
-//         <div>
-//           <h1 className="text-3xl font-bold mb-2">Minhas Reuniões</h1>
-//           <p className="text-muted-foreground">
-//             Gerencie suas reuniões com {isProfessional ? 'alunos' : 'profissionais'}
-//           </p>
-//         </div>
-//         {isProfessional && (
-//           <Button asChild>
-//             <Link to="/schedule-meeting">
-//               <Plus className="mr-2 h-4 w-4" />
-//               Agendar Nova Reunião
-//             </Link>
-//           </Button>
-//         )}
-//       </div>
+  const eventPropGetter = (event: CalendarEvent) => {
+    const backgroundColor = event.resource?.color || '#1aaa55';
+    return {
+      style: {
+        backgroundColor,
+        borderRadius: '4px',
+        opacity: 0.8,
+        color: '#fff',
+        border: '0px',
+        display: 'block',
+      },
+    };
+  };
 
-//       <Tabs defaultValue="upcoming" onValueChange={setActiveTab}>
-//         <TabsList className="grid w-full grid-cols-3">
-//           <TabsTrigger value="upcoming">Próximas</TabsTrigger>
-//           <TabsTrigger value="past">Concluídas</TabsTrigger>
-//           <TabsTrigger value="cancelled">Canceladas</TabsTrigger>
-//         </TabsList>
+  const CustomToolbar = ({ label, onNavigate, onView }: any) => {
+    return (
+      <div className="flex justify-between items-center mb-4 p-2 border-b">
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => onNavigate('TODAY')}>
+            Today
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate('PREV')}>
+            &lt;
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => onNavigate('NEXT')}>
+            &gt;
+          </Button>
+          <span className="text-lg font-medium">{label}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="flex border rounded-md overflow-hidden">
+            <Button
+              variant={view === Views.MONTH ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onView(Views.MONTH)}
+              className="rounded-none"
+            >
+              Month
+            </Button>
+            <Button
+              variant={view === Views.WEEK ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onView(Views.WEEK)}
+              className="rounded-none"
+            >
+              Week
+            </Button>
+            <Button
+              variant={view === Views.DAY ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onView(Views.DAY)}
+              className="rounded-none"
+            >
+              Day
+            </Button>
+            <Button
+              variant={view === Views.AGENDA ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => onView(Views.AGENDA)}
+              className="rounded-none"
+            >
+              Agenda
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isLoading || refreshing}
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isLoading || refreshing ? 'animate-spin' : ''}`}
+            />
+            Refresh
+          </Button>
+        </div>
+      </div>
+    );
+  };
 
-//         <TabsContent value="upcoming" className="mt-6">
-//           {isLoading ? (
-//             <LoadingSpinner />
-//           ) : upcomingMeetings.length === 0 ? (
-//             <Card>
-//               <CardContent className="py-10 text-center">
-//                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-//                   <Calendar className="h-6 w-6 text-primary" />
-//                 </div>
-//                 <h3 className="mb-2 text-xl font-semibold">Nenhuma reunião agendada</h3>
-//                 <p className="text-muted-foreground mb-6">
-//                   Você não tem reuniões agendadas para os próximos dias.
-//                 </p>
-//                 {isProfessional && (
-//                   <Button asChild>
-//                     <Link to="/schedule-meeting">Agendar Nova Reunião</Link>
-//                   </Button>
-//                 )}
-//               </CardContent>
-//             </Card>
-//           ) : (
-//             <div className="grid gap-6 md:grid-cols-2">
-//               {upcomingMeetings.map((meeting) => {
-//                 const startTime = new Date(meeting.startTime);
-//                 const endTime = new Date(meeting.endTime);
-//                 const participant = isProfessional
-//                   ? meeting.student
-//                   : meeting.professional;
+  const EventComponent = ({ event }: { event: CalendarEvent }) => {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="w-full h-full overflow-hidden text-white p-1 text-sm">
+              {event.title}
+              {event.resource?.location && (
+                <div className="text-xs opacity-80 truncate">
+                  📍 {event.resource.location}
+                </div>
+              )}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <div className="max-w-xs">
+              <h4 className="font-bold">{event.title}</h4>
+              <p className="text-xs">
+                {moment(event.start).format('LT')} - {moment(event.end).format('LT')}
+              </p>
+              {event.resource?.location && (
+                <p className="text-xs mt-1">📍 {event.resource.location}</p>
+              )}
+              {event.resource?.description && (
+                <p className="text-xs mt-1">{event.resource.description}</p>
+              )}
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  };
 
-//                 return (
-//                   <Card key={meeting.id}>
-//                     <CardHeader className="pb-3">
-//                       <div className="flex justify-between items-start">
-//                         <CardTitle>{meeting.title}</CardTitle>
-//                         <Badge variant="outline" className="bg-green-50 text-green-700">
-//                           Agendada
-//                         </Badge>
-//                       </div>
-//                       <CardDescription>{meeting.description}</CardDescription>
-//                     </CardHeader>
-//                     <CardContent>
-//                       <div className="space-y-3">
-//                         <div className="flex items-center gap-2">
-//                           <Calendar className="h-4 w-4 text-muted-foreground" />
-//                           <span>{startTime.toLocaleDateString()}</span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Clock className="h-4 w-4 text-muted-foreground" />
-//                           <span>
-//                             {startTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}{' '}
-//                             -
-//                             {endTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}
-//                           </span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Users className="h-4 w-4 text-muted-foreground" />
-//                           <span>Com: {participant?.name || 'Participante'}</span>
-//                         </div>
-//                       </div>
-//                     </CardContent>
-//                     <CardFooter className="flex justify-between">
-//                       {meeting.meetLink ? (
-//                         <Button asChild>
-//                           <a
-//                             href={meeting.meetLink}
-//                             target="_blank"
-//                             rel="noopener noreferrer"
-//                           >
-//                             <Video className="mr-2 h-4 w-4" />
-//                             Entrar na Reunião
-//                             <ExternalLink className="ml-1 h-3 w-3" />
-//                           </a>
-//                         </Button>
-//                       ) : (
-//                         <Button disabled>
-//                           <Video className="mr-2 h-4 w-4" />
-//                           Link Indisponível
-//                         </Button>
-//                       )}
-//                       <div className="flex gap-2">
-//                         {isProfessional && (
-//                           <Button
-//                             variant="outline"
-//                             size="sm"
-//                             onClick={() => handleCompleteMeeting(meeting.id)}
-//                           >
-//                             <CheckCircle className="mr-2 h-4 w-4" />
-//                             Concluir
-//                           </Button>
-//                         )}
-//                         <Button
-//                           variant="destructive"
-//                           size="sm"
-//                           onClick={() => handleCancelMeeting(meeting.id)}
-//                         >
-//                           <XCircle className="mr-2 h-4 w-4" />
-//                           Cancelar
-//                         </Button>
-//                       </div>
-//                     </CardFooter>
-//                   </Card>
-//                 );
-//               })}
-//             </div>
-//           )}
-//         </TabsContent>
+  return (
+    <div className="flex flex-col h-full">
+      <div className="flex justify-between items-center mb-4 px-4">
+        <h1 className="text-2xl font-bold">My Calendar</h1>
+      </div>
 
-//         <TabsContent value="past" className="mt-6">
-//           {isLoading ? (
-//             <LoadingSpinner />
-//           ) : pastMeetings.length === 0 ? (
-//             <Card>
-//               <CardContent className="py-10 text-center">
-//                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-//                   <CheckCircle className="h-6 w-6 text-primary" />
-//                 </div>
-//                 <h3 className="mb-2 text-xl font-semibold">Nenhuma reunião concluída</h3>
-//                 <p className="text-muted-foreground">
-//                   Você ainda não concluiu nenhuma reunião.
-//                 </p>
-//               </CardContent>
-//             </Card>
-//           ) : (
-//             <div className="grid gap-6 md:grid-cols-2">
-//               {pastMeetings.map((meeting) => {
-//                 const startTime = new Date(meeting.startTime);
-//                 const endTime = new Date(meeting.endTime);
-//                 const participant = isProfessional
-//                   ? meeting.student
-//                   : meeting.professional;
+      <Card className="flex-1 overflow-hidden">
+        <CardContent className="p-0 h-full">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            style={{ height: '100%' }}
+            views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+            defaultView={Views.MONTH}
+            view={view}
+            onView={(newView: View) => setView(newView)}
+            date={date}
+            onNavigate={(newDate: Date) => setDate(newDate)}
+            eventPropGetter={eventPropGetter}
+            components={{
+              toolbar: CustomToolbar,
+              event: EventComponent,
+            }}
+            popup
+            selectable={false}
+            longPressThreshold={10}
+          />
+        </CardContent>
+      </Card>
 
-//                 return (
-//                   <Card key={meeting.id}>
-//                     <CardHeader className="pb-3">
-//                       <div className="flex justify-between items-start">
-//                         <CardTitle>{meeting.title}</CardTitle>
-//                         <Badge variant="outline" className="bg-blue-50 text-blue-700">
-//                           Concluída
-//                         </Badge>
-//                       </div>
-//                       <CardDescription>{meeting.description}</CardDescription>
-//                     </CardHeader>
-//                     <CardContent>
-//                       <div className="space-y-3">
-//                         <div className="flex items-center gap-2">
-//                           <Calendar className="h-4 w-4 text-muted-foreground" />
-//                           <span>{startTime.toLocaleDateString()}</span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Clock className="h-4 w-4 text-muted-foreground" />
-//                           <span>
-//                             {startTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}{' '}
-//                             -
-//                             {endTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}
-//                           </span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Users className="h-4 w-4 text-muted-foreground" />
-//                           <span>Com: {participant?.name || 'Participante'}</span>
-//                         </div>
-//                       </div>
-//                     </CardContent>
-//                   </Card>
-//                 );
-//               })}
-//             </div>
-//           )}
-//         </TabsContent>
-
-//         <TabsContent value="cancelled" className="mt-6">
-//           {isLoading ? (
-//             <LoadingSpinner />
-//           ) : cancelledMeetings.length === 0 ? (
-//             <Card>
-//               <CardContent className="py-10 text-center">
-//                 <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-//                   <XCircle className="h-6 w-6 text-primary" />
-//                 </div>
-//                 <h3 className="mb-2 text-xl font-semibold">Nenhuma reunião cancelada</h3>
-//                 <p className="text-muted-foreground">Você não tem reuniões canceladas.</p>
-//               </CardContent>
-//             </Card>
-//           ) : (
-//             <div className="grid gap-6 md:grid-cols-2">
-//               {cancelledMeetings.map((meeting) => {
-//                 const startTime = new Date(meeting.startTime);
-//                 const endTime = new Date(meeting.endTime);
-//                 const participant = isProfessional
-//                   ? meeting.student
-//                   : meeting.professional;
-
-//                 return (
-//                   <Card key={meeting.id}>
-//                     <CardHeader className="pb-3">
-//                       <div className="flex justify-between items-start">
-//                         <CardTitle>{meeting.title}</CardTitle>
-//                         <Badge variant="outline" className="bg-red-50 text-red-700">
-//                           Cancelada
-//                         </Badge>
-//                       </div>
-//                       <CardDescription>{meeting.description}</CardDescription>
-//                     </CardHeader>
-//                     <CardContent>
-//                       <div className="space-y-3">
-//                         <div className="flex items-center gap-2">
-//                           <Calendar className="h-4 w-4 text-muted-foreground" />
-//                           <span>{startTime.toLocaleDateString()}</span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Clock className="h-4 w-4 text-muted-foreground" />
-//                           <span>
-//                             {startTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}{' '}
-//                             -
-//                             {endTime.toLocaleTimeString([], {
-//                               hour: '2-digit',
-//                               minute: '2-digit',
-//                             })}
-//                           </span>
-//                         </div>
-//                         <div className="flex items-center gap-2">
-//                           <Users className="h-4 w-4 text-muted-foreground" />
-//                           <span>Com: {participant?.name || 'Participante'}</span>
-//                         </div>
-//                       </div>
-//                     </CardContent>
-//                   </Card>
-//                 );
-//               })}
-//             </div>
-//           )}
-//         </TabsContent>
-//       </Tabs>
-//     </>
-//   );
-// }
+      {(isLoading || refreshing) && (
+        <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+          <div className="bg-white p-4 rounded-md shadow-md flex items-center gap-2">
+            <RefreshCw className="h-5 w-5 animate-spin text-primary" />
+            <span>Loading calendar events...</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

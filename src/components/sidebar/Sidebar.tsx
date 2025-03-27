@@ -1,11 +1,12 @@
-import type React from 'react'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { UserCircle, Settings } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import type React from 'react';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { UserCircle, Settings } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { BsGoogle } from 'react-icons/bs';
 
 const Sidebar: React.FC = () => {
-  const pathname = window.location.pathname
+  const pathname = window.location.pathname;
 
   const navItems = [
     {
@@ -14,11 +15,16 @@ const Sidebar: React.FC = () => {
       icon: UserCircle,
     },
     { href: '/settings/theme', label: 'Theme Settings', icon: Settings },
-  ]
+    {
+      href: '/settings/google-connect',
+      label: 'Google Calendar Connect',
+      icon: BsGoogle,
+    },
+  ];
 
   return (
     <nav className="flex flex-col space-y-2 p-4">
-      {navItems.map(item => (
+      {navItems.map((item) => (
         <Button
           key={item.href}
           asChild
@@ -35,7 +41,7 @@ const Sidebar: React.FC = () => {
         </Button>
       ))}
     </nav>
-  )
-}
+  );
+};
 
-export default Sidebar
+export default Sidebar;

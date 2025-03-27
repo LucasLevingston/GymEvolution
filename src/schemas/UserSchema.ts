@@ -6,27 +6,19 @@ import { historySchema } from './historySchema';
 
 export const UserSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
-    name: z.string().max(100, 'Name must be less than 100 characters').optional(),
-
-    email: z.string().email('Invalid email address').nonempty('Email is required'),
-
-    street: z.string().max(200, 'Street must be less than 200 characters').optional(),
-
-    number: z.string().max(10, 'Number must be less than 10 characters').optional(),
-
+    name: z.string().min(2, 'Name must be at least 2 characters').optional(),
+    email: z.string().email('Invalid email address'),
+    sex: z.string().optional(),
+    street: z.string().optional(),
+    number: z.string().optional(),
     zipCode: z.string().optional(),
-
-    city: z.string().max(100, 'City must be less than 100 characters').optional(),
-
-    state: z.string().max(2, 'State must be exactly 2 characters').optional(),
-
-    sex: z.string().max(50, 'Gender must be less than 50 characters').optional(),
-
-    phone: z.string().max(15, 'Phone number must be less than 15 characters').optional(),
-
-    birthDate: z.string().max(10, 'Birth date must be exactly 10 characters').optional(),
-
-    currentWeight: z.string().optional().nullable(),
+    city: z.string().optional(),
+    state: z.string().optional(),
+    birthDate: z.string().optional(),
+    phone: z.string().optional(),
+    currentWeight: z.string().optional(),
+    currentBf: z.string().optional(),
+    height: z.string().optional(),
 
     oldWeights: z.array(weightSchema).optional(),
     trainingWeeks: z.array(trainingWeekSchema).optional(),
@@ -36,3 +28,21 @@ export const UserSchema: z.ZodType<any> = z.lazy(() =>
 );
 
 export type UserSchemaType = z.infer<typeof UserSchema>;
+export const ProfessionalUserSchema = z.object({
+  bio: z.string().optional(),
+  experience: z.number().min(0, 'Experience must be a positive number').optional(),
+  specialties: z.string().optional(),
+  certifications: z.string().optional(),
+  education: z.string().optional(),
+  reviews: z.string().optional(),
+
+  // Professional Settings
+  workStartHour: z.number().min(0).max(23),
+  workEndHour: z.number().min(0).max(23),
+  appointmentDuration: z.number().min(15).max(240),
+  workDays: z.string(),
+  bufferBetweenSlots: z.number().min(0).max(60),
+  maxAdvanceBooking: z.number().min(1).max(365),
+  autoAcceptMeetings: z.boolean(),
+  timeZone: z.string(),
+});

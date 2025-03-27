@@ -2,28 +2,12 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { BarChart3, Dumbbell, Utensils, LineChart } from 'lucide-react';
 import useUser from '@/hooks/user-hooks';
-import { useEffect } from 'react';
 import { TrainingWeekCard } from '@/components/training/training-week-card';
-import { toast } from 'sonner';
 import FeatureCard from '@/components/FeatureCard';
 import { Helmet } from 'react-helmet-async';
 
 export default function Home() {
-  const { user, getUser } = useUser();
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      if (user) {
-        const result = await getUser(user.id);
-        console.log(result);
-        if (!result) {
-          toast.error('error');
-        }
-      }
-    };
-
-    fetchUser();
-  }, []);
+  const { user } = useUser();
 
   const currentTraining = user?.trainingWeeks
     ? user.trainingWeeks.find((trainingWeek) => trainingWeek.weekNumber)

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
@@ -99,6 +101,7 @@ export default function ProfessionalDetail() {
 
   useEffect(() => {
     const fetchProfessional = async () => {
+      console.log(user?.ProfessionalSettings);
       try {
         setIsLoading(true);
         if (!id) {
@@ -111,22 +114,35 @@ export default function ProfessionalDetail() {
         }
         setProfessional(professional);
 
+        // Parse string arrays if they're stored as strings
+        const parseStringArray = (value: any) => {
+          if (!value) return [];
+          if (Array.isArray(value)) return value;
+          if (typeof value === 'string') {
+            try {
+              const parsed = JSON.parse(value);
+              return Array.isArray(parsed) ? parsed : [];
+            } catch {
+              // If it's a string but not JSON, split by commas
+              return value
+                .split(',')
+                .map((item) => item.trim())
+                .filter(Boolean);
+            }
+          }
+          return [];
+        };
+
         form.reset({
           name: professional.name || '',
           role: professional.role || 'NUTRITIONIST',
           city: professional.city || '',
           experience: professional.experience || 0,
           bio: professional.bio || '',
-          specialties: Array.isArray(professional.specialties)
-            ? professional.specialties
-            : [],
-          certifications: Array.isArray(professional.certifications)
-            ? professional.certifications
-            : [],
-          education: Array.isArray(professional.education) ? professional.education : [],
-          availability: Array.isArray(professional.availability)
-            ? professional.availability
-            : [],
+          specialties: parseStringArray(professional.specialties),
+          certifications: parseStringArray(professional.certifications),
+          education: parseStringArray(professional.education),
+          availability: parseStringArray(professional.availability),
         });
       } catch (error) {
         console.error('Error fetching professional:', error);
@@ -138,7 +154,7 @@ export default function ProfessionalDetail() {
     if (id) {
       fetchProfessional();
     }
-  }, [id, form]);
+  }, []);
 
   const startEditing = () => {
     setIsEditing(true);
@@ -147,22 +163,35 @@ export default function ProfessionalDetail() {
   const cancelEditing = () => {
     setIsEditing(false);
     if (professional) {
+      // Parse string arrays if they're stored as strings
+      const parseStringArray = (value: any) => {
+        if (!value) return [];
+        if (Array.isArray(value)) return value;
+        if (typeof value === 'string') {
+          try {
+            const parsed = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            // If it's a string but not JSON, split by commas
+            return value
+              .split(',')
+              .map((item) => item.trim())
+              .filter(Boolean);
+          }
+        }
+        return [];
+      };
+
       form.reset({
         name: professional.name || '',
         role: professional.role || 'NUTRITIONIST',
         city: professional.city || '',
         experience: professional.experience || 0,
         bio: professional.bio || '',
-        specialties: Array.isArray(professional.specialties)
-          ? professional.specialties
-          : [],
-        certifications: Array.isArray(professional.certifications)
-          ? professional.certifications
-          : [],
-        education: Array.isArray(professional.education) ? professional.education : [],
-        availability: Array.isArray(professional.availability)
-          ? professional.availability
-          : [],
+        specialties: parseStringArray(professional.specialties),
+        certifications: parseStringArray(professional.certifications),
+        education: parseStringArray(professional.education),
+        availability: parseStringArray(professional.availability),
       });
     }
 
@@ -200,15 +229,21 @@ export default function ProfessionalDetail() {
     try {
       setLoading(true);
 
-      const result = await updateUser({
+      const prepareDataForSubmission = {
         ...data,
         id: id,
-      });
+        specialties: Array.isArray(data.specialties) ? data.specialties : [],
+        certifications: Array.isArray(data.certifications) ? data.certifications : [],
+        education: Array.isArray(data.education) ? data.education : [],
+        availability: Array.isArray(data.availability) ? data.availability : [],
+      };
+
+      const result = await updateUser(prepareDataForSubmission);
 
       if (result) {
         const updatedProfessional = {
           ...professional,
-          ...data,
+          ...prepareDataForSubmission,
         } as Professional;
 
         setProfessional(updatedProfessional);
@@ -223,6 +258,25 @@ export default function ProfessionalDetail() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Helper function to safely get array data
+  const getArrayData = (data: any): string[] => {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (typeof data === 'string') {
+      try {
+        const parsed = JSON.parse(data);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch {
+        // If it's a string but not JSON, split by commas
+        return data
+          .split(',')
+          .map((item) => item.trim())
+          .filter(Boolean);
+      }
+    }
+    return [];
   };
 
   if (isLoading) {
@@ -242,6 +296,15 @@ export default function ProfessionalDetail() {
       </div>
     );
   }
+
+  // Ensure reviews is an array
+  const reviews = Array.isArray(professional.reviews) ? professional.reviews : [];
+
+  // Get array data safely
+  const specialties = getArrayData(professional.specialties);
+  const certifications = getArrayData(professional.certifications);
+  const education = getArrayData(professional.education);
+  const availability = getArrayData(professional.availability);
 
   return (
     <>
@@ -366,11 +429,11 @@ export default function ProfessionalDetail() {
                     <div className="mb-4 flex items-center justify-center">
                       <Star className="mr-1 h-5 w-5 fill-yellow-400 text-yellow-400" />
                       <span className="font-medium">
-                        {calculateAverageRating(professional.reviews).toFixed(1)}
+                        {calculateAverageRating(reviews).toFixed(1)}
                       </span>
                       <span className="ml-1 text-sm text-muted-foreground">
-                        ({professional.reviews?.length || 0}{' '}
-                        {professional.reviews?.length === 1 ? 'review' : 'reviews'})
+                        ({reviews.length || 0}{' '}
+                        {reviews.length === 1 ? 'review' : 'reviews'})
                       </span>
                     </div>
 
@@ -525,10 +588,9 @@ export default function ProfessionalDetail() {
                     </div>
                   ) : (
                     <div className="space-y-2">
-                      {Array.isArray(professional.availability) &&
-                      professional.availability.length > 0 ? (
-                        professional.availability.map((day) => (
-                          <div key={day} className="flex items-center gap-2">
+                      {availability.length > 0 ? (
+                        availability.map((day, index) => (
+                          <div key={index} className="flex items-center gap-2">
                             <Calendar className="h-4 w-4 text-muted-foreground" />
                             <span>{day}</span>
                           </div>
@@ -608,9 +670,8 @@ export default function ProfessionalDetail() {
                     </div>
                   ) : (
                     <div className="flex flex-wrap gap-2">
-                      {Array.isArray(professional.specialties) &&
-                      professional.specialties.length > 0 ? (
-                        professional.specialties.map((specialty, index) => (
+                      {specialties.length > 0 ? (
+                        specialties.map((specialty, index) => (
                           <Badge key={index} variant="secondary">
                             {specialty}
                           </Badge>
@@ -737,9 +798,8 @@ export default function ProfessionalDetail() {
                         </div>
                       ) : (
                         <ul className="mb-6 space-y-2">
-                          {Array.isArray(professional.certifications) &&
-                          professional.certifications.length > 0 ? (
-                            professional.certifications.map((cert, index) => (
+                          {certifications.length > 0 ? (
+                            certifications.map((cert, index) => (
                               <li key={index} className="flex items-start gap-2">
                                 <CheckCircle className="mt-1 h-4 w-4 text-green-500 flex-shrink-0" />
                                 <span>{cert}</span>
@@ -832,9 +892,8 @@ export default function ProfessionalDetail() {
                         </div>
                       ) : (
                         <div className="space-y-6">
-                          {Array.isArray(professional.education) &&
-                          professional.education.length > 0 ? (
-                            professional.education.map((edu, index) => (
+                          {education.length > 0 ? (
+                            education.map((edu, index) => (
                               <div
                                 key={index}
                                 className="border-l-2 border-primary/20 pl-4"
@@ -944,9 +1003,8 @@ export default function ProfessionalDetail() {
                               <Star
                                 key={star}
                                 className={`h-5 w-5 ${
-                                  professional.reviews &&
-                                  professional.reviews.length > 0 &&
-                                  star <= calculateAverageRating(professional.reviews)
+                                  reviews.length > 0 &&
+                                  star <= calculateAverageRating(reviews)
                                     ? 'fill-yellow-400 text-yellow-400'
                                     : 'fill-muted text-muted-foreground'
                                 }`}
@@ -954,16 +1012,16 @@ export default function ProfessionalDetail() {
                             ))}
                           </div>
                           <span className="font-medium">
-                            {professional.reviews && professional.reviews.length > 0
-                              ? `${calculateAverageRating(professional.reviews).toFixed(1)} (${professional.reviews.length})`
+                            {reviews.length > 0
+                              ? `${calculateAverageRating(reviews).toFixed(1)} (${reviews.length})`
                               : 'No reviews yet'}
                           </span>
                         </div>
                       </div>
 
-                      {professional.reviews && professional.reviews.length > 0 ? (
+                      {reviews.length > 0 ? (
                         <div className="space-y-6">
-                          {professional.reviews.map((review, index) => (
+                          {reviews.map((review, index) => (
                             <div key={index} className="border-b pb-6">
                               <div className="mb-2 flex items-center justify-between">
                                 <div className="flex items-center gap-2">

@@ -1,15 +1,7 @@
-'use client';
-
 import { useState, useCallback } from 'react';
 import { useUser } from './user-hooks';
 import { useToast } from './use-toast';
 import api from '@/lib/api';
-
-interface GoogleCalendarCredentials {
-  connected: boolean;
-  email?: string;
-  calendarId?: string;
-}
 
 interface TimeSlot {
   start: string;
@@ -20,25 +12,22 @@ interface MeetingEvent {
   id: string;
   title: string;
   description?: string;
-  startTime: string;
-  endTime: string;
+  startTime: Date;
+  endTime: Date;
   meetLink?: string;
   attendees?: string[];
 }
 
 interface UseGoogleCalendarReturn {
-  // States
   isLoading: boolean;
   isConnected: boolean;
   calendarEmail: string | undefined;
 
-  // Connection methods
   checkConnection: () => Promise<boolean>;
   connectCalendar: (authCode: string) => Promise<boolean>;
   disconnectCalendar: () => Promise<boolean>;
   getAuthUrl: () => Promise<string>;
 
-  // Calendar operations
   getAvailability: (professionalId: string, date: string) => Promise<TimeSlot[]>;
   createMeeting: (
     meeting: Omit<MeetingEvent, 'id' | 'meetLink'>
@@ -50,25 +39,29 @@ interface UseGoogleCalendarReturn {
   deleteMeeting: (meetingId: string) => Promise<boolean>;
   getMeetingDetails: (meetingId: string) => Promise<MeetingEvent | null>;
 
-  // Working hours
+  getProfessionalAvailability: (professionalId: string, date: string) => Promise<any>;
   getWorkingHours: (professionalId: string) => Promise<any[]>;
   updateWorkingHours: (workingHours: any[]) => Promise<boolean>;
+  getUserCalendar: () => Promise<any>;
 }
 
 export function useGoogleCalendar(): UseGoogleCalendarReturn {
-  const { user } = useUser();
+  const { user, token } = useUser();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [calendarEmail, setCalendarEmail] = useState<string | undefined>(undefined);
 
-  // Check if the user has connected their Google Calendar
   const checkConnection = useCallback(async (): Promise<boolean> => {
     if (!user?.id) return false;
 
     setIsLoading(true);
     try {
-      const { data } = await api.get('/google-calendar/status', {});
+      const { data } = await api.get('/google/status', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (!data) {
         throw new Error('Failed to check Google Calendar connection');
@@ -86,22 +79,74 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     }
   }, [user?.id]);
 
-  // Get the Google OAuth URL for connecting calendar
   const getAuthUrl = useCallback(async (): Promise<string> => {
     try {
-      const response = await fetch('/api/google-calendar/auth-url', {
-        method: 'GET',
+      const { data } = await api.get('/google/auth', {
         headers: {
-          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
         },
       });
 
-      if (!response.ok) {
+      if (!data) {
         throw new Error('Failed to get auth URL');
       }
 
-      const data = await response.json();
-      return data.url;
+      return data.authUrl;
+    } catch (error) {
+      console.error('Error getting auth URL:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erro',
+        description: 'Não foi possível obter o URL de autenticação do Google.',
+      });
+      return '';
+    }
+  }, [toast]);
+  const getProfessionalAvailability = useCallback(
+    async (professionalId: string, date: string): Promise<any> => {
+      try {
+        if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          throw new Error('Date must be in YYYY-MM-DD format');
+        }
+
+        const { data } = await api.get(`/meetings/availability/${professionalId}`, {
+          params: { date },
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!data) {
+          throw new Error('Failed to get professional availability');
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Error getting professional availability:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Erro',
+          description: 'Não foi possível obter a disponibilidade do profissional.',
+        });
+        return [];
+      }
+    },
+    [toast, token]
+  );
+
+  const getUserCalendar = useCallback(async (): Promise<string> => {
+    try {
+      const { data } = await api.get('/meetings/calendar', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!data) {
+        throw new Error('Failed to get auth URL');
+      }
+
+      return data;
     } catch (error) {
       console.error('Error getting auth URL:', error);
       toast({
@@ -113,14 +158,13 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     }
   }, [toast]);
 
-  // Connect Google Calendar with auth code
   const connectCalendar = useCallback(
     async (authCode: string): Promise<boolean> => {
       if (!user?.id) return false;
 
       setIsLoading(true);
       try {
-        const response = await fetch('/api/google-calendar/connect', {
+        const response = await fetch('/api/meetings/connect', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -157,13 +201,12 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [user?.id, toast]
   );
 
-  // Disconnect Google Calendar
   const disconnectCalendar = useCallback(async (): Promise<boolean> => {
     if (!user?.id) return false;
 
     setIsLoading(true);
     try {
-      const response = await fetch('/api/google-calendar/disconnect', {
+      const response = await fetch('/api/meetings/disconnect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -196,27 +239,19 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     }
   }, [user?.id, toast]);
 
-  // Get professional's availability for a specific date
   const getAvailability = useCallback(
     async (professionalId: string, date: string): Promise<TimeSlot[]> => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/google-calendar/availability/${professionalId}?date=${date}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
+        const { data } = await api.get(
+          `/meetings/availability/${professionalId}?date=${date}`
         );
 
-        if (!response.ok) {
+        if (!data) {
           throw new Error('Failed to fetch availability');
         }
 
-        const data = await response.json();
-        return data.slots || [];
+        return data || [];
       } catch (error) {
         console.error('Error fetching availability:', error);
         toast({
@@ -232,7 +267,6 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [toast]
   );
 
-  // Create a new meeting with Google Meet
   const createMeeting = useCallback(
     async (
       meeting: Omit<MeetingEvent, 'id' | 'meetLink'>
@@ -241,7 +275,7 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
 
       setIsLoading(true);
       try {
-        const response = await fetch('/api/google-calendar/meetings', {
+        const response = await fetch('/api/meetings/meetings', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -276,7 +310,6 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [user?.id, toast]
   );
 
-  // Update an existing meeting
   const updateMeeting = useCallback(
     async (
       meetingId: string,
@@ -286,7 +319,7 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
 
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/google-calendar/meetings/${meetingId}`, {
+        const response = await fetch(`/api/meetings/meetings/${meetingId}`, {
           method: 'PATCH',
           headers: {
             'Content-Type': 'application/json',
@@ -319,14 +352,13 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [user?.id, toast]
   );
 
-  // Delete a meeting
   const deleteMeeting = useCallback(
     async (meetingId: string): Promise<boolean> => {
       if (!user?.id) return false;
 
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/google-calendar/meetings/${meetingId}`, {
+        const response = await fetch(`/api/meetings/meetings/${meetingId}`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -358,12 +390,11 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [user?.id, toast]
   );
 
-  // Get meeting details
   const getMeetingDetails = useCallback(
     async (meetingId: string): Promise<MeetingEvent | null> => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/google-calendar/meetings/${meetingId}`, {
+        const response = await fetch(`/api/meetings/meetings/${meetingId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -391,20 +422,16 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [toast]
   );
 
-  // Get professional's working hours
   const getWorkingHours = useCallback(
     async (professionalId: string): Promise<any[]> => {
       setIsLoading(true);
       try {
-        const response = await fetch(
-          `/api/google-calendar/working-hours/${professionalId}`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        );
+        const response = await fetch(`/api/meetings/working-hours/${professionalId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
         if (!response.ok) {
           throw new Error('Failed to fetch working hours');
@@ -427,14 +454,13 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     [toast]
   );
 
-  // Update professional's working hours
   const updateWorkingHours = useCallback(
     async (workingHours: any[]): Promise<boolean> => {
       if (!user?.id) return false;
 
       setIsLoading(true);
       try {
-        const response = await fetch('/api/google-calendar/working-hours', {
+        const response = await fetch('/api/meetings/working-hours', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -471,6 +497,7 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     isLoading,
     isConnected,
     calendarEmail,
+    getUserCalendar,
     checkConnection,
     connectCalendar,
     disconnectCalendar,
@@ -482,5 +509,6 @@ export function useGoogleCalendar(): UseGoogleCalendarReturn {
     getMeetingDetails,
     getWorkingHours,
     updateWorkingHours,
+    getProfessionalAvailability,
   };
 }

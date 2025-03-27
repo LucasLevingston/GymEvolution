@@ -26,7 +26,7 @@ export const useUser = () => {
         return false;
       }
 
-      const { data } = await api.post(
+      await api.post(
         '/auth/validate-token',
         { token },
         {
@@ -36,15 +36,14 @@ export const useUser = () => {
         }
       );
 
-      if (!data) {
+      return true;
+    } catch (error: any) {
+      if (error.response.data.message === 'Invalid token') {
         logout();
         return false;
       }
 
-      return true;
-    } catch (error) {
       console.error('Token validation error:', error);
-      logout();
       return false;
     }
   };

@@ -10,6 +10,7 @@ const App: React.FC = () => {
       <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
         <Helmet titleTemplate="%s | GymEvolution" />
         <RouterProvider router={router} />
+
         <Toaster richColors position="top-right" />
       </ThemeProvider>
     </HelmetProvider>

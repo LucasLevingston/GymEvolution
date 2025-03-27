@@ -1,3 +1,5 @@
+import { ProfessionalSettings } from './userType';
+
 export interface Review {
   id: string;
   rating: number;
@@ -29,4 +31,5 @@ export interface Professional {
   education?: string[];
   availability?: string[];
   reviews?: Review[];
+  professionalSettings: ProfessionalSettings;
 }

@@ -28,7 +28,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { useState } from 'react';
-import { ContainerRoot } from '@/components/Container';
 
 export default function Register() {
   const [passwordVisible, setPasswordVisible] = useState(false);

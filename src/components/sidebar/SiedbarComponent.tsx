@@ -1,12 +1,7 @@
 import type React from 'react';
 import { Card } from '@/components/ui/card';
 import Sidebar from './Sidebar';
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerRoot,
-  ContainerTitle,
-} from '../Container';
+import { ContainerContent, ContainerHeader, ContainerTitle } from '../Container';
 
 export default function SiedbarComponent({ children }: { children: React.ReactNode }) {
   return (
