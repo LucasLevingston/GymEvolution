@@ -97,7 +97,6 @@ export default function ScheduleMeeting() {
 
   const { getProfessionalById } = useProfessionals();
 
-  // Fetch purchase data
   useEffect(() => {
     const fetchPurchases = async () => {
       if (!purchaseId) return;
@@ -118,7 +117,6 @@ export default function ScheduleMeeting() {
     fetchPurchases();
   }, [purchaseId, getPurchaseById]);
 
-  // Check Google Calendar connection
   useEffect(() => {
     const checkGoogleConnection = async () => {
       if (!user) return;
@@ -135,7 +133,6 @@ export default function ScheduleMeeting() {
     checkGoogleConnection();
   }, [user, getUserCalendar]);
 
-  // Fetch professional settings
   useEffect(() => {
     const fetchProfessionalSettings = async () => {
       if (!purchase?.professionalId) return;
@@ -159,18 +156,15 @@ export default function ScheduleMeeting() {
     }
   }, [purchase, getProfessionalById]);
 
-  // Função para buscar disponibilidade para um mês específico
   const fetchAvailabilityForMonth = useCallback(
     async (month: Date) => {
       if (!purchase?.professionalId) return;
 
       setAvailabilityLoading(true);
       try {
-        // Formatar a data para o primeiro dia do mês
         const firstDayOfMonth = new Date(month.getFullYear(), month.getMonth(), 1);
         const monthKey = format(firstDayOfMonth, 'yyyy-MM');
 
-        // Verificar se já temos dados para este mês
         if (availabilityMonths.includes(monthKey)) {
           setAvailabilityLoading(false);
           return;
@@ -184,10 +178,8 @@ export default function ScheduleMeeting() {
         );
 
         if (availability) {
-          // Adicionar à disponibilidade existente ou definir como nova disponibilidade
           setProfessionalAvailability((prev) => {
             if (prev) {
-              // Filtrar slots duplicados
               const existingDates = new Set(
                 prev.map((slot) => slot.startTime.split('T')[0])
               );
@@ -199,7 +191,6 @@ export default function ScheduleMeeting() {
             return availability;
           });
 
-          // Marcar este mês como carregado
           setAvailabilityMonths((prev) => [...prev, monthKey]);
         }
       } catch (error) {
@@ -216,48 +207,65 @@ export default function ScheduleMeeting() {
     async (date: Date) => {
       if (!purchase?.professionalId) return;
 
+      setAvailabilityLoading(true);
       try {
-        // Formatar a data para o formato YYYY-MM-DD
         const dateStr = format(date, 'yyyy-MM-dd');
 
-        // Buscar disponibilidade para esta data específica
         const availability = await getProfessionalAvailability(
           purchase.professionalId,
           dateStr
         );
 
-        if (availability && availability.length > 0) {
-          // Adicionar à disponibilidade existente, substituindo slots para a mesma data
+        if (availability) {
+          const hasAvailable = availability.some((slot) => slot.available);
+
+          setConfirmedAvailableDays((prev) => {
+            const newSet = new Set(prev);
+            if (hasAvailable) {
+              newSet.add(dateStr);
+            } else {
+              newSet.delete(dateStr);
+            }
+            return newSet;
+          });
+
           setProfessionalAvailability((prev) => {
             if (!prev) return availability;
 
-            // Remover slots existentes para esta data
             const filteredPrev = prev.filter((slot) => {
               const slotDate = slot.startTime.split('T')[0];
               return slotDate !== dateStr;
             });
 
-            // Adicionar novos slots
             return [...filteredPrev, ...availability];
           });
-
-          return true;
         }
-        return false;
+
+        setAvailabilityLoading(false);
+        return availability && availability.some((slot) => slot.available);
       } catch (error) {
         console.error('Error fetching availability for date:', error);
+        setAvailabilityLoading(false);
         return false;
       }
     },
     [purchase?.professionalId, getProfessionalAvailability]
   );
 
-  // Carregar disponibilidade quando o mês atual mudar
+  const handleDateSelect = (date: Date) => {
+    setSelectedDate(date);
+    setSelectedTimeSlot(null);
+    setLoadingDate(date);
+
+    fetchAvailabilityForDate(date).finally(() => {
+      setLoadingDate(null);
+    });
+  };
+
   useEffect(() => {
     if (purchase?.professionalId) {
       fetchAvailabilityForMonth(currentMonth);
 
-      // Também carregar o próximo mês para ter dados prontos
       const nextMonth = addMonths(currentMonth, 1);
       fetchAvailabilityForMonth(nextMonth);
     }
@@ -310,17 +318,6 @@ export default function ScheduleMeeting() {
 
   const [loadingDate, setLoadingDate] = useState<Date | null>(null);
 
-  const handleDateSelect = (date: Date) => {
-    setSelectedDate(date);
-    setSelectedTimeSlot(null);
-    setLoadingDate(date);
-
-    // Buscar disponibilidade para esta data
-    fetchAvailabilityForDate(date).finally(() => {
-      setLoadingDate(null);
-    });
-  };
-
   const handleTimeSlotSelect = (slot: TimeSlot) => {
     setSelectedTimeSlot(slot);
   };
@@ -328,10 +325,8 @@ export default function ScheduleMeeting() {
   const getAvailableDays = (): DayAvailability[] => {
     if (!professionalAvailability) return [];
 
-    // Group time slots by date
     const groupedByDate = professionalAvailability.reduce(
       (acc, slot) => {
-        // Extract date part from the startTime string (assuming format like "2023-04-15T14:00:00")
         const dateStr = slot.startTime.split('T')[0];
         if (!acc[dateStr]) {
           acc[dateStr] = {
@@ -345,7 +340,6 @@ export default function ScheduleMeeting() {
       {} as Record<string, DayAvailability>
     );
 
-    // Convert to array and filter days with available slots
     return Object.values(groupedByDate).filter((day) =>
       day.slots.some((slot) => slot.available)
     );
@@ -354,10 +348,13 @@ export default function ScheduleMeeting() {
   const getAvailableSlotsForDate = (date: Date | null): TimeSlot[] => {
     if (!date || !professionalAvailability) return [];
 
-    // Filter slots for the selected date
-    return professionalAvailability.filter((slot) => {
+    const availableSlots = professionalAvailability.filter((slot) => {
       const slotDate = new Date(slot.startTime.split('T')[0]);
       return isSameDay(slotDate, date) && slot.available;
+    });
+
+    return availableSlots.sort((a, b) => {
+      return new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
     });
   };
 
@@ -380,7 +377,6 @@ export default function ScheduleMeeting() {
   const isValidDay = (day: Date | null): boolean => {
     if (!day) return false;
 
-    // Permitir dias futuros, mesmo sem disponibilidade confirmada
     const isValid =
       isWorkDay(day) &&
       isWithinMaxAdvanceBooking(day) &&
@@ -460,13 +456,27 @@ export default function ScheduleMeeting() {
     }
   };
 
-  const hasAvailabilityForDay = (day: Date | null): boolean => {
-    if (!day || !professionalAvailability) return false;
+  const [confirmedAvailableDays, setConfirmedAvailableDays] = useState<Set<string>>(
+    new Set()
+  );
 
-    return professionalAvailability.some((slot) => {
-      const slotDate = new Date(slot.startTime.split('T')[0]);
-      return isSameDay(slotDate, day) && slot.available;
-    });
+  const hasAvailabilityForDay = (day: Date | null): boolean => {
+    if (!day) return false;
+
+    const dateStr = format(day, 'yyyy-MM-dd');
+
+    if (confirmedAvailableDays.has(dateStr)) {
+      return true;
+    }
+
+    if (professionalAvailability) {
+      return professionalAvailability.some((slot) => {
+        const slotDate = slot.startTime.split('T')[0];
+        return slotDate === dateStr && slot.available;
+      });
+    }
+
+    return false;
   };
 
   const isDayClickable = (day: Date | null): boolean => {
@@ -767,16 +777,15 @@ export default function ScheduleMeeting() {
                                   className={`
                                     p-2 rounded-md relative
                                     ${!day ? 'invisible' : ''}
-                                    ${day && !isClickable ? 'text-gray-300 cursor-not-allowed' : ''}
-                                    ${day && isClickable ? 'cursor-pointer hover:bg-primary/10' : ''}
+                                    ${day && !isClickable ? 'text-gray-300 cursor-not-allowed bg-gray-50' : ''}
+                                    ${day && isClickable && !hasAvailability ? 'cursor-pointer hover:bg-primary/10 bg-orange-50 text-orange-700' : ''}
+                                    ${day && isClickable && hasAvailability ? 'cursor-pointer hover:bg-primary/10 bg-green-50 text-green-700' : ''}
                                     ${selectedDate && day && isSameDay(selectedDate, day) ? 'bg-primary text-primary-foreground' : ''}
-                                    ${day && !isWorkDay(day) ? 'bg-gray-100' : ''}
                                     ${loadingDate && day && isSameDay(loadingDate, day) ? 'animate-pulse' : ''}
                                   `}
                                   onClick={() => {
                                     if (day && isClickable) {
                                       handleDateSelect(day);
-                                      console.log(day);
                                       fetchAvailabilityForDate(day);
                                     }
                                   }}
@@ -788,7 +797,6 @@ export default function ScheduleMeeting() {
                                     ) {
                                       e.preventDefault();
                                       handleDateSelect(day);
-                                      // Buscar disponibilidade específica para este dia
                                       fetchAvailabilityForDate(day);
                                     }
                                   }}
@@ -1002,4 +1010,30 @@ export default function ScheduleMeeting() {
       </form>
     </>
   );
+}
+
+function getCalendarDays(): (Date | null)[] {
+  const today = new Date();
+  const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+  const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+
+  const daysInMonth = lastDayOfMonth.getDate();
+  const firstDayOfWeek = firstDayOfMonth.getDay();
+
+  const calendarDays: (Date | null)[] = [];
+
+  for (let i = 0; i < firstDayOfWeek; i++) {
+    calendarDays.push(null);
+  }
+
+  for (let i = 1; i <= daysInMonth; i++) {
+    calendarDays.push(new Date(today.getFullYear(), today.getMonth(), i));
+  }
+
+  const remainingSlots = (7 - (calendarDays.length % 7)) % 7;
+  for (let i = 0; i < remainingSlots; i++) {
+    calendarDays.push(null);
+  }
+
+  return calendarDays;
 }

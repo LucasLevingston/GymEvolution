@@ -1,8 +1,8 @@
-import { z } from 'zod';
-import { weightSchema } from './weightSchema';
-import { dietSchema } from './dietSchema';
-import { trainingWeekSchema } from './trainingWeekSchema';
-import { historySchema } from './historySchema';
+import { z } from 'zod'
+import { weightSchema } from './weightSchema'
+import { dietSchema } from './dietSchema'
+import { trainingWeekSchema } from './trainingWeekSchema'
+import { historySchema } from './historySchema'
 
 export const UserSchema: z.ZodType<any> = z.lazy(() =>
   z.object({
@@ -10,7 +10,7 @@ export const UserSchema: z.ZodType<any> = z.lazy(() =>
     email: z.string().email('Invalid email address'),
     sex: z.string().optional(),
     street: z.string().optional(),
-    number: z.string().optional(),
+    number: z.string(),
     zipCode: z.string().optional(),
     city: z.string().optional(),
     state: z.string().optional(),
@@ -19,15 +19,16 @@ export const UserSchema: z.ZodType<any> = z.lazy(() =>
     currentWeight: z.string().optional(),
     currentBf: z.string().optional(),
     height: z.string().optional(),
+    profilePictureFile: z.any(),
 
     oldWeights: z.array(weightSchema).optional(),
     trainingWeeks: z.array(trainingWeekSchema).optional(),
     diets: z.array(dietSchema).optional(),
     history: z.array(historySchema).optional(),
   })
-);
+)
 
-export type UserSchemaType = z.infer<typeof UserSchema>;
+export type UserSchemaType = z.infer<typeof UserSchema>
 export const ProfessionalUserSchema = z.object({
   bio: z.string().optional(),
   experience: z.number().min(0, 'Experience must be a positive number').optional(),
@@ -45,4 +46,4 @@ export const ProfessionalUserSchema = z.object({
   maxAdvanceBooking: z.number().min(1).max(365),
   autoAcceptMeetings: z.boolean(),
   timeZone: z.string(),
-});
+})

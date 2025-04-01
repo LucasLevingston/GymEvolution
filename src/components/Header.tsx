@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +7,8 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/dropdown-menu'
+import { Button } from '@/components/ui/button'
 import {
   LogOut,
   Settings,
@@ -18,24 +18,26 @@ import {
   BarChart,
   Utensils,
   DollarSign,
-} from 'lucide-react';
-import useUser from '@/hooks/user-hooks';
-import { toast } from 'sonner';
-import { ModeToggle } from './toggle/ModeToggle';
-import logoDivision from '../assets/logo.png';
-import { NotificationDropdown } from './notifications/NotificationDropdown';
+} from 'lucide-react'
+import useUser from '@/hooks/user-hooks'
+import { toast } from 'sonner'
+import { ModeToggle } from './toggle/ModeToggle'
+import logoDivision from '../assets/logo.png'
+import { NotificationDropdown } from './notifications/NotificationDropdown'
+import { Avatar, AvatarImage } from './ui/avatar'
+import { AvatarFallback } from '@radix-ui/react-avatar'
 
 export default function Header() {
-  const { logout, user } = useUser();
-  const navigate = useNavigate();
+  const { logout, user } = useUser()
+  const navigate = useNavigate()
 
   const handleLogout = () => {
-    logout();
-    toast.warning('Logged out of the account.');
+    logout()
+    toast.warning('Logged out of the account.')
     setTimeout(() => {
-      navigate('/login');
-    }, 2000);
-  };
+      navigate('/login')
+    }, 2000)
+  }
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -87,8 +89,13 @@ export default function Header() {
               <NotificationDropdown />
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                    <User className="h-5 w-5" />
+                  <Button variant="ghost" className="relative h-12 w-12 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.imageUrl} className="w-full h-full" />
+                      <AvatarFallback>
+                        <User />
+                      </AvatarFallback>
+                    </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -177,5 +184,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  );
+  )
 }

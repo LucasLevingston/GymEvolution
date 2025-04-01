@@ -15,17 +15,17 @@ const initialUser = storedUser ? JSON.parse(storedUser) : null
 const storedToken = localStorage.getItem('token')
 const initialToken = storedToken ? JSON.parse(storedToken) : null
 
-export const useUserStore = create<UserStoreProps>()(set => ({
+export const useUserStore = create<UserStoreProps>()((set) => ({
   user: initialUser,
   token: initialToken,
-  setUser: user => {
+  setUser: (user) => {
     set({ user })
     localStorage.setItem('user', JSON.stringify(user))
     return user
   },
 
-  updateUser: updatedUser =>
-    set(state => {
+  updateUser: (updatedUser) =>
+    set((state) => {
       const newUser = state.user ? { ...state.user, ...updatedUser } : null
       localStorage.setItem('user', JSON.stringify(newUser))
       return { user: newUser }
@@ -48,7 +48,7 @@ export const useUserStore = create<UserStoreProps>()(set => ({
     return storedUser ? JSON.parse(storedUser) : null
   },
 
-  setToken: token => {
+  setToken: (token) => {
     set({ token })
     localStorage.setItem('token', JSON.stringify(token))
     return token

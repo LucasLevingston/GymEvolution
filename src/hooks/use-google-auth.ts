@@ -72,8 +72,7 @@ export function useGoogleAuth() {
     setState((prev) => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      // Get the authorization URL from our API
-      const { data } = await api.get('/google/auth', {
+      const { data } = await api.get('/auth/google', {
         headers: {
           Authorization: `Bearer ${token}`,
         },

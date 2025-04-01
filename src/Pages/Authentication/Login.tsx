@@ -1,3 +1,5 @@
+'use client';
+
 import { ReloadIcon } from '@radix-ui/react-icons';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -12,13 +14,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { IoEyeOutline, IoEyeSharp } from 'react-icons/io5';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import useUser from '@/hooks/user-hooks';
+import { GoogleButton } from '@/components/GoogleButton';
+import { Separator } from '@/components/ui/separator';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
+import type { z } from 'zod';
 import {
   Form,
   FormControl,
@@ -28,10 +32,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { loginSchema } from '@/schemas/LogInSchema';
+import { useEffect } from 'react';
 
 export default function Login() {
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const { login } = useUser();
+  const { login, loginWithGoogle } = useUser();
+  const [searchParams] = useSearchParams();
 
   const form = useForm<z.infer<typeof loginSchema>>({
     resolver: zodResolver(loginSchema),
@@ -40,6 +46,18 @@ export default function Login() {
       password: '',
     },
   });
+
+  // Check for error in URL params (from Google auth callback)
+  useEffect(() => {
+    const error = searchParams.get('error');
+    if (error) {
+      toast.error(
+        error === 'authentication_failed'
+          ? 'Authentication failed. Please try again.'
+          : 'An error occurred during login.'
+      );
+    }
+  }, [searchParams]);
 
   const toggleShowPassword = () => {
     setPasswordVisible(!passwordVisible);
@@ -56,6 +74,10 @@ export default function Login() {
     } catch (error: any) {
       return toast.error(error.message);
     }
+  };
+
+  const handleGoogleLogin = () => {
+    loginWithGoogle();
   };
 
   return (
@@ -116,18 +138,27 @@ export default function Login() {
                       )}
                     />
                   </CardContent>
-                  <CardFooter className="flex flex-col items-center justify-center">
-                    <Button type="submit">
+                  <CardFooter className="flex flex-col items-center justify-center gap-2">
+                    <Button type="submit" className="w-full">
                       {form.formState.isSubmitting ? (
                         <ReloadIcon className="h-4 w-4 animate-spin" />
                       ) : (
                         'Log In'
                       )}
                     </Button>
-                    <br />
-                    <Link to="/password-recovery" className="text-[12px] text-mainColor">
-                      Forgot password? Click here to recover
-                    </Link>
+
+                    <Separator className="my-2" />
+
+                    <GoogleButton onClick={handleGoogleLogin} />
+
+                    <div className="mt-2">
+                      <Link
+                        to="/password-recovery"
+                        className="text-[12px] text-mainColor"
+                      >
+                        Forgot password? Click here to recover
+                      </Link>
+                    </div>
                   </CardFooter>
                 </form>
               </Form>
