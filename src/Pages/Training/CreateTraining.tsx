@@ -1,16 +1,11 @@
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerRoot,
-  ContainerTitle,
-} from '@/components/Container';
-import { TrainingWeekCard } from '@/components/training/training-week-card';
-import { Button } from '@/components/ui/button';
-import { ClipboardIcon } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
+import { TrainingWeekCard } from '@/components/training/training-week-card'
+import { Button } from '@/components/ui/button'
+import { ClipboardIcon } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export default function CreateTraining() {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   return (
     <>
@@ -27,5 +22,5 @@ export default function CreateTraining() {
         <TrainingWeekCard isCreating={true} />
       </ContainerContent>
     </>
-  );
+  )
 }

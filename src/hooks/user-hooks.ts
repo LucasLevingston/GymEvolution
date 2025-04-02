@@ -141,7 +141,7 @@ export const useUser = () => {
 
   const updateUser = async (updatedUser: Partial<UserType>) => {
     try {
-      if (updatedUser.profilePictureFile && !updatedUser.useGooglePicture) {
+      if (updatedUser.profilePictureFile && updatedUser.useGooglePicture === undefined) {
         const formData = new FormData()
 
         Object.entries(updatedUser).map(([key, value]) => {
@@ -167,9 +167,7 @@ export const useUser = () => {
         })
         updateUserStore(data)
         return data
-      } else if (updatedUser.useGooglePicture) {
-        console.log(updatedUser.useGooglePicture)
-
+      } else {
         const { data } = await api.put(`/users/${updatedUser.id}`, updatedUser, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -179,7 +177,9 @@ export const useUser = () => {
         return data
       }
     } catch (error: any) {
-      console.log(error.response.data.error)
+      const errorData: string = error.response.data.message
+      console.log(errorData)
+      throw new Error(errorData)
     }
   }
 
