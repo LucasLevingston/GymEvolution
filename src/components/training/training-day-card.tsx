@@ -1,36 +1,36 @@
-'use client';
+'use client'
 
-import { PlusCircle, CheckCircle } from 'lucide-react';
-import { useFieldArray, type UseFormReturn } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema';
+import { PlusCircle, CheckCircle } from 'lucide-react'
+import { useFieldArray, type UseFormReturn } from 'react-hook-form'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema'
 import {
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-} from '@/components/ui/form';
-import { ExerciseCard } from './exercise-card';
-import { Separator } from '@/components/ui/separator';
+} from '@/components/ui/form'
+import { ExerciseCard } from './exercise-card'
+import { Separator } from '@/components/ui/separator'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/select'
 
 interface TrainingDayCardProps {
-  day: TrainingWeekFormData['trainingDays'][number];
-  index: number;
-  form: UseFormReturn<TrainingWeekFormData>;
-  trainingNow?: boolean;
-  isEditing?: boolean;
-  isCreating?: boolean;
-  onStartTraining: () => void;
+  day: TrainingWeekFormData['trainingDays'][number]
+  index: number
+  form: UseFormReturn<TrainingWeekFormData>
+  trainingNow?: boolean
+  isEditing?: boolean
+  isCreating?: boolean
+  onStartTraining: () => void
 }
 
 export function TrainingDayCard({
@@ -48,16 +48,16 @@ export function TrainingDayCard({
   } = useFieldArray({
     control: form.control,
     name: `trainingDays.${index}.exercises`,
-  });
+  })
 
   const handleCompleteAllExercises = () => {
     exercises.forEach((_, exerciseIndex) => {
-      form.setValue(`trainingDays.${index}.exercises.${exerciseIndex}.isCompleted`, true);
-    });
-    form.setValue(`trainingDays.${index}.isCompleted`, true);
-  };
+      form.setValue(`trainingDays.${index}.exercises.${exerciseIndex}.isCompleted`, true)
+    })
+    form.setValue(`trainingDays.${index}.isCompleted`, true)
+  }
 
-  const weekDays = [
+  const dayOfWeeks = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -65,10 +65,10 @@ export function TrainingDayCard({
     'Friday',
     'Saturday',
     'Sunday',
-  ];
+  ]
 
   return (
-    <div className="space-y-6 bg-yellow-50">
+    <div className="space-y-6 ">
       <div className="grid md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
@@ -112,7 +112,7 @@ export function TrainingDayCard({
       <div className="grid md:grid-cols-2 gap-6">
         <FormField
           control={form.control}
-          name={`trainingDays.${index}.weekDay`}
+          name={`trainingDays.${index}.dayOfWeek`}
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-semibold">Day of Week</FormLabel>
@@ -127,7 +127,7 @@ export function TrainingDayCard({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {weekDays.map((day) => (
+                  {dayOfWeeks.map((day) => (
                     <SelectItem key={day} value={day}>
                       {day}
                     </SelectItem>
@@ -254,5 +254,5 @@ export function TrainingDayCard({
         )}
       </div>
     </div>
-  );
+  )
 }
