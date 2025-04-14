@@ -4,38 +4,39 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Dumbbell, Wheat, Droplet, Flame } from 'lucide-react';
-import useUser from '@/hooks/user-hooks';
+} from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { Dumbbell, Wheat, Droplet, Flame } from 'lucide-react'
+import useUser from '@/hooks/user-hooks'
 
 interface MacroNutrientsCardProps {
   diet: {
-    totalProtein?: number;
-    totalCarbohydrates?: number;
-    totalFat?: number;
-    totalCalories?: number;
-  };
+    totalProtein?: number
+    totalCarbohydrates?: number
+    totalFat?: number
+    totalCalories?: number
+  }
 }
 
 export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
-  const { getBasalMetabolicRate } = useUser();
-  const bmr = getBasalMetabolicRate();
+  console.log(diet)
+  const { getBasalMetabolicRate } = useUser()
+  const bmr = getBasalMetabolicRate()
 
   const macroData = [
     { name: 'Protein', value: diet.totalProtein || 0, color: '#FF6384' },
     { name: 'Carbs', value: diet.totalCarbohydrates || 0, color: '#36A2EB' },
     { name: 'Fat', value: diet.totalFat || 0, color: '#FFCE56' },
-  ].filter((item) => item.value > 0);
+  ].filter((item) => item.value > 0)
 
-  const totalMacros = macroData.reduce((sum, item) => sum + item.value, 0);
+  const totalMacros = macroData.reduce((sum, item) => sum + item.value, 0)
   const macroPercentages = macroData.map((item) => ({
     ...item,
     percentage: totalMacros > 0 ? Math.round((item.value / totalMacros) * 100) : 0,
-  }));
-  const caloriePercentage = bmr ? (diet.totalCalories! / bmr) * 100 : 0;
+  }))
+  const caloriePercentage = bmr ? (diet.totalCalories! / bmr) * 100 : 0
 
   return (
     <Card className="md:col-span-1">
@@ -140,5 +141,5 @@ export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

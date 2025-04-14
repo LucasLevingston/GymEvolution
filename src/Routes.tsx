@@ -1,77 +1,86 @@
-import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
-import Home from './Pages/Home';
-import Login from './Pages/Authentication/Login';
-import Register from './Pages/Authentication/Register';
-import MyInformationsSettings from './Pages/Settings/MyInformations';
-import CreateTraining from './Pages/Training/CreateTraining';
-import { useUserStore } from './store/user-store';
-import NotFound from './Pages/Not-Found';
-import { ThemeProvider } from './components/providers/ThemeProvider';
-import Profile from './Pages/Profile';
-import ThemeSettings from './Pages/Settings/ThemeSettings';
-import PastWorkouts from './Pages/Training/PastTrainings';
-import CurrentWorkoutWeek from './Pages/Training/TrainingWeekPlan';
-import Progress from './Pages/Progress';
-import ResetPassword from './Pages/Authentication/ResetPassword';
-import PasswordRecovery from './Pages/Authentication/PasswordRecovery';
-import DietPlan from './Pages/Diet/DietPlan';
-import PastDiets from './Pages/Diet/PastDiets';
-import CreateDiet from './Pages/Diet/CreateDiet';
-import ProfessionalsList from './Pages/Professionals/ProfessionalsList';
-import ProfessionalDetail from './Pages/Professionals/ProfessionalDetail';
-import { NotificationProvider } from './components/notifications/NotificationProvider';
-import { ContainerRoot } from './components/Container';
-import RegisterProfessional from './Pages/Professionals/RegisterProfessional';
-import HiringFlow from './Pages/HiringFlow';
-import AdminDashboard from './Pages/Admin/Admin-Dashboard';
-import PurchaseSuccess from './Pages/Purchase/PurchaseSuccess';
-import PurchaseCancel from './Pages/Purchase/PurchaseCancel';
-import RelationshipManagement from './Pages/Professionals/RelationshipManagement';
-import CreatePlan from './Pages/Professionals/Plan/CreatePlan';
-import EditPlan from './Pages/Professionals/Plan/EditPlan';
-import Meetings from './Pages/Meetings/Meetings';
-import ScheduleMeeting from './Pages/Meetings/ScheduleMeeting';
-import ProfessionalPlans from './Pages/Professionals/Plan/ProfessionalPlans';
-import Purchases from './Pages/Purchase/Purchases';
-import PurchaseDetails from './Pages/Purchase/PurchaseDetails';
-import ConnectGooglePage from './Pages/Settings/ConnectGoogle';
-import ProfessionalDashboard from './Pages/Professionals/ProfessionalDashboard';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom'
+import Home from './Pages/Home'
+import Login from './Pages/Authentication/Login'
+import Register from './Pages/Authentication/Register'
+import MyInformationsSettings from './Pages/Settings/MyInformations'
+import CreateTraining from './Pages/Training/CreateTraining'
+import { useUserStore } from './store/user-store'
+import NotFound from './Pages/Not-Found'
+import { ThemeProvider } from './components/providers/ThemeProvider'
+import Profile from './Pages/Profile'
+import ThemeSettings from './Pages/Settings/ThemeSettings'
+import PastWorkouts from './Pages/Training/PastTrainings'
+import CurrentWorkoutWeek from './Pages/Training/TrainingWeekPlan'
+import Progress from './Pages/Progress'
+import ResetPassword from './Pages/Authentication/ResetPassword'
+import PasswordRecovery from './Pages/Authentication/PasswordRecovery'
+import DietPlan from './Pages/Diet/DietPlan'
+import PastDiets from './Pages/Diet/PastDiets'
+import CreateDiet from './Pages/Diet/CreateDiet'
+import ProfessionalsList from './Pages/Professionals/ProfessionalsList'
+import ProfessionalDetail from './Pages/Professionals/ProfessionalDetail'
+import { NotificationProvider } from './components/notifications/NotificationProvider'
+import { ContainerRoot } from './components/Container'
+import RegisterProfessional from './Pages/Professionals/RegisterProfessional'
+import HiringFlow from './Pages/HiringFlow'
+import AdminDashboard from './Pages/Admin/Admin-Dashboard'
+import PurchaseSuccess from './Pages/Purchase/PurchaseSuccess'
+import PurchaseCancel from './Pages/Purchase/PurchaseCancel'
+import RelationshipManagement from './Pages/Professionals/RelationshipManagement'
+import CreatePlan from './Pages/Professionals/Plan/CreatePlan'
+import EditPlan from './Pages/Professionals/Plan/EditPlan'
+import Meetings from './Pages/Meetings/Meetings'
+import ScheduleMeeting from './Pages/Meetings/ScheduleMeeting'
+import ProfessionalPlans from './Pages/Professionals/Plan/ProfessionalPlans'
+import Purchases from './Pages/Purchase/Purchases'
+import PurchaseDetails from './Pages/Purchase/PurchaseDetails'
+import ConnectGooglePage from './Pages/Settings/ConnectGoogle'
+import ProfessionalDashboard from './Pages/Professionals/ProfessionalDashboard'
+import AllProfessionals from './Pages/Admin/AllProfessionals'
 
 interface PrivateRouteProps {
-  element: JSX.Element;
+  element: JSX.Element
 }
 
 const PrivateRoute = ({ element }: PrivateRouteProps) => {
-  const { user } = useUserStore();
-  return user ? element : <Navigate to="/login" />;
-};
+  const { user } = useUserStore()
+  return user ? element : <Navigate to="/login" />
+}
+
+const AdminRoute = ({ element }: PrivateRouteProps) => {
+  const { user } = useUserStore()
+  return user?.role === 'ADMIN' ? element : <Navigate to="/" />
+}
 
 const ProfessionalRoute = ({ element }: PrivateRouteProps) => {
-  const { user } = useUserStore();
+  const { user } = useUserStore()
   return user && (user.role === 'NUTRITIONIST' || user.role === 'TRAINER') ? (
     element
   ) : (
     <Navigate to="/professionals/register-professional" />
-  );
-};
+  )
+}
 
 const AuthRoutes = [
   { path: '/login', element: <Login /> },
   { path: '/register', element: <Register /> },
   { path: '/password-recovery', element: <PasswordRecovery /> },
   { path: '/reset-password', element: <ResetPassword /> },
-];
+]
 
 const ProfessionalRoutes = [
   { path: '/professionals', element: <ProfessionalsList /> },
   { path: '/professionals/:id', element: <ProfessionalDetail /> },
-  { path: '/professionals/register-professional', element: <RegisterProfessional /> },
+  {
+    path: '/professionals/register-professional',
+    element: <PrivateRoute element={<RegisterProfessional />} />,
+  },
   { path: '/hiring-flow', element: <HiringFlow /> },
   {
     path: '/professional-dashboard',
     element: <ProfessionalRoute element={<ProfessionalDashboard />} />,
   },
-];
+]
 
 const SettingsRoutes = [
   {
@@ -83,25 +92,32 @@ const SettingsRoutes = [
     path: '/settings/my-informations',
     element: <PrivateRoute element={<MyInformationsSettings />} />,
   },
-];
+]
 
 const TrainingRoutes = [
   { path: '/workout-week', element: <PrivateRoute element={<CurrentWorkoutWeek />} /> },
   { path: '/training-weeks', element: <PrivateRoute element={<PastWorkouts />} /> },
   { path: '/create-training', element: <PrivateRoute element={<CreateTraining />} /> },
-];
+]
 
 const DietRoutes = [
   { path: '/diet', element: <PrivateRoute element={<DietPlan />} /> },
   { path: '/past-diets', element: <PrivateRoute element={<PastDiets />} /> },
   { path: '/create-diet', element: <PrivateRoute element={<CreateDiet />} /> },
-];
+]
 
-const PurchaseRoutes = [
+const AdminRoutes = [
   {
     path: '/admin-dashboard',
-    element: <PrivateRoute element={<AdminDashboard />} />,
+    element: <AdminRoute element={<AdminDashboard />} />,
   },
+  {
+    path: '/admin/professionals',
+    element: <AdminRoute element={<AllProfessionals />} />,
+  },
+]
+
+const PurchaseRoutes = [
   {
     path: '/purchases',
     element: <PrivateRoute element={<Purchases />} />,
@@ -138,7 +154,7 @@ const PurchaseRoutes = [
     path: '/schedule-meeting/:purchaseId',
     element: <PrivateRoute element={<ScheduleMeeting />} />,
   },
-];
+]
 
 const GeneralRoutes = [
   { path: '/', element: <Home /> },
@@ -149,7 +165,7 @@ const GeneralRoutes = [
     element: <PrivateRoute element={<RelationshipManagement />} />,
   },
   { path: '*', element: <NotFound /> },
-];
+]
 
 export const router = createBrowserRouter([
   {
@@ -171,6 +187,7 @@ export const router = createBrowserRouter([
       ...DietRoutes,
       ...PurchaseRoutes,
       ...GeneralRoutes,
+      ...AdminRoutes,
     ],
   },
-]);
+])

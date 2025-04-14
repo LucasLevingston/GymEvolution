@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import type React from 'react';
+import type React from 'react'
 
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Plus, X, Save, ArrowLeft } from 'lucide-react';
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { Plus, X, Save, ArrowLeft } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -14,90 +14,146 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { useUserStore } from '@/store/user-store';
-import { ContainerRoot } from '@/components/Container';
-import { usePlans } from '@/hooks/use-plans';
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { useUserStore } from '@/store/user-store'
+import { ContainerRoot } from '@/components/Container'
+import { usePlans } from '@/hooks/use-plans'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Checkbox } from '@/components/ui/checkbox'
+
+// Define available features by professional type
+const NUTRITIONIST_FEATURES = [
+  { id: 'initial_consultation', label: 'Consulta Inicial' },
+  { id: 'follow_up', label: 'Consulta de Retorno' },
+  { id: 'diet_plan', label: 'Plano Alimentar' },
+  { id: 'nutritional_monitoring', label: 'Acompanhamento Nutricional' },
+  { id: 'whatsapp_support', label: 'Suporte via WhatsApp' },
+  { id: 'meal_planning', label: 'Planejamento de Refeições' },
+  { id: 'body_composition_analysis', label: 'Análise de Composição Corporal' },
+  { id: 'nutritional_education', label: 'Educação Nutricional' },
+]
+
+const TRAINER_FEATURES = [
+  { id: 'initial_assessment', label: 'Avaliação Física Inicial' },
+  { id: 'training_plan', label: 'Planilha de Treino' },
+  { id: 'follow_up_session', label: 'Sessão de Acompanhamento' },
+  { id: 'physical_monitoring', label: 'Monitoramento de Progresso' },
+  { id: 'whatsapp_support', label: 'Suporte via WhatsApp' },
+  { id: 'exercise_technique', label: 'Correção de Técnica de Exercícios' },
+  { id: 'personalized_training', label: 'Treino Personalizado' },
+  { id: 'performance_evaluation', label: 'Avaliação de Desempenho' },
+]
 
 export default function CreatePlan() {
-  const navigate = useNavigate();
-  const { user } = useUserStore();
-  const { createPlan, isLoading } = usePlans();
+  const navigate = useNavigate()
+  const { user } = useUserStore()
+  const { createPlan, isLoading } = usePlans()
 
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [price, setPrice] = useState('');
-  const [duration, setDuration] = useState('');
-  const [feature, setFeature] = useState('');
-  const [features, setFeatures] = useState<string[]>([]);
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [price, setPrice] = useState('')
+  const [duration, setDuration] = useState('')
+  const [customFeature, setCustomFeature] = useState('')
+  const [customFeatures, setCustomFeatures] = useState<string[]>([])
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([])
+  const [planType, setPlanType] = useState('predefined') // 'predefined' or 'custom'
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // Determine which feature set to use based on user role
+  const availableFeatures =
+    user?.role === 'NUTRITIONIST' ? NUTRITIONIST_FEATURES : TRAINER_FEATURES
 
   const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Record<string, string> = {}
 
-    if (!name.trim()) newErrors.name = 'Nome é obrigatório';
-    if (!price.trim()) newErrors.price = 'Preço é obrigatório';
+    if (!name.trim()) newErrors.name = 'Nome é obrigatório'
+    if (!price.trim()) newErrors.price = 'Preço é obrigatório'
     else if (isNaN(Number.parseFloat(price)) || Number.parseFloat(price) <= 0)
-      newErrors.price = 'Preço deve ser um valor positivo';
+      newErrors.price = 'Preço deve ser um valor positivo'
 
-    if (!duration.trim()) newErrors.duration = 'Duração é obrigatória';
+    if (!duration.trim()) newErrors.duration = 'Duração é obrigatória'
     else if (isNaN(Number.parseInt(duration)) || Number.parseInt(duration) <= 0)
-      newErrors.duration = 'Duração deve ser um número inteiro positivo';
+      newErrors.duration = 'Duração deve ser um número inteiro positivo'
 
-    if (features.length === 0)
-      newErrors.features = 'Adicione pelo menos um recurso ao plano';
+    if (planType === 'predefined' && selectedFeatures.length === 0)
+      newErrors.features = 'Selecione pelo menos um recurso para o plano'
+    else if (planType === 'custom' && customFeatures.length === 0)
+      newErrors.features = 'Adicione pelo menos um recurso ao plano'
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
 
-  const handleAddFeature = () => {
-    if (!feature.trim()) return;
+  const handleAddCustomFeature = () => {
+    if (!customFeature.trim()) return
 
-    setFeatures([...features, feature]);
-    setFeature('');
+    setCustomFeatures([...customFeatures, customFeature])
+    setCustomFeature('')
 
     // Clear feature error if it exists
     if (errors.features) {
-      const { features, ...rest } = errors;
-      setErrors(rest);
+      const { features, ...rest } = errors
+      setErrors(rest)
     }
-  };
+  }
 
-  const handleRemoveFeature = (index: number) => {
-    setFeatures(features.filter((_, i) => i !== index));
-  };
+  const handleRemoveCustomFeature = (index: number) => {
+    setCustomFeatures(customFeatures.filter((_, i) => i !== index))
+  }
+
+  const handleFeatureToggle = (featureId: string) => {
+    setSelectedFeatures((prev) =>
+      prev.includes(featureId)
+        ? prev.filter((id) => id !== featureId)
+        : [...prev, featureId]
+    )
+
+    // Clear feature error if it exists
+    if (errors.features) {
+      const { features, ...rest } = errors
+      setErrors(rest)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!validateForm()) return;
+    if (!validateForm()) return
 
     if (!user) {
-      navigate('/login');
-      return;
+      navigate('/login')
+      return
     }
+
+    // Determine which features to use based on plan type
+    const featuresToSave =
+      planType === 'predefined'
+        ? selectedFeatures.map(
+            (id) => availableFeatures.find((f) => f.id === id)?.label || id
+          )
+        : customFeatures
 
     const planData = {
       name,
       description,
       price: Number.parseFloat(price),
       duration: Number.parseInt(duration),
-      features,
+      features: featuresToSave,
       professionalId: user.id,
-    };
+      professionalType: user.role,
+    }
 
-    const result = await createPlan(planData);
+    const result = await createPlan(planData)
 
     if (result) {
-      navigate(`/professional-plans/${user.id}`);
+      navigate(`/professional-plans/${user.id}`)
     }
-  };
+  }
 
   if (!user) {
     return (
@@ -112,7 +168,7 @@ export default function CreatePlan() {
           </Button>
         </div>
       </ContainerRoot>
-    );
+    )
   }
 
   if (user.role === 'STUDENT') {
@@ -128,7 +184,7 @@ export default function CreatePlan() {
           </Button>
         </div>
       </ContainerRoot>
-    );
+    )
   }
 
   return (
@@ -214,33 +270,66 @@ export default function CreatePlan() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="flex gap-2">
-              <Input
-                placeholder="Ex: Consulta inicial detalhada"
-                value={feature}
-                onChange={(e) => setFeature(e.target.value)}
-                className={errors.features ? 'border-red-500' : ''}
-              />
-              <Button type="button" onClick={handleAddFeature}>
-                <Plus className="h-4 w-4 mr-1" /> Adicionar
-              </Button>
-            </div>
-            {errors.features && <p className="text-red-500 text-sm">{errors.features}</p>}
+            <Tabs value={planType} onValueChange={setPlanType} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="predefined">Recursos Pré-definidos</TabsTrigger>
+                <TabsTrigger value="custom">Recursos Personalizados</TabsTrigger>
+              </TabsList>
 
-            <div className="flex flex-wrap gap-2 mt-4">
-              {features.map((feat, index) => (
-                <Badge key={index} variant="secondary" className="px-3 py-1.5">
-                  {feat}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveFeature(index)}
-                    className="ml-2 text-muted-foreground hover:text-foreground"
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                </Badge>
-              ))}
-            </div>
+              <TabsContent value="predefined" className="mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {availableFeatures.map((feature) => (
+                    <div key={feature.id} className="flex items-start space-x-2">
+                      <Checkbox
+                        id={feature.id}
+                        checked={selectedFeatures.includes(feature.id)}
+                        onCheckedChange={() => handleFeatureToggle(feature.id)}
+                      />
+                      <Label htmlFor={feature.id} className="cursor-pointer">
+                        {feature.label}
+                      </Label>
+                    </div>
+                  ))}
+                </div>
+                {errors.features && planType === 'predefined' && (
+                  <p className="text-red-500 text-sm mt-2">{errors.features}</p>
+                )}
+              </TabsContent>
+
+              <TabsContent value="custom" className="mt-4">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ex: Consulta inicial detalhada"
+                    value={customFeature}
+                    onChange={(e) => setCustomFeature(e.target.value)}
+                    className={
+                      errors.features && planType === 'custom' ? 'border-red-500' : ''
+                    }
+                  />
+                  <Button type="button" onClick={handleAddCustomFeature}>
+                    <Plus className="h-4 w-4 mr-1" /> Adicionar
+                  </Button>
+                </div>
+                {errors.features && planType === 'custom' && (
+                  <p className="text-red-500 text-sm mt-2">{errors.features}</p>
+                )}
+
+                <div className="flex flex-wrap gap-2 mt-4">
+                  {customFeatures.map((feat, index) => (
+                    <Badge key={index} variant="secondary" className="px-3 py-1.5">
+                      {feat}
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomFeature(index)}
+                        className="ml-2 text-muted-foreground hover:text-foreground"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button
@@ -267,5 +356,5 @@ export default function CreatePlan() {
         </Card>
       </form>
     </>
-  );
+  )
 }

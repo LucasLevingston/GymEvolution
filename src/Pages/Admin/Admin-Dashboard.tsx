@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Users,
   Clock,
@@ -13,9 +13,9 @@ import {
   MessageSquare,
   Dumbbell,
   Utensils,
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -23,49 +23,49 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { useNotifications } from '@/hooks/use-notifications';
-import { toast } from 'sonner';
-import { ContainerRoot } from '@/components/Container';
-import { useRelationships } from '@/hooks/relationship-hooks';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import useUser from '@/hooks/user-hooks';
+} from '@/components/ui/select'
+import { useNotifications } from '@/hooks/use-notifications'
+import { toast } from 'sonner'
+import { ContainerRoot } from '@/components/Container'
+import { useRelationships } from '@/hooks/relationship-hooks'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import useUser from '@/hooks/user-hooks'
 
 interface Student {
-  id: string;
-  name: string;
-  email: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  since: string;
-  lastActivity?: string;
-  hasDiet: boolean;
-  hasTraining: boolean;
+  id: string
+  name: string
+  email: string
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
+  since: string
+  lastActivity?: string
+  hasDiet: boolean
+  hasTraining: boolean
 }
 
 export default function AdminDashboard() {
-  const [students, setStudents] = useState<Student[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const { addNotification } = useNotifications();
-  const { user } = useUser();
-  const { getStudents, updateRelationship, isLoading } = useRelationships();
+  const [students, setStudents] = useState<Student[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const { addNotification } = useNotifications()
+  const { user } = useUser()
+  const { getStudents, updateRelationship, isLoading } = useRelationships()
 
   useEffect(() => {
     const fetchStudents = async () => {
-      if (!user) return;
+      if (!user) return
 
       try {
-        const data = await getStudents();
+        const data = await getStudents()
 
         const transformedStudents: Student[] = data.map((student: any) => ({
           id: student.id,
@@ -76,53 +76,53 @@ export default function AdminDashboard() {
           lastActivity: student.lastActivity,
           hasDiet: student.hasDiet || false,
           hasTraining: student.hasTraining || false,
-        }));
+        }))
 
-        setStudents(transformedStudents);
+        setStudents(transformedStudents)
       } catch (error) {
-        console.error('Error fetching students:', error);
-        toast.error('Falha ao carregar alunos');
+        console.error('Error fetching students:', error)
+        toast.error('Falha ao carregar alunos')
       }
-    };
+    }
 
-    fetchStudents();
-  }, [user, getStudents]);
+    fetchStudents()
+  }, [user, getStudents])
 
   const handleAcceptStudent = async (studentId: string) => {
     try {
-      const student = students.find((s) => s.id === studentId);
-      if (!student) return;
+      const student = students.find((s) => s.id === studentId)
+      if (!student) return
 
-      const result = await updateRelationship(student.id, { status: 'ACCEPTED' });
+      const result = await updateRelationship(student.id, { status: 'ACCEPTED' })
 
       if (result) {
         setStudents((prev) =>
           prev.map((student) =>
             student.id === studentId ? { ...student, status: 'ACCEPTED' } : student
           )
-        );
+        )
 
-        toast.success('Aluno aceito com sucesso');
+        toast.success('Aluno aceito com sucesso')
         addNotification({
           title: 'Novo Aluno',
           message: 'Você aceitou um novo aluno. Crie um plano personalizado para ele.',
           type: 'success',
-        });
+        })
       }
     } catch (error) {
-      console.error('Error accepting student:', error);
-      toast.error('Falha ao aceitar aluno');
+      console.error('Error accepting student:', error)
+      toast.error('Falha ao aceitar aluno')
     }
-  };
+  }
 
   const handleRejectStudent = async (studentId: string) => {
     try {
       // Find the relationship ID for this student
-      const student = students.find((s) => s.id === studentId);
-      if (!student) return;
+      const student = students.find((s) => s.id === studentId)
+      if (!student) return
 
       // Update the relationship status
-      const result = await updateRelationship(student.id, { status: 'REJECTED' });
+      const result = await updateRelationship(student.id, { status: 'REJECTED' })
 
       if (result) {
         // Update local state
@@ -130,40 +130,40 @@ export default function AdminDashboard() {
           prev.map((student) =>
             student.id === studentId ? { ...student, status: 'REJECTED' } : student
           )
-        );
+        )
 
-        toast.success('Solicitação rejeitada');
+        toast.success('Solicitação rejeitada')
         addNotification({
           title: 'Solicitação Rejeitada',
           message: 'Você rejeitou a solicitação de um aluno.',
           type: 'info',
-        });
+        })
       }
     } catch (error) {
-      console.error('Error rejecting student:', error);
-      toast.error('Falha ao rejeitar solicitação');
+      console.error('Error rejecting student:', error)
+      toast.error('Falha ao rejeitar solicitação')
     }
-  };
+  }
 
   // Filter students based on search term and status filter
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase());
+      student.email.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesStatus = statusFilter === 'all' || student.status === statusFilter;
+    const matchesStatus = statusFilter === 'all' || student.status === statusFilter
 
-    return matchesSearch && matchesStatus;
-  });
+    return matchesSearch && matchesStatus
+  })
 
-  const pendingCount = students.filter((student) => student.status === 'PENDING').length;
-  const activeCount = students.filter((student) => student.status === 'ACCEPTED').length;
+  const pendingCount = students.filter((student) => student.status === 'PENDING').length
+  const activeCount = students.filter((student) => student.status === 'ACCEPTED').length
   const needsTrainingCount = students.filter(
     (student) => student.status === 'ACCEPTED' && !student.hasTraining
-  ).length;
+  ).length
   const needsDietCount = students.filter(
     (student) => student.status === 'ACCEPTED' && !student.hasDiet
-  ).length;
+  ).length
 
   if (!user) {
     return (
@@ -178,12 +178,12 @@ export default function AdminDashboard() {
           </Button>
         </div>
       </ContainerRoot>
-    );
+    )
   }
 
-  if (user.role !== 'NUTRITIONIST' && user.role !== 'TRAINER') {
+  if (user.role !== 'ADMIN') {
     return (
-      <ContainerRoot>
+      <>
         <div className="py-20 text-center">
           <h2 className="text-2xl font-bold mb-4">Acesso Restrito</h2>
           <p className="text-muted-foreground mb-8">
@@ -193,8 +193,8 @@ export default function AdminDashboard() {
             <Link to="/register-professional">Cadastrar como Profissional</Link>
           </Button>
         </div>
-      </ContainerRoot>
-    );
+      </>
+    )
   }
 
   return (
@@ -596,5 +596,5 @@ export default function AdminDashboard() {
         </TabsContent>
       </Tabs>
     </>
-  );
+  )
 }

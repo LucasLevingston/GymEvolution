@@ -1,127 +1,219 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Button } from '@/components/ui/button';
-import { PanelsLeftRightIcon, Save } from 'lucide-react';
-import { useDiets } from '@/hooks/use-diets';
-import { toast } from 'sonner';
-import type { DietType } from '@/types/DietType';
-import { DietComponent } from '@/components/diet/DietComponent';
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
 import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerRoot,
-  ContainerTitle,
-} from '@/components/Container';
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
+import { ArrowLeft, Save } from 'lucide-react'
 
-const dietSchema = z.object({
-  weekNumber: z.number().optional().default(1),
-  totalCalories: z.number().optional().default(0),
-  totalProtein: z.number().optional().default(0),
-  totalCarbohydrates: z.number().optional().default(0),
-  totalFat: z.number().optional().default(0),
-  meals: z.array(z.any()).optional().default([]),
-});
+import { useUser } from '@/hooks/user-hooks'
 
-export type DietFormValues = z.infer<typeof dietSchema>;
+import { DietComponent } from '@/components/diet/DietComponent'
+import { ClientAssignment } from '@/components/diet/ClientAssignment'
+import { useDiets } from '@/hooks/use-diets'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
+import { DietType } from '@/types/DietType'
 
 export default function CreateDiet() {
-  const navigate = useNavigate();
-  const { createDiet } = useDiets();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { user } = useUser()
+  const { createDiet } = useDiets()
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [clients, setClients] = useState<any[]>([])
+  const [selectedTab, setSelectedTab] = useState('existing')
+  const [selectedClientId, setSelectedClientId] = useState('')
+  const [newClientEmail, setNewClientEmail] = useState('')
+  const [newClientName, setNewClientName] = useState('')
+  const [newClientCpf, setNewClientCpf] = useState('')
+  const [notes, setNotes] = useState('')
+  const [assignmentMethod, setAssignmentMethod] = useState<'user' | 'cpf' | 'email'>(
+    'user'
+  )
+
   const [diet, setDiet] = useState<DietType>({
     weekNumber: 1,
     totalCalories: 0,
     totalProtein: 0,
     totalCarbohydrates: 0,
     totalFat: 0,
+    isCurrent: true,
     meals: [],
-  });
+  })
 
-  const form = useForm<DietFormValues>({
-    resolver: zodResolver(dietSchema),
-    defaultValues: {
-      weekNumber: 1,
-      totalCalories: 0,
-      totalProtein: 0,
-      totalCarbohydrates: 0,
-      totalFat: 0,
-      meals: [],
-    },
-  });
+  // useEffect(() => {
+  //   const fetchClients = async () => {
+  //     try {
+  //       // const data = await getClients()
+  //       // setClients(data)
+  //     } catch (error) {
+  //       console.error('Error fetching clients:', error)
+  //       toast({
+  //         title: 'Error',
+  //         description: 'Failed to load clients. Please try again.',
+  //         variant: 'destructive',
+  //       })
+  //     }
+  //   }
 
-  useEffect(() => {
-    if (diet) {
-      form.setValue('weekNumber', diet.weekNumber || 1);
-      form.setValue('totalCalories', diet.totalCalories || 0);
-      form.setValue('totalProtein', diet.totalProtein || 0);
-      form.setValue('totalCarbohydrates', diet.totalCarbohydrates || 0);
-      form.setValue('totalFat', diet.totalFat || 0);
-
-      if (Array.isArray(diet.meals)) {
-        form.setValue('meals', diet.meals);
-      }
-    }
-  }, [diet, form]);
+  //   fetchClients()
+  // }, [toast])
 
   const handleDietUpdate = (updatedDiet: DietType) => {
-    setDiet(updatedDiet);
-  };
+    setDiet(updatedDiet)
+  }
 
-  const onSubmit = async () => {
-    try {
-      setIsSubmitting(true);
+  const handleClientAssignment = (data: {
+    method: 'user' | 'cpf' | 'email'
+    userId?: string
+    cpf?: string
+    email?: string
+    name?: string
+  }) => {
+    setAssignmentMethod(data.method)
 
-      const submission = {
-        weekNumber: diet.weekNumber || 1,
-        totalCalories: diet.totalCalories || 0,
-        totalProtein: diet.totalProtein || 0,
-        totalCarbohydrates: diet.totalCarbohydrates || 0,
-        totalFat: diet.totalFat || 0,
-        meals: diet.meals || [],
-      };
-
-      await createDiet(submission);
-      toast.success('Diet plan created successfully!');
-      navigate('/diet');
-    } catch (err: any) {
-      console.error('Error creating diet:', err);
-      toast.error('Error creating diet');
-    } finally {
-      setIsSubmitting(false);
+    if (data.method === 'user') {
+      setSelectedClientId(data.userId || '')
+      setNewClientEmail('')
+      setNewClientName('')
+      setNewClientCpf('')
+    } else if (data.method === 'cpf') {
+      setSelectedClientId('')
+      setNewClientCpf(data.cpf || '')
+      setNewClientName(data.name || '')
+      setNewClientEmail(data.email || '')
+    } else if (data.method === 'email') {
+      setSelectedClientId('')
+      setNewClientCpf('')
+      setNewClientEmail(data.email || '')
+      setNewClientName(data.name || '')
     }
-  };
+  }
+
+  const handleSubmit = async () => {
+    setIsLoading(true)
+
+    try {
+      const dietData: any = {
+        weekNumber: diet.weekNumber,
+        totalCalories: diet.totalCalories,
+        totalProtein: diet.totalProtein,
+        totalCarbohydrates: diet.totalCarbohydrates,
+        totalFat: diet.totalFat,
+        isCurrent: diet.isCurrent,
+        meals:
+          diet.meals?.map((meal) => ({
+            name: meal.name,
+            mealType: meal.mealType,
+            calories: meal.calories,
+            protein: meal.protein,
+            carbohydrates: meal.carbohydrates,
+            fat: meal.fat,
+            day: meal.day,
+            hour: meal.hour,
+            isCompleted: false,
+            mealItems: meal.mealItems || [],
+          })) || [],
+      }
+
+      if (assignmentMethod === 'user' && selectedClientId) {
+        dietData.userId = selectedClientId
+      } else if (assignmentMethod === 'cpf' && newClientCpf) {
+        dietData.userCpf = newClientCpf
+        dietData.userName = newClientName
+        dietData.userEmail = newClientEmail
+      } else if (assignmentMethod === 'email' && newClientEmail) {
+        dietData.userEmail = newClientEmail
+        dietData.userName = newClientName
+      }
+
+      if (notes) {
+        dietData.notes = notes
+      }
+
+      await createDiet(dietData)
+
+      toast({
+        title: 'Success',
+        description: 'Diet plan created successfully!',
+      })
+
+      navigate('/dashboard/plans')
+    } catch (error) {
+      console.error('Error creating diet:', error)
+      toast({
+        title: 'Error',
+        description: 'Failed to create diet plan. Please try again.',
+        variant: 'destructive',
+      })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const isFormValid = () => {
+    if (assignmentMethod === 'user') {
+      return !!selectedClientId
+    } else if (assignmentMethod === 'cpf') {
+      return !!newClientCpf && newClientCpf.length >= 11
+    } else if (assignmentMethod === 'email') {
+      return !!newClientEmail && newClientEmail.includes('@')
+    }
+    return false
+  }
 
   return (
-    <>
-      <ContainerHeader className="flex justify-between items-center mb-6">
-        <ContainerTitle>Create New Diet Plan</ContainerTitle>
-        <div className="flex gap-2">
-          <Button onClick={() => navigate('/past-diets')} disabled={isSubmitting}>
-            <PanelsLeftRightIcon className="h-4 w-4" />
-            Past Diets
+    <div className="container mx-auto py-8 space-y-8">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
           </Button>
-          <Button
-            onClick={onSubmit}
-            disabled={isSubmitting}
-            className="flex items-center gap-2"
-          >
-            <Save className="h-4 w-4" />
-            {isSubmitting ? 'Saving...' : 'Save Diet Plan'}
-          </Button>
+          <h1 className="text-3xl font-bold">Create Diet Plan</h1>
         </div>
-      </ContainerHeader>
+        <Button
+          onClick={handleSubmit}
+          disabled={isLoading || !isFormValid()}
+          className="bg-emerald-600 hover:bg-emerald-700"
+        >
+          <Save className="mr-2 h-4 w-4" />
+          {isLoading ? 'Creating...' : 'Save Diet Plan'}
+        </Button>
+      </div>
+      {user && checkIsProfessional(user) && (
+        <ClientAssignment clients={clients} onAssign={handleClientAssignment} />
+      )}
 
-      <ContainerContent>
-        <DietComponent
-          diet={diet}
-          onSave={handleDietUpdate}
-          readOnly={false}
-          isCreating={true}
-        />
-      </ContainerContent>
-    </>
-  );
+      <Card>
+        <CardHeader>
+          <CardTitle>Diet Plan Notes</CardTitle>
+          <CardDescription>
+            Add any additional notes or instructions for this diet plan
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Textarea
+            placeholder="Enter any notes or special instructions for this diet plan..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="min-h-[100px]"
+          />
+        </CardContent>
+      </Card>
+
+      <div className="bg-card rounded-lg p-6 border">
+        <h2 className="text-xl font-semibold mb-4">Diet Plan Builder</h2>
+        <DietComponent diet={diet} isCreating={true} onSaveClick={handleSubmit} />
+      </div>
+    </div>
+  )
 }

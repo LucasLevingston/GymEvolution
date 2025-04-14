@@ -1,681 +1,1291 @@
-'use client';
+'use client'
 
-import type React from 'react';
+import type { ChangeEvent } from 'react'
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useReducer } from 'react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 import {
   Dumbbell,
-  Apple,
+  Utensils,
   Upload,
-  Plus,
+  Loader2,
+  FileText,
   X,
-  CheckCircle2,
-  AlertCircle,
-} from 'lucide-react';
+  Plus,
+  Calendar,
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Textarea } from '@/components/ui/textarea'
+import { useToast } from '@/hooks/use-toast'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useProfessionals } from '@/hooks/professional-hooks'
+import { Badge } from '@/components/ui/badge'
+import { useNavigate } from 'react-router-dom'
+import { Switch } from '@/components/ui/switch'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { useNotifications } from '@/components/notifications/NotificationProvider';
-import useUser from '@/hooks/user-hooks';
+} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
 
-interface FormData {
-  role: 'NUTRITIONIST' | 'TRAINER';
-  bio: string;
-  experience: number;
-  city: string;
-  state: string;
-  phone: string;
-  specialties: string[];
-  certifications: string[];
-  education: string[];
-  availability: string[];
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+const ACCEPTED_DOCUMENT_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/jpg',
+]
+
+const professionalFormSchema = z.object({
+  role: z.enum(['TRAINER', 'NUTRITIONIST'], {
+    required_error: 'Please select a professional role',
+  }),
+  bio: z
+    .string()
+    .min(50, {
+      message: 'Bio must be at least 50 characters',
+    })
+    .max(500, {
+      message: 'Bio cannot exceed 500 characters',
+    }),
+  experience: z.coerce.number().min(0, {
+    message: 'Experience must be a positive number',
+  }),
+  // Changed to string array
+  specialties: z.array(z.string()).min(1, 'Add at least one specialty'),
+  // Updated certification schema
+  certifications: z
+    .array(
+      z.object({
+        name: z.string().min(1, 'Certification name is required'),
+        organization: z.string().optional(),
+        year: z.string().optional(),
+      })
+    )
+    .min(1, 'Add at least one certification'),
+  // Updated education schema
+  education: z
+    .array(
+      z.object({
+        degree: z.string().min(1, 'Degree/qualification is required'),
+        institution: z.string().optional(),
+        year: z.string().optional(),
+      })
+    )
+    .min(1, 'Add at least one education entry'),
+  availability: z.string().min(5, {
+    message: 'Please describe your availability',
+  }),
+  acceptTerms: z.boolean().refine((value) => value === true, {
+    message: 'You must accept the terms and conditions',
+  }),
+  // Professional settings fields
+  workStartHour: z.coerce.number().min(0).max(23),
+  workEndHour: z.coerce.number().min(0).max(23),
+  appointmentDuration: z.coerce.number().min(15),
+  workDays: z.string(),
+  bufferBetweenSlots: z.coerce.number().min(0),
+  maxAdvanceBooking: z.coerce.number().min(1).max(365),
+  autoAcceptMeetings: z.boolean(),
+  timeZone: z.string(),
+})
+
+type ProfessionalFormValues = z.infer<typeof professionalFormSchema>
+
+type DocumentFile = {
+  file: File
+  name: string
+  description: string
+  type: string
 }
 
-export default function RegisterProfessional() {
-  const navigate = useNavigate();
-  const { user, updateUser } = useUser();
-  const { addNotification } = useNotifications();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [specialty, setSpecialty] = useState('');
-  const [certification, setCertification] = useState('');
-  const [education, setEducation] = useState('');
-  const [availabilityDay, setAvailabilityDay] = useState('');
+// Define a reducer for form inputs to reduce the number of useState hooks
+type FormInputState = {
+  newSpecialty: string
+  newCertName: string
+  newCertOrg: string
+  newCertYear: string
+  newEduDegree: string
+  newEduInstitution: string
+  newEduYear: string
+  documentName: string
+  documentDescription: string
+}
 
-  const [formData, setFormData] = useState<FormData>({
-    role: 'NUTRITIONIST',
-    bio: '',
-    experience: 0,
-    city: '',
-    state: '',
-    phone: '',
-    specialties: [],
-    certifications: [],
-    education: [],
-    availability: [],
-  });
+type FormInputAction =
+  | {
+      type: 'SET_FIELD'
+      field: keyof FormInputState
+      value: string
+    }
+  | {
+      type: 'RESET_CERTIFICATION'
+    }
+  | {
+      type: 'RESET_EDUCATION'
+    }
+  | {
+      type: 'RESET_DOCUMENT'
+    }
 
-  const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
+const formInputReducer = (
+  state: FormInputState,
+  action: FormInputAction
+): FormInputState => {
+  switch (action.type) {
+    case 'SET_FIELD':
+      return { ...state, [action.field]: action.value }
+    case 'RESET_CERTIFICATION':
+      return {
+        ...state,
+        newCertName: '',
+        newCertOrg: '',
+        newCertYear: '',
+      }
+    case 'RESET_EDUCATION':
+      return {
+        ...state,
+        newEduDegree: '',
+        newEduInstitution: '',
+        newEduYear: '',
+      }
+    case 'RESET_DOCUMENT':
+      return {
+        ...state,
+        documentName: '',
+        documentDescription: '',
+      }
+    default:
+      return state
+  }
+}
 
-  if (!user) {
-    return (
-      <div className="py-20 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-red-500 mb-4" />
-        <h2 className="text-2xl font-bold mb-4">Você precisa estar logado</h2>
-        <p className="text-muted-foreground mb-8">
-          Faça login para se cadastrar como profissional.
-        </p>
-        <Button asChild>
-          <a href="/login">Fazer Login</a>
-        </Button>
-      </div>
-    );
+export default function ProfessionalRegistrationForm() {
+  // Reduced number of useState hooks by using useReducer
+  const [formInputs, dispatch] = useReducer(formInputReducer, {
+    newSpecialty: '',
+    newCertName: '',
+    newCertOrg: '',
+    newCertYear: '',
+    newEduDegree: '',
+    newEduInstitution: '',
+    newEduYear: '',
+    documentName: '',
+    documentDescription: '',
+  })
+
+  // Remaining useState hooks for more complex state
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [documentError, setDocumentError] = useState<string | null>(null)
+
+  // State for qualification items
+  // const [newSpecialty, setNewSpecialty] = useState("")
+  // const [newCertName, setNewCertName] = useState("")
+  // const [newCertOrg, setNewCertOrg] = useState("")
+  // const [newCertYear, setNewCertYear] = useState("")
+  // const [newEduDegree, setNewEduDegree] = useState("")
+  // const [newEduInstitution, setNewEduInstitution] = useState("")
+  // const [newEduYear, setNewEduYear] = useState("")
+  // const [documentName, setDocumentName] = useState("")
+  // const [documentDescription, setDocumentDescription] = useState("")
+
+  const navigate = useNavigate()
+  const { toast } = useToast()
+  const { registerProfessional } = useProfessionals()
+
+  const form = useForm<ProfessionalFormValues>({
+    resolver: zodResolver(professionalFormSchema),
+    defaultValues: {
+      role: 'TRAINER',
+      bio: '',
+      experience: 0,
+      specialties: [],
+      certifications: [],
+      education: [],
+      availability: '',
+      acceptTerms: false,
+      workStartHour: 9,
+      workEndHour: 17,
+      appointmentDuration: 60,
+      workDays: '1,2,3,4,5',
+      bufferBetweenSlots: 0,
+      maxAdvanceBooking: 30,
+      autoAcceptMeetings: false,
+      timeZone: 'America/Sao_Paulo',
+    },
+  })
+
+  const workDaysArray =
+    form
+      .watch('workDays')
+      ?.split(',')
+      .map((day: string) => Number.parseInt(day.trim())) || []
+
+  const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setImageFile(file)
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string)
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+  const handleDocumentChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
 
-    // Clear error when user types
-    if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    // Validate file size
+    if (file.size > MAX_FILE_SIZE) {
+      setDocumentError('File size must be less than 5MB')
+      return
     }
-  };
 
-  const handleNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    const numValue = Number.parseInt(value) || 0;
-    setFormData((prev) => ({ ...prev, [name]: numValue }));
-
-    // Clear error when user types
-    if (errors[name as keyof FormData]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    // Validate file type
+    if (!ACCEPTED_DOCUMENT_TYPES.includes(file.type)) {
+      setDocumentError('File must be PDF, JPEG, or PNG')
+      return
     }
-  };
 
-  const handleRoleChange = (value: 'NUTRITIONIST' | 'TRAINER') => {
-    setFormData((prev) => ({ ...prev, role: value }));
-  };
+    setDocumentError(null)
 
+    // If no name is provided, use the file name
+    const name = formInputs.documentName.trim() || file.name
+
+    setDocuments([
+      ...documents,
+      {
+        file,
+        name,
+        description: formInputs.documentDescription,
+        type: file.type,
+      },
+    ])
+
+    // Reset form fields
+    dispatch({ type: 'RESET_DOCUMENT' })
+
+    // Reset file input
+    if (e.target) {
+      e.target.value = ''
+    }
+  }
+
+  const removeDocument = (index: number) => {
+    setDocuments(documents.filter((_, i) => i !== index))
+  }
+
+  // Add specialty - now using string array
   const addSpecialty = () => {
-    if (!specialty.trim()) return;
+    if (!formInputs.newSpecialty.trim()) return
 
-    if (!formData.specialties.includes(specialty)) {
-      setFormData((prev) => ({
-        ...prev,
-        specialties: [...prev.specialties, specialty],
-      }));
-    }
+    const currentSpecialties = form.getValues('specialties') || []
+    form.setValue('specialties', [...currentSpecialties, formInputs.newSpecialty.trim()])
+    dispatch({ type: 'SET_FIELD', field: 'newSpecialty', value: '' })
+  }
 
-    setSpecialty('');
+  // Remove specialty - now using string array
+  const removeSpecialty = (index: number) => {
+    const currentSpecialties = form.getValues('specialties') || []
+    form.setValue(
+      'specialties',
+      currentSpecialties.filter((_, i) => i !== index)
+    )
+  }
 
-    // Clear error when user adds specialty
-    if (errors.specialties) {
-      setErrors((prev) => ({ ...prev, specialties: undefined }));
-    }
-  };
-
-  const removeSpecialty = (item: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      specialties: prev.specialties.filter((s) => s !== item),
-    }));
-  };
-
+  // Add certification
   const addCertification = () => {
-    if (!certification.trim()) return;
+    if (!formInputs.newCertName.trim()) return
 
-    if (!formData.certifications.includes(certification)) {
-      setFormData((prev) => ({
-        ...prev,
-        certifications: [...prev.certifications, certification],
-      }));
-    }
+    const currentCertifications = form.getValues('certifications') || []
+    form.setValue('certifications', [
+      ...currentCertifications,
+      {
+        name: formInputs.newCertName.trim(),
+        organization: formInputs.newCertOrg.trim() || undefined,
+        year: formInputs.newCertYear.trim() || undefined,
+      },
+    ])
+    dispatch({ type: 'RESET_CERTIFICATION' })
+  }
 
-    setCertification('');
-  };
+  // Remove certification
+  const removeCertification = (index: number) => {
+    const currentCertifications = form.getValues('certifications') || []
+    form.setValue(
+      'certifications',
+      currentCertifications.filter((_, i) => i !== index)
+    )
+  }
 
-  const removeCertification = (item: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      certifications: prev.certifications.filter((c) => c !== item),
-    }));
-  };
-
+  // Add education
   const addEducation = () => {
-    if (!education.trim()) return;
+    if (!formInputs.newEduDegree.trim()) return
 
-    if (!formData.education.includes(education)) {
-      setFormData((prev) => ({
-        ...prev,
-        education: [...prev.education, education],
-      }));
+    const currentEducation = form.getValues('education') || []
+    form.setValue('education', [
+      ...currentEducation,
+      {
+        degree: formInputs.newEduDegree.trim(),
+        institution: formInputs.newEduInstitution.trim() || undefined,
+        year: formInputs.newEduYear.trim() || undefined,
+      },
+    ])
+    dispatch({ type: 'RESET_EDUCATION' })
+  }
+
+  // Remove education
+  const removeEducation = (index: number) => {
+    const currentEducation = form.getValues('education') || []
+    form.setValue(
+      'education',
+      currentEducation.filter((_, i) => i !== index)
+    )
+  }
+
+  // Toggle work day
+  const toggleWorkDay = (day: number) => {
+    const currentDays = workDaysArray
+
+    if (currentDays.includes(day)) {
+      const newDays = currentDays.filter((d: number) => d !== day)
+      form.setValue('workDays', newDays.join(','))
+    } else {
+      const newDays = [...currentDays, day].sort()
+      form.setValue('workDays', newDays.join(','))
     }
+  }
 
-    setEducation('');
-  };
-
-  const removeEducation = (item: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      education: prev.education.filter((e) => e !== item),
-    }));
-  };
-
-  const addAvailability = () => {
-    if (!availabilityDay) return;
-
-    if (!formData.availability.includes(availabilityDay)) {
-      setFormData((prev) => ({
-        ...prev,
-        availability: [...prev.availability, availabilityDay],
-      }));
-    }
-
-    setAvailabilityDay('');
-  };
-
-  const removeAvailability = (item: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      availability: prev.availability.filter((a) => a !== item),
-    }));
-  };
-
-  const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof FormData, string>> = {};
-
-    if (!formData.bio.trim()) {
-      newErrors.bio = 'A biografia é obrigatória';
-    }
-
-    if (formData.experience <= 0) {
-      newErrors.experience = 'A experiência deve ser maior que zero';
-    }
-
-    if (!formData.city.trim()) {
-      newErrors.city = 'A cidade é obrigatória';
-    }
-
-    if (!formData.state.trim()) {
-      newErrors.state = 'O estado é obrigatório';
-    }
-
-    if (!formData.phone.trim()) {
-      newErrors.phone = 'O telefone é obrigatório';
-    }
-
-    if (formData.specialties.length === 0) {
-      newErrors.specialties = 'Adicione pelo menos uma especialidade';
-    }
-
-    if (formData.certifications.length === 0) {
-      newErrors.certifications = 'Adicione pelo menos uma certificação';
-    }
-
-    if (formData.availability.length === 0) {
-      newErrors.availability = 'Adicione pelo menos um dia de disponibilidade';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) {
-      toast.error('Por favor, corrija os erros no formulário');
-      return;
-    }
+  async function onSubmit(data: ProfessionalFormValues) {
+    setIsSubmitting(true)
 
     try {
-      setIsSubmitting(true);
+      const formData = new FormData()
 
-      // Simulating API call to update user profile
-      // In a real app, you would call your API to update the user's role and professional info
-      await updateUser({
-        ...user,
-        role: formData.role,
-        bio: formData.bio,
-        experience: formData.experience,
-        city: formData.city,
-        state: formData.state,
-        phone: formData.phone,
-        specialties: JSON.stringify(formData.specialties),
-        certifications: JSON.stringify(formData.certifications),
-        education: JSON.stringify(formData.education),
-        availability: JSON.stringify(formData.availability),
-      });
+      formData.append('role', data.role)
+      formData.append('bio', data.bio)
+      formData.append('experience', data.experience.toString())
+      formData.append('availability', data.availability)
 
-      toast.success('Cadastro realizado com sucesso!');
-      addNotification({
-        title: 'Cadastro Concluído',
-        message: `Você agora é um ${formData.role === 'NUTRITIONIST' ? 'Nutricionista' : 'Treinador'} na plataforma.`,
-        type: 'success',
-      });
+      // Updated to handle string array for specialties
+      formData.append('specialties', JSON.stringify(data.specialties))
+      formData.append('certifications', JSON.stringify(data.certifications))
+      formData.append('education', JSON.stringify(data.education))
 
-      // Redirect to professional dashboard
-      navigate('/dashboard');
+      // Add professional settings data
+      formData.append('workStartHour', data.workStartHour.toString())
+      formData.append('workEndHour', data.workEndHour.toString())
+      formData.append('appointmentDuration', data.appointmentDuration.toString())
+      formData.append('workDays', data.workDays)
+      formData.append('bufferBetweenSlots', data.bufferBetweenSlots.toString())
+      formData.append('maxAdvanceBooking', data.maxAdvanceBooking.toString())
+      formData.append('autoAcceptMeetings', data.autoAcceptMeetings.toString())
+      formData.append('timeZone', data.timeZone)
+
+      if (imageFile) {
+        formData.append('profileImage', imageFile)
+      }
+
+      documents.forEach((doc, index) => {
+        formData.append(`document_${index}`, doc.file)
+      })
+
+      formData.append('documentCount', documents.length.toString())
+
+      const result = await registerProfessional(formData)
+
+      if (result.success) {
+        toast({
+          title: 'Application Submitted',
+          description: 'Your professional application has been submitted for review.',
+        })
+
+        navigate('/register-professional/success')
+      } else {
+        throw new Error(result.message)
+      }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Falha ao atualizar o perfil');
-      addNotification({
-        title: 'Erro no Cadastro',
-        message: 'Ocorreu um erro ao processar seu cadastro. Tente novamente.',
-        type: 'error',
-      });
+      toast({
+        title: 'Submission Failed',
+        description:
+          error instanceof Error
+            ? error.message
+            : 'An error occurred while submitting your application',
+        variant: 'destructive',
+      })
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   return (
-    <>
-      <div className="mb-8 text-center">
-        <h1 className="text-3xl font-bold mb-2">Cadastro de Profissional</h1>
-        <p className="text-muted-foreground">
-          Preencha o formulário abaixo para se cadastrar como nutricionista ou treinador
-        </p>
-      </div>
-
-      <form onSubmit={handleSubmit}>
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Informações Básicas</CardTitle>
-            <CardDescription>
-              Escolha sua área de atuação e forneça suas informações profissionais
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label className="text-base">Tipo de Profissional</Label>
-              <RadioGroup
-                value={formData.role}
-                onValueChange={handleRoleChange}
-                className="flex flex-col space-y-3 mt-3"
-              >
-                <div className="flex items-center space-x-3 space-y-0">
-                  <RadioGroupItem value="NUTRITIONIST" id="nutritionist" />
-                  <Label
-                    htmlFor="nutritionist"
-                    className="flex items-center cursor-pointer"
-                  >
-                    <Apple className="mr-2 h-5 w-5 text-green-500" />
-                    Nutricionista
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-3 space-y-0">
-                  <RadioGroupItem value="TRAINER" id="trainer" />
-                  <Label htmlFor="trainer" className="flex items-center cursor-pointer">
-                    <Dumbbell className="mr-2 h-5 w-5 text-blue-500" />
-                    Personal Trainer
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div>
-              <Label htmlFor="bio">Biografia Profissional</Label>
-              <Textarea
-                id="bio"
-                name="bio"
-                placeholder="Descreva sua experiência, abordagem e filosofia profissional..."
-                className={`mt-1 min-h-[120px] ${errors.bio ? 'border-red-500' : ''}`}
-                value={formData.bio}
-                onChange={handleInputChange}
-              />
-              {errors.bio && <p className="text-red-500 text-sm mt-1">{errors.bio}</p>}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="experience">Anos de Experiência</Label>
-                <Input
-                  id="experience"
-                  name="experience"
-                  type="number"
-                  min="0"
-                  className={`mt-1 ${errors.experience ? 'border-red-500' : ''}`}
-                  value={formData.experience}
-                  onChange={handleNumberChange}
-                />
-                {errors.experience && (
-                  <p className="text-red-500 text-sm mt-1">{errors.experience}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="city">Cidade</Label>
-                <Input
-                  id="city"
-                  name="city"
-                  className={`mt-1 ${errors.city ? 'border-red-500' : ''}`}
-                  value={formData.city}
-                  onChange={handleInputChange}
-                />
-                {errors.city && (
-                  <p className="text-red-500 text-sm mt-1">{errors.city}</p>
-                )}
-              </div>
-              <div>
-                <Label htmlFor="state">Estado</Label>
-                <Input
-                  id="state"
-                  name="state"
-                  className={`mt-1 ${errors.state ? 'border-red-500' : ''}`}
-                  value={formData.state}
-                  onChange={handleInputChange}
-                />
-                {errors.state && (
-                  <p className="text-red-500 text-sm mt-1">{errors.state}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="phone">Telefone de Contato</Label>
-              <Input
-                id="phone"
-                name="phone"
-                className={`mt-1 ${errors.phone ? 'border-red-500' : ''}`}
-                value={formData.phone}
-                onChange={handleInputChange}
-              />
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Especialidades e Qualificações</CardTitle>
-            <CardDescription>
-              Adicione suas especialidades, certificações e formação acadêmica
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div>
-              <Label className="text-base mb-2 block">Especialidades</Label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {formData.specialties.map((item) => (
-                  <Badge key={item} variant="secondary" className="px-3 py-1.5">
-                    {item}
-                    <button
-                      type="button"
-                      onClick={() => removeSpecialty(item)}
-                      className="ml-2 text-muted-foreground hover:text-foreground"
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-12">
+        {/* Basic Information Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Basic Information</h2>
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="role"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormLabel>Professional Role</FormLabel>
+                  <FormControl>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-col space-y-1 sm:flex-row sm:space-x-4 sm:space-y-0"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder={
-                    formData.role === 'NUTRITIONIST'
-                      ? 'Ex: Nutrição Esportiva'
-                      : 'Ex: Hipertrofia'
-                  }
-                  value={specialty}
-                  onChange={(e) => setSpecialty(e.target.value)}
-                  className={errors.specialties ? 'border-red-500' : ''}
-                />
-                <Button type="button" size="sm" onClick={addSpecialty}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-              {errors.specialties && (
-                <p className="text-red-500 text-sm mt-1">{errors.specialties}</p>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="TRAINER" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center">
+                          <Dumbbell className="mr-2 h-4 w-4" />
+                          Personal Trainer
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="NUTRITIONIST" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center">
+                          <Utensils className="mr-2 h-4 w-4" />
+                          Nutritionist
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            <Separator />
-
-            <div>
-              <Label className="text-base mb-2 block">Certificações</Label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {formData.certifications.map((item) => (
-                  <Badge key={item} variant="secondary" className="px-3 py-1.5">
-                    {item}
-                    <button
-                      type="button"
-                      onClick={() => removeCertification(item)}
-                      className="ml-2 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder={
-                    formData.role === 'NUTRITIONIST' ? 'Ex: CRN 12345' : 'Ex: CREF 12345'
-                  }
-                  value={certification}
-                  onChange={(e) => setCertification(e.target.value)}
-                  className={errors.certifications ? 'border-red-500' : ''}
-                />
-                <Button type="button" size="sm" onClick={addCertification}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-              {errors.certifications && (
-                <p className="text-red-500 text-sm mt-1">{errors.certifications}</p>
+            <FormField
+              control={form.control}
+              name="bio"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Professional Bio</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell us about yourself, your approach, and your professional philosophy..."
+                      className={cn(
+                        'min-h-[120px]',
+                        fieldState.error && 'border-red-500'
+                      )}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>
+                    This will be displayed on your public profile.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
+            />
 
-            <Separator />
-
-            <div>
-              <Label className="text-base mb-2 block">Formação Acadêmica</Label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {formData.education.map((item) => (
-                  <Badge key={item} variant="secondary" className="px-3 py-1.5">
-                    {item}
-                    <button
-                      type="button"
-                      onClick={() => removeEducation(item)}
-                      className="ml-2 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Ex: Graduação em Nutrição - UFRJ"
-                  value={education}
-                  onChange={(e) => setEducation(e.target.value)}
-                />
-                <Button type="button" size="sm" onClick={addEducation}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Disponibilidade</CardTitle>
-            <CardDescription>
-              Informe os dias e horários em que você está disponível para atender
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div>
-              <Label className="text-base mb-2 block">Dias Disponíveis</Label>
-              <div className="flex flex-wrap gap-2 mb-3">
-                {formData.availability.map((item) => (
-                  <Badge key={item} variant="secondary" className="px-3 py-1.5">
-                    {item}
-                    <button
-                      type="button"
-                      onClick={() => removeAvailability(item)}
-                      className="ml-2 text-muted-foreground hover:text-foreground"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Select value={availabilityDay} onValueChange={setAvailabilityDay}>
-                  <SelectTrigger
-                    className={`w-full ${errors.availability ? 'border-red-500' : ''}`}
-                  >
-                    <SelectValue placeholder="Selecione um dia" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Segunda-feira">Segunda-feira</SelectItem>
-                    <SelectItem value="Terça-feira">Terça-feira</SelectItem>
-                    <SelectItem value="Quarta-feira">Quarta-feira</SelectItem>
-                    <SelectItem value="Quinta-feira">Quinta-feira</SelectItem>
-                    <SelectItem value="Sexta-feira">Sexta-feira</SelectItem>
-                    <SelectItem value="Sábado">Sábado</SelectItem>
-                    <SelectItem value="Domingo">Domingo</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button type="button" size="sm" onClick={addAvailability}>
-                  <Plus className="h-4 w-4 mr-1" /> Adicionar
-                </Button>
-              </div>
-              {errors.availability && (
-                <p className="text-red-500 text-sm mt-1">{errors.availability}</p>
+            <FormField
+              control={form.control}
+              name="experience"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Years of Experience</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      min="0"
+                      className={cn(fieldState.error && 'border-red-500')}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            />
+          </div>
+        </section>
 
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Documentos e Verificação</CardTitle>
-            <CardDescription>
-              Envie documentos que comprovem sua formação e certificações
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="license">Carteira Profissional</Label>
-                <div className="mt-2 flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                  <div className="text-center">
-                    <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                    <p className="mt-2 text-sm font-medium">
-                      Arraste e solte ou clique para fazer upload
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      PNG, JPG ou PDF (máx. 5MB)
-                    </p>
-                    <Button type="button" variant="outline" size="sm" className="mt-4">
-                      Selecionar Arquivo
+        {/* Qualifications Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Qualifications</h2>
+          <div className="space-y-6">
+            {/* Specialties Section - Updated for string array */}
+            <FormField
+              control={form.control}
+              name="specialties"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Specialties</FormLabel>
+                  <FormDescription>
+                    Add your areas of specialization (e.g., Weight Loss, Strength
+                    Training, Sports Nutrition)
+                  </FormDescription>
+
+                  {/* Display added specialties */}
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {field.value.map((specialty, index) => (
+                      <Badge key={index} variant="secondary" className="px-3 py-1">
+                        {specialty}
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-4 w-4 ml-2 p-0"
+                          onClick={() => removeSpecialty(index)}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Add new specialty */}
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Add a specialty..."
+                      value={formInputs.newSpecialty}
+                      onChange={(e) =>
+                        dispatch({
+                          type: 'SET_FIELD',
+                          field: 'newSpecialty',
+                          value: e.target.value,
+                        })
+                      }
+                      className={cn('flex-1', fieldState.error && 'border-red-500')}
+                    />
+                    <Button
+                      type="button"
+                      onClick={addSpecialty}
+                      disabled={!formInputs.newSpecialty.trim()}
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
                     </Button>
                   </div>
-                </div>
-              </div>
 
-              <div>
-                <Label htmlFor="certificates">Certificados</Label>
-                <div className="mt-2 flex items-center justify-center border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
-                  <div className="text-center">
-                    <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                    <p className="mt-2 text-sm font-medium">
-                      Arraste e solte ou clique para fazer upload
-                    </p>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      PNG, JPG ou PDF (máx. 5MB)
-                    </p>
-                    <Button type="button" variant="outline" size="sm" className="mt-4">
-                      Selecionar Arquivos
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Certifications Section */}
+            <FormField
+              control={form.control}
+              name="certifications"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Certifications</FormLabel>
+                  <FormDescription>Add your professional certifications</FormDescription>
+
+                  {/* Display added certifications */}
+                  <div className="space-y-3 mb-4">
+                    {field.value.map((cert, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-3 border rounded-md bg-muted/20"
+                      >
+                        <div>
+                          <p className="font-medium">{cert.name}</p>
+                          {(cert.organization || cert.year) && (
+                            <p className="text-sm text-muted-foreground">
+                              {cert.organization}
+                              {cert.organization && cert.year ? ' • ' : ''}
+                              {cert.year}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeCertification(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add new certification */}
+                  <Card className={cn(fieldState.error && 'border-red-500')}>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <FormLabel htmlFor="cert-name">Certification Name*</FormLabel>
+                        <Input
+                          id="cert-name"
+                          placeholder="e.g., Personal Trainer Certification"
+                          value={formInputs.newCertName}
+                          onChange={(e) =>
+                            dispatch({
+                              type: 'SET_FIELD',
+                              field: 'newCertName',
+                              value: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <FormLabel htmlFor="cert-org">Issuing Organization</FormLabel>
+                          <Input
+                            id="cert-org"
+                            placeholder="e.g., ACE, NASM"
+                            value={formInputs.newCertOrg}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'SET_FIELD',
+                                field: 'newCertOrg',
+                                value: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <FormLabel htmlFor="cert-year">Year</FormLabel>
+                          <Input
+                            id="cert-year"
+                            placeholder="e.g., 2022"
+                            value={formInputs.newCertYear}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'SET_FIELD',
+                                field: 'newCertYear',
+                                value: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={addCertification}
+                        disabled={!formInputs.newCertName.trim()}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Certification
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {/* Education Section */}
+            <FormField
+              control={form.control}
+              name="education"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Education</FormLabel>
+                  <FormDescription>Add your educational background</FormDescription>
+
+                  {/* Display added education */}
+                  <div className="space-y-3 mb-4">
+                    {field.value.map((edu, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center p-3 border rounded-md bg-muted/20"
+                      >
+                        <div>
+                          <p className="font-medium">{edu.degree}</p>
+                          {(edu.institution || edu.year) && (
+                            <p className="text-sm text-muted-foreground">
+                              {edu.institution}
+                              {edu.institution && edu.year ? ' • ' : ''}
+                              {edu.year}
+                            </p>
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeEducation(index)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Add new education */}
+                  <Card className={cn(fieldState.error && 'border-red-500')}>
+                    <CardContent className="p-4 space-y-3">
+                      <div>
+                        <FormLabel htmlFor="edu-degree">Degree/Qualification*</FormLabel>
+                        <Input
+                          id="edu-degree"
+                          placeholder="e.g., Bachelor of Science in Nutrition"
+                          value={formInputs.newEduDegree}
+                          onChange={(e) =>
+                            dispatch({
+                              type: 'SET_FIELD',
+                              field: 'newEduDegree',
+                              value: e.target.value,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <FormLabel htmlFor="edu-institution">Institution</FormLabel>
+                          <Input
+                            id="edu-institution"
+                            placeholder="e.g., University of California"
+                            value={formInputs.newEduInstitution}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'SET_FIELD',
+                                field: 'newEduInstitution',
+                                value: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                        <div>
+                          <FormLabel htmlFor="edu-year">Year</FormLabel>
+                          <Input
+                            id="edu-year"
+                            placeholder="e.g., 2020"
+                            value={formInputs.newEduYear}
+                            onChange={(e) =>
+                              dispatch({
+                                type: 'SET_FIELD',
+                                field: 'newEduYear',
+                                value: e.target.value,
+                              })
+                            }
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={addEducation}
+                        disabled={!formInputs.newEduDegree.trim()}
+                        className="w-full"
+                      >
+                        <Plus className="h-4 w-4 mr-1" />
+                        Add Education
+                      </Button>
+                    </CardContent>
+                  </Card>
+
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
+        {/* Documents Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Documents</h2>
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Please upload your professional documents, certifications, diplomas, or
+                any other relevant documentation.
+              </p>
+            </div>
+
+            {/* Document list */}
+            {documents.length > 0 && (
+              <div className="space-y-3 mb-4">
+                <h4 className="text-sm font-medium">Uploaded Documents</h4>
+                {documents.map((doc, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
+                  >
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 mr-3 text-primary" />
+                      <div>
+                        <p className="font-medium text-sm">{doc.name}</p>
+                        {doc.description && (
+                          <p className="text-xs text-muted-foreground">
+                            {doc.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeDocument(index)}
+                    >
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
-                </div>
+                ))}
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Termos e Condições</CardTitle>
-            <CardDescription>
-              Leia e aceite os termos para concluir seu cadastro
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="rounded-lg bg-muted p-4">
-                <p className="text-sm text-muted-foreground">
-                  Ao se cadastrar como profissional em nossa plataforma, você concorda com
-                  nossos Termos de Serviço e Política de Privacidade. Você confirma que
-                  todas as informações fornecidas são verdadeiras e que possui as
-                  qualificações necessárias para oferecer os serviços propostos.
-                </p>
+            {/* Document upload form */}
+            <Card>
+              <CardContent className="p-4 space-y-4">
+                <div className="grid gap-2">
+                  <FormLabel htmlFor="document-name">Document Name</FormLabel>
+                  <Input
+                    id="document-name"
+                    placeholder="e.g., Personal Trainer Certification"
+                    value={formInputs.documentName}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_FIELD',
+                        field: 'documentName',
+                        value: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <FormLabel htmlFor="document-description">
+                    Description (Optional)
+                  </FormLabel>
+                  <Input
+                    id="document-description"
+                    placeholder="e.g., Issued by ACE in 2022"
+                    value={formInputs.documentDescription}
+                    onChange={(e) =>
+                      dispatch({
+                        type: 'SET_FIELD',
+                        field: 'documentDescription',
+                        value: e.target.value,
+                      })
+                    }
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <FormLabel htmlFor="document-file">Document File</FormLabel>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="document-file"
+                      type="file"
+                      accept=".pdf,.jpg,.jpeg,.png"
+                      onChange={handleDocumentChange}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      onClick={() => document.getElementById('document-file')?.click()}
+                      className="flex items-center"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add
+                    </Button>
+                  </div>
+                  <FormDescription>
+                    Accepted formats: PDF, JPEG, PNG. Max size: 5MB.
+                  </FormDescription>
+                </div>
+
+                {documentError && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{documentError}</AlertDescription>
+                  </Alert>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+
+        {/* Availability Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Availability</h2>
+          <div className="space-y-6">
+            <div className="rounded-md border p-4">
+              <h3 className="text-lg font-medium mb-4 flex items-center">
+                <Calendar className="h-5 w-5 mr-2 text-primary" />
+                Availability Settings
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                Configure your working hours and appointment settings. This information
+                will be used to determine your availability for client bookings.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <FormField
+                control={form.control}
+                name="workStartHour"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Work Start Hour</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(fieldState.error && 'border-red-500')}
+                        >
+                          <SelectValue placeholder="Select start hour" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={i.toString()}>
+                            {i.toString().padStart(2, '0')}:00
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>The hour you start working each day</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="workEndHour"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Work End Hour</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(fieldState.error && 'border-red-500')}
+                        >
+                          <SelectValue placeholder="Select end hour" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Array.from({ length: 24 }, (_, i) => (
+                          <SelectItem key={i} value={i.toString()}>
+                            {i.toString().padStart(2, '0')}:00
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      The hour you finish working each day
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="appointmentDuration"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Appointment Duration (minutes)</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(fieldState.error && 'border-red-500')}
+                        >
+                          <SelectValue placeholder="Select duration" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                        <SelectItem value="45">45 minutes</SelectItem>
+                        <SelectItem value="60">60 minutes</SelectItem>
+                        <SelectItem value="90">90 minutes</SelectItem>
+                        <SelectItem value="120">120 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Standard length of your client appointments
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="bufferBetweenSlots"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Buffer Between Appointments (minutes)</FormLabel>
+                    <Select
+                      onValueChange={(value) => field.onChange(Number.parseInt(value))}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(fieldState.error && 'border-red-500')}
+                        >
+                          <SelectValue placeholder="Select buffer time" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="0">No buffer</SelectItem>
+                        <SelectItem value="5">5 minutes</SelectItem>
+                        <SelectItem value="10">10 minutes</SelectItem>
+                        <SelectItem value="15">15 minutes</SelectItem>
+                        <SelectItem value="30">30 minutes</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>
+                      Time between consecutive appointments
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="maxAdvanceBooking"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Maximum Days in Advance for Booking</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={365}
+                        className={cn(fieldState.error && 'border-red-500')}
+                        {...field}
+                        onChange={(e) => field.onChange(Number.parseInt(e.target.value))}
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      How far in advance clients can book appointments
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="timeZone"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <FormLabel>Time Zone</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger
+                          className={cn(fieldState.error && 'border-red-500')}
+                        >
+                          <SelectValue placeholder="Select time zone" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="America/Sao_Paulo">
+                          America/Sao_Paulo
+                        </SelectItem>
+                        <SelectItem value="America/New_York">America/New_York</SelectItem>
+                        <SelectItem value="America/Chicago">America/Chicago</SelectItem>
+                        <SelectItem value="America/Denver">America/Denver</SelectItem>
+                        <SelectItem value="America/Los_Angeles">
+                          America/Los_Angeles
+                        </SelectItem>
+                        <SelectItem value="Europe/London">Europe/London</SelectItem>
+                        <SelectItem value="Europe/Paris">Europe/Paris</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormDescription>Your local time zone for scheduling</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <FormLabel>Working Days</FormLabel>
+              <div className="grid grid-cols-7 gap-2">
+                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                  <Button
+                    key={day}
+                    type="button"
+                    variant={workDaysArray.includes(index) ? 'default' : 'outline'}
+                    className="flex-1"
+                    onClick={() => toggleWorkDay(index)}
+                  >
+                    {day}
+                  </Button>
+                ))}
               </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  className="h-4 w-4 rounded border-gray-300"
-                  required
-                />
-                <Label
-                  htmlFor="terms"
-                  className="text-sm font-medium leading-none cursor-pointer"
+              <FormDescription>
+                Select the days of the week you are available to work
+              </FormDescription>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="autoAcceptMeetings"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                  <div className="space-y-0.5">
+                    <FormLabel className="text-base">
+                      Auto-accept meeting requests
+                    </FormLabel>
+                    <FormDescription>
+                      Automatically accept meeting requests from clients
+                    </FormDescription>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
+        </section>
+
+        {/* Profile & Submit Section */}
+        <section>
+          <h2 className="text-2xl font-bold mb-6">Profile & Submit</h2>
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="availability"
+              render={({ field, fieldState }) => (
+                <FormItem>
+                  <FormLabel>Availability</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Describe your availability (days, hours, remote/in-person)..."
+                      className={cn(
+                        'min-h-[100px]',
+                        fieldState.error && 'border-red-500'
+                      )}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="space-y-3">
+              <FormLabel>Profile Image</FormLabel>
+              <Card className="border-dashed">
+                <CardContent className="pt-5 flex flex-col items-center justify-center">
+                  {imagePreview ? (
+                    <div className="relative w-32 h-32 mb-4">
+                      <img
+                        src={imagePreview || '/placeholder.svg'}
+                        alt="Profile preview"
+                        className="w-full h-full object-cover rounded-full"
+                      />
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        className="absolute -top-2 -right-2 rounded-full w-8 h-8 p-0"
+                        onClick={() => {
+                          setImageFile(null)
+                          setImagePreview(null)
+                        }}
+                      >
+                        &times;
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-muted flex items-center justify-center mb-4">
+                      <Upload className="h-10 w-10 text-muted-foreground" />
+                    </div>
+                  )}
+
+                  <div className="flex flex-col items-center">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('profile-image')?.click()}
+                    >
+                      Select Image
+                    </Button>
+                    <input
+                      id="profile-image"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleImageChange}
+                    />
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Upload a professional photo for your profile
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <FormField
+              control={form.control}
+              name="acceptTerms"
+              render={({ field, fieldState }) => (
+                <FormItem
+                  className={cn(
+                    'flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4',
+                    fieldState.error && 'border-red-500'
+                  )}
                 >
-                  Eu li e concordo com os Termos de Serviço e Política de Privacidade
-                </Label>
-              </div>
-            </div>
-          </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => navigate(-1)}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
-                  Concluir Cadastro
-                </>
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Terms and Conditions</FormLabel>
+                    <FormDescription>
+                      I agree to the terms of service and privacy policy. I certify that
+                      all information provided is accurate and complete.
+                    </FormDescription>
+                  </div>
+                  <FormMessage />
+                </FormItem>
               )}
-            </Button>
-          </CardFooter>
-        </Card>
+            />
+          </div>
+        </section>
+
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Submit Application
+          </Button>
+        </div>
       </form>
-    </>
-  );
+    </Form>
+  )
 }

@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import type React from 'react';
+import type React from 'react'
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   Search,
   Filter,
@@ -13,100 +13,97 @@ import {
   ArrowUpRight,
   X,
   ChevronDown,
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import type { Professional } from '@/types/ProfessionalType';
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerTitle,
-} from '@/components/Container';
-import { calculateAverageRating } from '@/lib/utils/calculateAverageRating';
-import { useProfessionals } from '@/hooks/professional-hooks';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import type { Professional } from '@/types/ProfessionalType'
+import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
+import { calculateAverageRating } from '@/lib/utils/calculateAverageRating'
+import { useProfessionals } from '@/hooks/professional-hooks'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
+} from '@/components/ui/accordion'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import useUser from '@/hooks/user-hooks'
 
 export default function ProfessionalsList() {
-  const [professionals, setProfessionals] = useState<Professional[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [professionals, setProfessionals] = useState<Professional[]>([])
+  const [loading, setLoading] = useState(true)
+  const [searchTerm, setSearchTerm] = useState('')
+  const { user } = useUser()
 
-  // Filter states
-  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([]);
-  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [isRemoteOnly, setIsRemoteOnly] = useState<boolean | null>(null);
+  const [selectedSpecialties, setSelectedSpecialties] = useState<string[]>([])
+  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([])
+  const [isRemoteOnly, setIsRemoteOnly] = useState<boolean | null>(null)
 
-  const { getProfessionals } = useProfessionals();
+  const { getProfessionals } = useProfessionals()
 
   useEffect(() => {
     const fetchProfessionals = async () => {
       try {
-        setLoading(true);
-        const professionalsData = await getProfessionals();
-        setProfessionals(professionalsData);
+        setLoading(true)
+        const professionalsData = await getProfessionals()
+        setProfessionals(professionalsData)
       } catch (error) {
-        console.error('Error fetching professionals:', error);
+        console.error('Error fetching professionals:', error)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchProfessionals();
-  }, []);
+    fetchProfessionals()
+  }, [])
 
   // Extract unique values for filters
-  const allSpecialties = new Set<string>();
-  const allRoles = new Set<string>();
-  const allLocations = new Set<string>();
+  const allSpecialties = new Set<string>()
+  const allRoles = new Set<string>()
+  const allLocations = new Set<string>()
 
-  professionals.map((professional) => {
+  professionals?.map((professional) => {
     // Add role
     if (professional.role) {
       allRoles.add(
         professional.role === 'NUTRITIONIST' ? 'Nutritionist' : 'Personal Trainer'
-      );
+      )
     }
 
     // Add location
     if (professional.location && professional.location !== 'Remote') {
-      allLocations.add(professional.location);
+      allLocations.add(professional.location)
     }
 
     // Add specialties
     if (Array.isArray(professional.specialties)) {
-      professional.specialties.map((spec) => allSpecialties.add(spec));
+      professional.specialties.map((spec) => allSpecialties.add(spec))
     }
     if (professional.specialty) {
-      allSpecialties.add(professional.specialty);
+      allSpecialties.add(professional.specialty)
     }
-  });
+  })
 
   // Convert to sorted arrays
-  const specialtyOptions = Array.from(allSpecialties).sort();
-  const roleOptions = Array.from(allRoles).sort();
-  const locationOptions = Array.from(allLocations).sort();
+  const specialtyOptions = Array.from(allSpecialties).sort()
+  const roleOptions = Array.from(allRoles).sort()
+  const locationOptions = Array.from(allLocations).sort()
 
   // Count active filters
   const activeFilterCount =
     selectedSpecialties.length +
     selectedRoles.length +
     selectedLocations.length +
-    (isRemoteOnly !== null ? 1 : 0);
+    (isRemoteOnly !== null ? 1 : 0)
 
-  const filteredProfessionals = professionals.filter((professional) => {
+  const filteredProfessionals = professionals?.filter((professional) => {
     // Search in name, specialty, and specialties array
     const searchableText = [
       professional.name,
@@ -114,9 +111,9 @@ export default function ProfessionalsList() {
       ...(professional.specialties || []),
     ]
       .join(' ')
-      .toLowerCase();
+      .toLowerCase()
 
-    const matchesSearch = searchableText.includes(searchTerm.toLowerCase());
+    const matchesSearch = searchableText.includes(searchTerm.toLowerCase())
 
     // Check if matches selected specialties
     const matchesSpecialties =
@@ -126,24 +123,24 @@ export default function ProfessionalsList() {
           professional.specialty === spec ||
           (Array.isArray(professional.specialties) &&
             professional.specialties.includes(spec))
-      );
+      )
 
     // Check if matches selected roles
     const professionalRole =
-      professional.role === 'NUTRITIONIST' ? 'Nutritionist' : 'Personal Trainer';
+      professional.role === 'NUTRITIONIST' ? 'Nutritionist' : 'Personal Trainer'
     const matchesRoles =
-      selectedRoles.length === 0 || selectedRoles.includes(professionalRole);
+      selectedRoles.length === 0 || selectedRoles.includes(professionalRole)
 
     // Check if matches selected locations
     const matchesLocations =
       selectedLocations.length === 0 ||
-      (professional.location && selectedLocations.includes(professional.location));
+      (professional.location && selectedLocations.includes(professional.location))
 
     // Check if matches remote filter
     const matchesRemote =
       isRemoteOnly === null ||
       (isRemoteOnly === true && professional.location === 'Remote') ||
-      (isRemoteOnly === false && professional.location !== 'Remote');
+      (isRemoteOnly === false && professional.location !== 'Remote')
 
     return (
       matchesSearch &&
@@ -151,16 +148,16 @@ export default function ProfessionalsList() {
       matchesRoles &&
       matchesLocations &&
       matchesRemote
-    );
-  });
+    )
+  })
 
   // Reset all filters
   const resetFilters = () => {
-    setSelectedSpecialties([]);
-    setSelectedRoles([]);
-    setSelectedLocations([]);
-    setIsRemoteOnly(null);
-  };
+    setSelectedSpecialties([])
+    setSelectedRoles([])
+    setSelectedLocations([])
+    setIsRemoteOnly(null)
+  }
 
   // Toggle a filter value
   const toggleFilter = (
@@ -169,11 +166,11 @@ export default function ProfessionalsList() {
     setValues: React.Dispatch<React.SetStateAction<string[]>>
   ) => {
     if (currentValues.includes(value)) {
-      setValues(currentValues.filter((v) => v !== value));
+      setValues(currentValues.filter((v) => v !== value))
     } else {
-      setValues([...currentValues, value]);
+      setValues([...currentValues, value])
     }
-  };
+  }
 
   return (
     <>
@@ -228,7 +225,7 @@ export default function ProfessionalsList() {
                       <AccordionItem value="role">
                         <AccordionTrigger className="py-2">
                           Professional Type
-                          {selectedRoles.length > 0 && (
+                          {selectedRoles?.length > 0 && (
                             <Badge variant="secondary" className="ml-auto mr-2">
                               {selectedRoles.length}
                             </Badge>
@@ -260,7 +257,7 @@ export default function ProfessionalsList() {
                       <AccordionItem value="location">
                         <AccordionTrigger className="py-2">
                           Location
-                          {(selectedLocations.length > 0 || isRemoteOnly !== null) && (
+                          {(selectedLocations?.length > 0 || isRemoteOnly !== null) && (
                             <Badge variant="secondary" className="ml-auto mr-2">
                               {selectedLocations.length + (isRemoteOnly !== null ? 1 : 0)}
                             </Badge>
@@ -274,10 +271,10 @@ export default function ProfessionalsList() {
                                 checked={isRemoteOnly === true}
                                 onCheckedChange={(checked) => {
                                   if (checked === true) {
-                                    setIsRemoteOnly(true);
-                                    setSelectedLocations([]); // Clear locations when remote is selected
+                                    setIsRemoteOnly(true)
+                                    setSelectedLocations([]) // Clear locations when remote is selected
                                   } else {
-                                    setIsRemoteOnly(null);
+                                    setIsRemoteOnly(null)
                                   }
                                 }}
                               />
@@ -295,9 +292,9 @@ export default function ProfessionalsList() {
                                 checked={isRemoteOnly === false}
                                 onCheckedChange={(checked) => {
                                   if (checked === true) {
-                                    setIsRemoteOnly(false);
+                                    setIsRemoteOnly(false)
                                   } else {
-                                    setIsRemoteOnly(null);
+                                    setIsRemoteOnly(null)
                                   }
                                 }}
                               />
@@ -343,7 +340,7 @@ export default function ProfessionalsList() {
                       <AccordionItem value="specialties">
                         <AccordionTrigger className="py-2">
                           Specialties
-                          {selectedSpecialties.length > 0 && (
+                          {selectedSpecialties?.length > 0 && (
                             <Badge variant="secondary" className="ml-auto mr-2">
                               {selectedSpecialties.length}
                             </Badge>
@@ -476,14 +473,14 @@ export default function ProfessionalsList() {
 
         {loading ? (
           <LoadingSpinner />
-        ) : filteredProfessionals.length === 0 ? (
+        ) : filteredProfessionals?.length === 0 ? (
           <div className="rounded-lg bg-primary/5 p-8 text-center">
             <h3 className="mb-2 text-xl font-semibold">No professionals found</h3>
             <p className="text-muted-foreground">Try adjusting your search or filters</p>
           </div>
         ) : (
           <section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredProfessionals.map((professional) => (
+            {filteredProfessionals?.map((professional) => (
               <Card
                 key={professional.id}
                 className="overflow-hidden transition-all hover:shadow-md"
@@ -564,20 +561,23 @@ export default function ProfessionalsList() {
             ))}
           </section>
         )}
-
-        <section className="mt-16 rounded-lg bg-primary/10 p-8 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-primary">
-            Join Our Professional Team
-          </h2>
-          <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
-            Are you a fitness professional looking to expand your client base? Join our
-            platform and connect with motivated clients.
-          </p>
-          <Button asChild size="lg">
-            <Link to="/apply">Apply as a Professional</Link>
-          </Button>
-        </section>
+        {user && (
+          <section className="mt-16 rounded-lg bg-primary/10 p-8 text-center">
+            <h2 className="mb-4 text-3xl font-bold text-primary">
+              Join Our Professional Team
+            </h2>
+            <p className="mx-auto mb-6 max-w-2xl text-lg text-muted-foreground">
+              Are you a fitness professional looking to expand your client base? Join our
+              platform and connect with motivated clients.
+            </p>
+            <Button asChild size="lg">
+              <Link to="/professionals/register-professional">
+                Apply as a Professional
+              </Link>
+            </Button>
+          </section>
+        )}
       </ContainerContent>
     </>
-  );
+  )
 }

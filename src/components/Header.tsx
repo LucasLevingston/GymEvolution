@@ -18,6 +18,7 @@ import {
   BarChart,
   Utensils,
   DollarSign,
+  AmpersandIcon,
 } from 'lucide-react'
 import useUser from '@/hooks/user-hooks'
 import { toast } from 'sonner'
@@ -90,10 +91,13 @@ export default function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-12 w-12 rounded-full">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.imageUrl} className="w-full h-full" />
-                      <AvatarFallback>
-                        <User />
+                    <Avatar className="h-8 w-8 flex items-center justify-center">
+                      <AvatarImage
+                        src={user.imageUrl}
+                        className="w-full h-full object-cover"
+                      />
+                      <AvatarFallback className="w-full h-full flex items-center justify-center">
+                        <User className="w-4 h-4" />
                       </AvatarFallback>
                     </Avatar>
                   </Button>
@@ -154,6 +158,7 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+
                   <DropdownMenuItem asChild>
                     <Link to="/purchases" className="flex cursor-pointer items-center">
                       <DollarSign className="mr-2 h-4 w-4" />
@@ -161,6 +166,20 @@ export default function Header() {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
+                  {user.role === 'ADMIN' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/admin-dashboard"
+                          className="flex cursor-pointer items-center"
+                        >
+                          <AmpersandIcon className="mr-2 h-4 w-4" />
+                          <span>Admin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
                   <DropdownMenuItem
                     onClick={handleLogout}
                     className="flex cursor-pointer items-center"

@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import type React from 'react';
-import { useState, useEffect } from 'react';
+import type React from 'react'
+import { useState, useEffect } from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Edit,
   Save,
@@ -23,19 +23,19 @@ import {
   ChevronRight,
   Plus,
   CheckCircle2,
-} from 'lucide-react';
-import type { DietType, MealType } from '@/types/DietType';
-import { calculateCalories } from '@/lib/utils/calculateCalories';
-import { MacroNutrientsCard } from '../diet/MacroNutrientsComponent';
-import { AddMealForm } from '@/components/diet/Forms/AddMealForm';
-import { MealComponent } from '@/components/diet/MealCard';
+} from 'lucide-react'
+import type { DietType, MealType } from '@/types/DietType'
+import { calculateCalories } from '@/lib/utils/calculateCalories'
+import { MacroNutrientsCard } from '../diet/MacroNutrientsComponent'
+import { AddMealForm } from '@/components/diet/Forms/AddMealForm'
+import { MealComponent } from '@/components/diet/MealCard'
 
 interface DietComponentProps {
-  diet: DietType;
-  onSave?: (updatedDiet: DietType) => void;
-  readOnly?: boolean;
-  isCreating?: boolean;
-  onSaveClick?: () => void;
+  diet: DietType
+  onSave?: (updatedDiet: DietType) => void
+  readOnly?: boolean
+  isCreating?: boolean
+  onSaveClick?: () => void
 }
 
 export function DietComponent({
@@ -45,91 +45,86 @@ export function DietComponent({
   isCreating = false,
   onSaveClick,
 }: DietComponentProps) {
-  const [diet, setDiet] = useState<DietType>(initialDiet);
-  const [selectedDay, setSelectedDay] = useState<number>(1);
-  const [isEditing, setIsEditing] = useState<boolean>(isCreating || false);
-  const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false);
+  const [diet, setDiet] = useState<DietType>(initialDiet)
+  const [selectedDay, setSelectedDay] = useState<number>(1)
+  const [isEditing, setIsEditing] = useState<boolean>(isCreating || false)
+  const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false)
 
-  // Update editing state when isCreating or readOnly changes
   useEffect(() => {
     if (isCreating) {
-      setIsEditing(true);
+      setIsEditing(true)
     } else {
-      setIsEditing(!readOnly);
+      setIsEditing(!readOnly)
     }
-  }, [isCreating, readOnly]);
+  }, [isCreating, readOnly])
 
-  // Update diet state when initialDiet changes
   useEffect(() => {
-    setDiet(initialDiet);
-  }, [initialDiet]);
+    setDiet(initialDiet)
+  }, [initialDiet])
 
-  const mealsForDay = diet.meals?.filter((meal) => meal.day === selectedDay) || [];
+  const mealsForDay = diet.meals?.filter((meal) => meal.day === selectedDay) || []
 
   const sortedMeals = [...mealsForDay].sort((a, b) => {
-    return a.hour.localeCompare(b.hour);
-  });
+    return a.hour?.localeCompare(b.hour!)
+  })
 
   const totalCaloriesConsumed = sortedMeals.reduce((total, meal) => {
-    return total + (meal.calories || 0);
-  }, 0);
+    return total + (meal.calories || 0)
+  }, 0)
 
   const calorieProgress = diet.totalCalories
     ? Math.min(100, (totalCaloriesConsumed / diet.totalCalories) * 100)
-    : 0;
+    : 0
 
-  const completedMeals = sortedMeals.filter((meal) => meal.isCompleted).length;
-  const totalMeals = sortedMeals.length;
-  const completionPercentage = totalMeals > 0 ? (completedMeals / totalMeals) * 100 : 0;
+  const completedMeals = sortedMeals.filter((meal) => meal.isCompleted).length
+  const totalMeals = sortedMeals.length
+  const completionPercentage = totalMeals > 0 ? (completedMeals / totalMeals) * 100 : 0
 
   const navigateDay = (direction: 'prev' | 'next') => {
     if (direction === 'prev' && selectedDay > 1) {
-      setSelectedDay(selectedDay - 1);
+      setSelectedDay(selectedDay - 1)
     } else if (direction === 'next' && selectedDay < 7) {
-      setSelectedDay(selectedDay + 1);
+      setSelectedDay(selectedDay + 1)
     }
-  };
+  }
 
   const toggleEditMode = () => {
     if (isEditing && !isCreating) {
-      console.log('Sending updated diet to parent:', diet);
-      onSave?.(diet);
+      console.log('Sending updated diet to parent:', diet)
+      onSave?.(diet)
 
       if (onSaveClick) {
-        console.log('Calling external save handler directly');
+        console.log('Calling external save handler directly')
         setTimeout(() => {
-          onSaveClick();
-        }, 0);
-        return;
+          onSaveClick()
+        }, 0)
+        return
       }
     }
 
     if (!isCreating) {
-      setIsEditing(!isEditing);
-      setShowAddMealForm(false);
+      setIsEditing(!isEditing)
+      setShowAddMealForm(false)
     }
-  };
+  }
 
-  // Direct save function that bypasses toggleEditMode
   const handleDirectSave = () => {
-    console.log('Direct save clicked, updating parent with diet:', diet);
-    onSave?.(diet);
+    onSave?.(diet)
 
     if (onSaveClick) {
-      console.log('Calling external save handler directly from direct save');
-      onSaveClick();
+      onSaveClick()
     }
-  };
+  }
 
   useEffect(() => {
     if (isCreating) {
-      onSave?.(diet);
+      onSave?.(diet)
     }
-  }, [diet, isCreating, onSave]);
+  }, [diet, isCreating, onSave])
 
   const updateDietMacros = (field: keyof DietType, value: number) => {
     setDiet((prev) => {
-      const updatedDiet = { ...prev, [field]: value };
+      const updatedDiet = { ...prev, [field]: value }
 
       if (
         field === 'totalProtein' ||
@@ -140,20 +135,20 @@ export function DietComponent({
           updatedDiet.totalProtein || 0,
           updatedDiet.totalCarbohydrates || 0,
           updatedDiet.totalFat || 0
-        );
-        updatedDiet.totalCalories = calculatedCalories;
+        )
+        updatedDiet.totalCalories = calculatedCalories
       }
 
-      return updatedDiet;
-    });
-  };
+      return updatedDiet
+    })
+  }
 
   const addNewMeal = () => {
-    setShowAddMealForm(true);
-  };
+    setShowAddMealForm(true)
+  }
 
   const handleAddMeal = (meal: { name: string; mealItems: any[] }) => {
-    const newMealId = `meal-${Date.now()}`;
+    const newMealId = `meal-${Date.now()}`
     setDiet((prev) => {
       const newMeal: MealType = {
         id: newMealId,
@@ -169,36 +164,35 @@ export function DietComponent({
         mealItems: [],
         createdAt: new Date(),
         updatedAt: new Date(),
-      };
+      }
 
       return {
         ...prev,
         meals: [...(prev.meals || []), newMeal],
-      };
-    });
+      }
+    })
 
-    setShowAddMealForm(false);
-  };
+    setShowAddMealForm(false)
+  }
 
   const deleteMeal = (mealId: string) => {
     setDiet((prev) => ({
       ...prev,
       meals: prev.meals?.filter((meal) => meal.id !== mealId),
-    }));
-  };
+    }))
+  }
 
   const handleUpdateMeal = (updatedMeal: MealType) => {
     setDiet((prev) => {
       const updatedMeals =
-        prev.meals?.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)) ||
-        [];
+        prev.meals?.map((meal) => (meal.id === updatedMeal.id ? updatedMeal : meal)) || []
 
       return {
         ...prev,
         meals: updatedMeals,
-      };
-    });
-  };
+      }
+    })
+  }
 
   return (
     <div className="space-y-8">
@@ -389,5 +383,5 @@ export function DietComponent({
         </div>
       )}
     </div>
-  );
+  )
 }
