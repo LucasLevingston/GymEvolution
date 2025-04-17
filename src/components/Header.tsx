@@ -19,6 +19,7 @@ import {
   Utensils,
   DollarSign,
   AmpersandIcon,
+  LayoutDashboardIcon,
 } from 'lucide-react'
 import useUser from '@/hooks/user-hooks'
 import { toast } from 'sonner'
@@ -27,6 +28,7 @@ import logoDivision from '../assets/logo.png'
 import { NotificationDropdown } from './notifications/NotificationDropdown'
 import { Avatar, AvatarImage } from './ui/avatar'
 import { AvatarFallback } from '@radix-ui/react-avatar'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
 
 export default function Header() {
   const { logout, user } = useUser()
@@ -73,7 +75,7 @@ export default function Header() {
                 Diet
               </Link>
               <Link
-                to="/professionals"
+                to="/professional/list"
                 className="transition-colors hover:text-foreground/80"
               >
                 Professionals
@@ -169,12 +171,23 @@ export default function Header() {
                   {user.role === 'ADMIN' && (
                     <>
                       <DropdownMenuItem asChild>
-                        <Link
-                          to="/admin-dashboard"
-                          className="flex cursor-pointer items-center"
-                        >
+                        <Link to="/admin" className="flex cursor-pointer items-center">
                           <AmpersandIcon className="mr-2 h-4 w-4" />
                           <span>Admin</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {checkIsProfessional(user) && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/professional/professional-dashboard"
+                          className="flex cursor-pointer items-center"
+                        >
+                          <LayoutDashboardIcon className="mr-2 h-4 w-4" />
+                          <span>Professional Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />

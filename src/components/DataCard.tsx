@@ -1,11 +1,11 @@
-import type React from 'react';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
-import { PencilIcon, CheckIcon } from 'lucide-react';
-import { useState } from 'react';
-import { brazilianStates, capitalizeFirstLetter } from '@/estatico';
-import { useNavigate } from 'react-router-dom';
+import type React from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { PencilIcon, CheckIcon } from 'lucide-react'
+import { useState } from 'react'
+import { brazilianStates, capitalizeFirstLetter } from '@/static'
+import { useNavigate } from 'react-router-dom'
 import {
   Select,
   SelectContent,
@@ -13,15 +13,15 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from './ui/select';
+} from './ui/select'
 
 interface DataCardProps {
-  fieldName: string;
-  fieldLabel: string;
-  register: any;
-  editMode: { [key: string]: boolean };
-  handleEditClick: () => void;
-  errors: any;
+  fieldName: string
+  fieldLabel: string
+  register: any
+  editMode: { [key: string]: boolean }
+  handleEditClick: () => void
+  errors: any
 }
 
 const DataCard: React.FC<DataCardProps> = ({
@@ -32,8 +32,8 @@ const DataCard: React.FC<DataCardProps> = ({
   handleEditClick,
   errors,
 }) => {
-  const [value, setValue] = useState('');
-  const navigate = useNavigate();
+  const [value, setValue] = useState('')
+  const navigate = useNavigate()
 
   if (fieldName === 'currentWeight') {
     return (
@@ -62,7 +62,7 @@ const DataCard: React.FC<DataCardProps> = ({
           </Button>
         </div>
       </div>
-    );
+    )
   }
 
   if (fieldName === 'state') {
@@ -107,7 +107,7 @@ const DataCard: React.FC<DataCardProps> = ({
           <p className="mt-1 text-xs text-destructive">{errors[fieldName].message}</p>
         )}
       </div>
-    );
+    )
   }
   return (
     <div className="relative rounded-md border border-input bg-background p-4 shadow-sm transition-all duration-200 hover:shadow-md">
@@ -142,7 +142,7 @@ const DataCard: React.FC<DataCardProps> = ({
         <p className="mt-1 text-xs text-destructive">{errors[fieldName].message}</p>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default DataCard;
+export default DataCard

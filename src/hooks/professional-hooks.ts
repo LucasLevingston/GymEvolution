@@ -15,7 +15,7 @@ export const useProfessionals = () => {
       setIsLoading(true)
       setError(null)
 
-      const { data } = await api.get('/professional/nutritionists', {
+      const { data } = await api.get('/professionals/nutritionists', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -66,12 +66,37 @@ export const useProfessionals = () => {
     }
   }
 
+  const getClientsByProfessionalId = async (professionalId: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data } = await api.get(`/professionals/get-clients/${professionalId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!data) {
+        throw new Error('Falha ao buscar treinadores')
+      }
+
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 'Falha ao buscar treinadores'
+      setError(errorMessage)
+      return []
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const getTrainers = async (): Promise<Professional[]> => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const { data } = await api.get('/professional/trainers', {
+      const { data } = await api.get('/professionals/trainers', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -187,6 +212,58 @@ export const useProfessionals = () => {
     }
   }
 
+  const getTasksByProfessionalId = async (professionalId: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data } = await api.get(
+        `/professionals/${professionalId}/tasks`,
+
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      console.log(data)
+
+      if (!data) {
+        throw new Error('Error on request of get professionals')
+      }
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error
+      setError(errorMessage)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const getMetricsByProfessionalId = async (
+    professionalId: string,
+    timeRange: string
+  ) => {
+    try {
+      const { data } = await api.get(
+        `/professionals/${professionalId}/metrics?timeRange=${timeRange}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error
+      setError(errorMessage)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return {
     isLoading,
     approveProfessional,
@@ -197,5 +274,8 @@ export const useProfessionals = () => {
     getProfessionals,
     getTrainers,
     getProfessionalById,
+    getClientsByProfessionalId,
+    getTasksByProfessionalId,
+    getMetricsByProfessionalId,
   }
 }

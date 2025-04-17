@@ -5,14 +5,14 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from '@/components/ui/sheet';
-import { BsJournalText } from 'react-icons/bs';
-import useUser from '@/hooks/user-hooks';
-import { formatDate } from '@/estatico';
-import { Button } from './ui/button';
+} from '@/components/ui/sheet'
+import { BsJournalText } from 'react-icons/bs'
+import useUser from '@/hooks/user-hooks'
+import { formatDate } from '@/static'
+import { Button } from './ui/button'
 
 export default function HistoryButton() {
-  const { user } = useUser();
+  const { user } = useUser()
 
   return (
     <div>
@@ -45,5 +45,5 @@ export default function HistoryButton() {
         </Sheet>
       )}
     </div>
-  );
+  )
 }

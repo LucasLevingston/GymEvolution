@@ -52,7 +52,7 @@ interface Student {
   hasTraining: boolean
 }
 
-export default function AdminDashboard() {
+export default function AdminPurchases() {
   const [students, setStudents] = useState<Student[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')

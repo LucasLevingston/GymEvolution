@@ -1,64 +1,64 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
-import { CheckCircle, Calendar, MessageSquare } from 'lucide-react';
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams, Link } from 'react-router-dom'
+import { CheckCircle, Calendar, MessageSquare } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { useNotifications } from '@/hooks/use-notifications';
-import { useUserStore } from '@/store/user-store';
-import { ContainerRoot } from '@/components/Container';
-import { usePurchases } from '@/hooks/purchase-hooks';
-import { useProfessionals } from '@/hooks/professional-hooks';
-import type { Purchase } from '@/types/PurchaseType';
-import type { Professional } from '@/types/ProfessionalType';
-import LoadingSpinner from '@/components/LoadingSpinner';
+} from '@/components/ui/card'
+import { useNotifications } from '@/hooks/use-notifications'
+import { useUserStore } from '@/store/user-store'
+import { ContainerRoot } from '@/components/Container'
+import { usePurchases } from '@/hooks/purchase-hooks'
+import { useProfessionals } from '@/hooks/professional-hooks'
+import type { Purchase } from '@/types/PurchaseType'
+import type { Professional } from '@/types/ProfessionalType'
+import LoadingSpinner from '@/components/LoadingSpinner'
 
 export default function PurchaseSuccess() {
-  const navigate = useNavigate();
-  const { professionalId, planId } = useParams();
-  const { addNotification } = useNotifications();
-  const { user } = useUserStore();
-  const { getUserPurchases, isLoading: isPurchaseLoading } = usePurchases();
-  const { getProfessionalById, isLoading: isProfessionalLoading } = useProfessionals();
-  const [purchase, setPurchase] = useState<Purchase | null>(null);
-  const [professional, setProfessional] = useState<Professional | null>(null);
+  const navigate = useNavigate()
+  const { professionalId, planId } = useParams()
+  const { addNotification } = useNotifications()
+  const { user } = useUserStore()
+  const { getUserPurchases, isLoading: isPurchaseLoading } = usePurchases()
+  const { getProfessionalById, isLoading: isProfessionalLoading } = useProfessionals()
+  const [purchase, setPurchase] = useState<Purchase | null>(null)
+  const [professional, setProfessional] = useState<Professional | null>(null)
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user || !professionalId || !planId) return;
+      if (!user || !professionalId || !planId) return
 
-      const professionalData = await getProfessionalById(professionalId);
+      const professionalData = await getProfessionalById(professionalId)
       if (professionalData) {
-        setProfessional(professionalData);
+        setProfessional(professionalData)
       }
 
-      const purchases = await getUserPurchases();
+      const purchases = await getUserPurchases()
       const matchingPurchase = purchases.find(
         (p) => p.professionalId === professionalId && p.planId === planId
-      );
+      )
 
       if (matchingPurchase) {
-        setPurchase(matchingPurchase);
+        setPurchase(matchingPurchase)
       }
-    };
+    }
 
-    fetchData();
-  }, []);
+    fetchData()
+  }, [])
 
   if (isPurchaseLoading || isProfessionalLoading) {
     return (
       <ContainerRoot>
         <LoadingSpinner />
       </ContainerRoot>
-    );
+    )
   }
 
   if (!purchase && !isPurchaseLoading) {
@@ -70,11 +70,11 @@ export default function PurchaseSuccess() {
             Não foi possível encontrar os detalhes da sua compra.
           </p>
           <Button asChild className="mt-6">
-            <Link to="/professionals">Explorar profissionais</Link>
+            <Link to="/professional">Explorar profissionais</Link>
           </Button>
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -197,5 +197,5 @@ export default function PurchaseSuccess() {
         </Button>
       </div>
     </>
-  );
+  )
 }

@@ -1,52 +1,52 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { CheckCircle, AlertCircle } from 'lucide-react';
+import { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { CheckCircle, AlertCircle } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { ContainerRoot } from '@/components/Container';
-import { toast } from 'sonner';
-import useUser from '@/hooks/user-hooks';
+} from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { ContainerRoot } from '@/components/Container'
+import { toast } from 'sonner'
+import useUser from '@/hooks/user-hooks'
 
 interface ProfessionalType {
-  id: string;
-  name: string;
-  role: string;
-  price?: number;
-  description?: string;
+  id: string
+  name: string
+  role: string
+  price?: number
+  description?: string
 }
 
 interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  features: string[];
+  id: string
+  name: string
+  price: number
+  description: string
+  features: string[]
 }
 
 export default function HireProfessional() {
-  const { id, type } = useParams();
-  const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<string>('');
-  const [message, setMessage] = useState<string>('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [professional, setProfessional] = useState<ProfessionalType | null>(null);
-  const { user, createRelationship } = useUser();
+  const { id, type } = useParams()
+  const navigate = useNavigate()
+  const [selectedPlan, setSelectedPlan] = useState<string>('')
+  const [message, setMessage] = useState<string>('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [professional, setProfessional] = useState<ProfessionalType | null>(null)
+  const { user, createRelationship } = useUser()
 
   // Mock data for demonstration
-  const professionalType = type === 'nutritionist' ? 'NUTRITIONIST' : 'TRAINER';
+  const professionalType = type === 'nutritionist' ? 'NUTRITIONIST' : 'TRAINER'
 
   const plans: Plan[] =
     professionalType === 'NUTRITIONIST'
@@ -131,16 +131,11 @@ export default function HireProfessional() {
               'Detailed exercise education',
             ],
           },
-        ];
+        ]
 
-  // Fetch professional data
   useState(() => {
     const fetchProfessional = async () => {
       try {
-        // Replace with your actual API call
-        // For example: const data = await getProfessionalById(id)
-
-        // Mock data for demonstration
         setProfessional({
           id: id || '',
           name: 'Sarah Johnson',
@@ -150,39 +145,39 @@ export default function HireProfessional() {
             professionalType === 'NUTRITIONIST'
               ? 'Certified nutritionist specializing in weight management and sports nutrition.'
               : 'Certified personal trainer specializing in strength training and weight loss.',
-        });
+        })
       } catch (error) {
-        console.error('Error fetching professional:', error);
-        toast.error('Failed to load professional details');
-        navigate('/professionals');
+        console.error('Error fetching professional:', error)
+        toast.error('Failed to load professional details')
+        navigate('/professional')
       }
-    };
+    }
 
-    fetchProfessional();
-  }, [id, professionalType, navigate]);
+    fetchProfessional()
+  }, [id])
 
   const handleSubmit = async () => {
     if (!user) {
-      toast.error('Please log in to hire a professional');
-      navigate('/login');
-      return;
+      toast.error('Please log in to hire a professional')
+      navigate('/login')
+      return
     }
 
     if (!professional) {
-      toast.error('Professional information not available');
-      return;
+      toast.error('Professional information not available')
+      return
     }
 
     if (!selectedPlan) {
-      toast.error('Please select a plan');
-      return;
+      toast.error('Please select a plan')
+      return
     }
 
     try {
-      setIsSubmitting(true);
+      setIsSubmitting(true)
 
       // Determine relationship type based on professional role
-      const isNutritionist = professional.role === 'NUTRITIONIST';
+      const isNutritionist = professional.role === 'NUTRITIONIST'
 
       // Create relationship
       const result = await createRelationship({
@@ -191,21 +186,21 @@ export default function HireProfessional() {
         status: 'PENDING',
         // You might want to add additional fields to store the selected plan and message
         // This would require extending your Relationship model
-      });
+      })
 
       if (result) {
-        toast.success('Request sent successfully!');
-        navigate('/dashboard');
+        toast.success('Request sent successfully!')
+        navigate('/dashboard')
       } else {
-        toast.error('Failed to send request');
+        toast.error('Failed to send request')
       }
     } catch (error) {
-      console.error('Error hiring professional:', error);
-      toast.error('Failed to send request');
+      console.error('Error hiring professional:', error)
+      toast.error('Failed to send request')
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
-  };
+  }
 
   if (!professional) {
     return (
@@ -214,7 +209,7 @@ export default function HireProfessional() {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" />
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -292,7 +287,7 @@ export default function HireProfessional() {
         )}
 
         <div className="flex justify-between">
-          <Button variant="outline" onClick={() => navigate(`/professionals/${id}`)}>
+          <Button variant="outline" onClick={() => navigate(`/professional/${id}`)}>
             Back to Profile
           </Button>
           <Button onClick={handleSubmit} disabled={!selectedPlan || isSubmitting}>
@@ -301,5 +296,5 @@ export default function HireProfessional() {
         </div>
       </div>
     </>
-  );
+  )
 }

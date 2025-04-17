@@ -23,7 +23,6 @@ import { NotificationProvider } from './components/notifications/NotificationPro
 import { ContainerRoot } from './components/Container'
 import RegisterProfessional from './Pages/Professionals/RegisterProfessional'
 import HiringFlow from './Pages/HiringFlow'
-import AdminDashboard from './Pages/Admin/Admin-Dashboard'
 import PurchaseSuccess from './Pages/Purchase/PurchaseSuccess'
 import PurchaseCancel from './Pages/Purchase/PurchaseCancel'
 import RelationshipManagement from './Pages/Professionals/RelationshipManagement'
@@ -36,7 +35,17 @@ import Purchases from './Pages/Purchase/Purchases'
 import PurchaseDetails from './Pages/Purchase/PurchaseDetails'
 import ConnectGooglePage from './Pages/Settings/ConnectGoogle'
 import ProfessionalDashboard from './Pages/Professionals/ProfessionalDashboard'
-import AllProfessionals from './Pages/Admin/AllProfessionals'
+import AdminProfessionals from './Pages/Admin/AllProfessionals'
+import AdminSettings from './Pages/Admin/AdminSettings'
+import { AdminLayout } from './components/admin/admin-layout'
+import ClientManagement from './Pages/Professionals/ClientManagement'
+import ProfessionalMetrics from './Pages/Professionals/ProfessionalMetrics'
+import type { JSX } from 'react'
+import { ProfessionalLayout } from './components/professional/professional-layout'
+import AdminPurchases from './Pages/Admin/AdminPurchases'
+import SettingsLayout from './components/settings/settings-layout'
+import ProfessionalPayments from './Pages/Professionals/ProfessionalPayments'
+import ProfessionalTasks from './Pages/Professionals/ProfessionalTasks'
 
 interface PrivateRouteProps {
   element: JSX.Element
@@ -54,10 +63,14 @@ const AdminRoute = ({ element }: PrivateRouteProps) => {
 
 const ProfessionalRoute = ({ element }: PrivateRouteProps) => {
   const { user } = useUserStore()
-  return user && (user.role === 'NUTRITIONIST' || user.role === 'TRAINER') ? (
-    element
+  return user ? (
+    user.role === 'NUTRITIONIST' || user.role === 'TRAINER' ? (
+      element
+    ) : (
+      <Navigate to="/professional/register" />
+    )
   ) : (
-    <Navigate to="/professionals/register-professional" />
+    <Navigate to="/login" />
   )
 }
 
@@ -69,28 +82,46 @@ const AuthRoutes = [
 ]
 
 const ProfessionalRoutes = [
-  { path: '/professionals', element: <ProfessionalsList /> },
-  { path: '/professionals/:id', element: <ProfessionalDetail /> },
   {
-    path: '/professionals/register-professional',
+    path: '/professional/',
+    element: <ProfessionalRoute element={<ProfessionalLayout />} />,
+    children: [
+      { path: 'professional-dashboard', element: <ProfessionalDashboard /> },
+      { path: 'clients', element: <ClientManagement /> },
+      { path: 'metrics', element: <ProfessionalMetrics /> },
+      { path: 'meetings', element: <Meetings /> },
+      { path: 'professional-plans', element: <ProfessionalPlans /> },
+      { path: 'create-plan', element: <CreatePlan /> },
+      { path: 'payments', element: <ProfessionalPayments /> },
+      { path: 'edit-plan/:id', element: <EditPlan /> },
+      { path: 'tasks', element: <ProfessionalTasks /> },
+      // { path: 'settings', element: <ProfessionalSettings /> },
+    ],
+  },
+  {
+    path: '/professional/register',
     element: <PrivateRoute element={<RegisterProfessional />} />,
   },
-  { path: '/hiring-flow', element: <HiringFlow /> },
-  {
-    path: '/professional-dashboard',
-    element: <ProfessionalRoute element={<ProfessionalDashboard />} />,
-  },
+  { path: '/professional/list', element: <ProfessionalsList /> },
+  { path: '/professional/:id', element: <ProfessionalDetail /> },
+  { path: '/professional/hiring-flow', element: <HiringFlow /> },
 ]
 
 const SettingsRoutes = [
   {
-    path: '/settings/google-connect',
-    element: <PrivateRoute element={<ConnectGooglePage />} />,
-  },
-  { path: '/settings/theme', element: <PrivateRoute element={<ThemeSettings />} /> },
-  {
-    path: '/settings/my-informations',
-    element: <PrivateRoute element={<MyInformationsSettings />} />,
+    element: <SettingsLayout />,
+    path: '/settings/',
+    children: [
+      {
+        path: 'google-connect',
+        element: <PrivateRoute element={<ConnectGooglePage />} />,
+      },
+      { path: 'theme', element: <PrivateRoute element={<ThemeSettings />} /> },
+      {
+        path: 'my-informations',
+        element: <PrivateRoute element={<MyInformationsSettings />} />,
+      },
+    ],
   },
 ]
 
@@ -108,12 +139,15 @@ const DietRoutes = [
 
 const AdminRoutes = [
   {
-    path: '/admin-dashboard',
-    element: <AdminRoute element={<AdminDashboard />} />,
-  },
-  {
-    path: '/admin/professionals',
-    element: <AdminRoute element={<AllProfessionals />} />,
+    path: '/admin/',
+    element: <AdminRoute element={<AdminLayout />} />,
+    children: [
+      // { path: 'dashboard', element: <AdminDashboard /> },
+      { path: 'professionals', element: <AdminProfessionals /> },
+      { path: 'purchases', element: <AdminPurchases /> },
+      { path: 'settings', element: <AdminSettings /> },
+      { path: '', element: <Navigate to="/admin/dashboard" replace /> },
+    ],
   },
 ]
 
@@ -137,14 +171,6 @@ const PurchaseRoutes = [
   {
     path: '/professional-plans/:id',
     element: <PrivateRoute element={<ProfessionalPlans />} />,
-  },
-  {
-    path: '/create-plan',
-    element: <PrivateRoute element={<CreatePlan />} />,
-  },
-  {
-    path: '/edit-plan/:id',
-    element: <PrivateRoute element={<EditPlan />} />,
   },
   {
     path: '/meetings',

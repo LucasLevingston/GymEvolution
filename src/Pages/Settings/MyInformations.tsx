@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import type { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -9,7 +7,6 @@ import useUser from '@/hooks/user-hooks'
 import type { UserType } from '@/types/userType'
 import { UserSchema } from '@/schemas/UserSchema'
 import { CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import SiedbarComponent from '@/components/sidebar/SiedbarComponent'
 import { toast } from 'sonner'
 import { Loader2, Info, Calendar, RefreshCw, Trash2, Search } from 'lucide-react'
 import HistoryButton from '@/components/HistoryButton'
@@ -38,7 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { brazilianStates } from '@/estatico'
+import { brazilianStates } from '@/static'
 import { sexOptions } from '@/lib/utils/sexOptions'
 
 type UserFormValues = z.infer<typeof UserSchema>
@@ -251,7 +248,7 @@ export default function MyInformations() {
   }, [user, form, image])
 
   return (
-    <SiedbarComponent>
+    <>
       <CardHeader>
         <CardTitle className="flex justify-between">
           My Information
@@ -1116,6 +1113,6 @@ export default function MyInformations() {
           </form>
         </Form>
       </CardContent>
-    </SiedbarComponent>
+    </>
   )
 }

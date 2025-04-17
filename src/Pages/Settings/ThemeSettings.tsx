@@ -1,15 +1,10 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useTheme } from '@/components/providers/ThemeProvider';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useTheme } from '@/components/providers/ThemeProvider'
+import { useForm } from 'react-hook-form'
+import { z } from 'zod'
 
-import { Button } from '@/components/ui/button';
-import {
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Button } from '@/components/ui/button'
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Form,
   FormControl,
@@ -17,33 +12,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { toast } from '@/hooks/use-toast';
-import SiedbarComponent from '@/components/sidebar/SiedbarComponent';
+} from '@/components/ui/form'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { toast } from '@/hooks/use-toast'
 
 export default function ThemeSettings() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useTheme()
   const themeFormSchema = z.object({
     theme: z.string(),
-  });
+  })
   const form = useForm<z.infer<typeof themeFormSchema>>({
     resolver: zodResolver(themeFormSchema),
     defaultValues: {
       theme: theme ?? 'light',
     },
-  });
+  })
 
   const onSubmit = form.handleSubmit(async (data) => {
-    setTheme(data.theme as 'light' | 'dark');
+    setTheme(data.theme as 'light' | 'dark')
 
     toast({
       title: 'Sucesso',
       description: `O tema foi alterado para: ${data.theme}`,
-    });
-  });
+    })
+  })
   return (
-    <SiedbarComponent>
+    <>
       <CardHeader>
         <CardTitle>Theme Settings</CardTitle>
         <CardDescription>Customize the appearance of the application.</CardDescription>
@@ -133,6 +127,6 @@ export default function ThemeSettings() {
           </form>
         </Form>
       </CardContent>
-    </SiedbarComponent>
-  );
+    </>
+  )
 }

@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import {
   ShoppingBag,
   Clock,
@@ -15,26 +15,26 @@ import {
   DollarSign,
   RefreshCcw,
   X,
-} from 'lucide-react';
+} from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/select'
 import {
   Dialog,
   DialogContent,
@@ -42,106 +42,106 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
-import { toast } from 'sonner';
-import { ContainerContent } from '@/components/Container';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import useUser from '@/hooks/user-hooks';
-import { usePurchases } from '@/hooks/purchase-hooks';
-import type { Purchase } from '@/types/PurchaseType';
-import { formatDate } from '@/estatico';
+} from '@/components/ui/dialog'
+import { Textarea } from '@/components/ui/textarea'
+import { toast } from 'sonner'
+import { ContainerContent } from '@/components/Container'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import useUser from '@/hooks/user-hooks'
+import { usePurchases } from '@/hooks/purchase-hooks'
+import type { Purchase } from '@/types/PurchaseType'
+import { formatDate } from '@/static'
 
 export default function Purchases() {
-  const [purchases, setPurchases] = useState<Purchase[] | null>(null);
-  const [filteredPurchases, setFilteredPurchases] = useState<Purchase[] | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [sortBy, setSortBy] = useState('newest');
-  const [isLoading, setIsLoading] = useState(true);
-  const { user } = useUser();
-  const { getUserPurchases, cancelPurchase, retryPayment } = usePurchases();
+  const [purchases, setPurchases] = useState<Purchase[] | null>(null)
+  const [filteredPurchases, setFilteredPurchases] = useState<Purchase[] | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [sortBy, setSortBy] = useState('newest')
+  const [isLoading, setIsLoading] = useState(true)
+  const { user } = useUser()
+  const { getUserPurchases, cancelPurchase, retryPayment } = usePurchases()
 
-  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [purchaseToCancel, setPurchaseToCancel] = useState<string | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
-  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false)
+  const [purchaseToCancel, setPurchaseToCancel] = useState<string | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+  const [cancelLoading, setCancelLoading] = useState(false)
 
-  const [retryDialogOpen, setRetryDialogOpen] = useState(false);
-  const [purchaseToRetry, setPurchaseToRetry] = useState<Purchase | null>(null);
-  const [retryLoading, setRetryLoading] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('');
+  const [retryDialogOpen, setRetryDialogOpen] = useState(false)
+  const [purchaseToRetry, setPurchaseToRetry] = useState<Purchase | null>(null)
+  const [retryLoading, setRetryLoading] = useState(false)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('')
 
   useEffect(() => {
     const fetchPurchases = async () => {
-      if (!user) return;
+      if (!user) return
 
       try {
-        setIsLoading(true);
-        const data = await getUserPurchases();
-        setPurchases(data);
-        setFilteredPurchases(data);
+        setIsLoading(true)
+        const data = await getUserPurchases()
+        setPurchases(data)
+        setFilteredPurchases(data)
       } catch (error) {
-        console.error('Error fetching purchases:', error);
-        toast.error('Falha ao carregar compras');
+        console.error('Error fetching purchases:', error)
+        toast.error('Falha ao carregar compras')
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
-    fetchPurchases();
-  }, [user, getUserPurchases]);
+    fetchPurchases()
+  }, [user, getUserPurchases])
 
   useEffect(() => {
-    if (!purchases) return;
+    if (!purchases) return
 
-    let result = [...purchases];
+    let result = [...purchases]
 
     if (statusFilter !== 'all') {
-      result = result.filter((purchase) => purchase.status === statusFilter);
+      result = result.filter((purchase) => purchase.status === statusFilter)
     }
 
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
+      const query = searchQuery.toLowerCase()
       result = result.filter(
         (purchase) =>
           purchase.Plan.name?.toLowerCase().includes(query) ||
           purchase.professional?.name?.toLowerCase().includes(query) ||
           purchase.paymentMethod?.toLowerCase().includes(query)
-      );
+      )
     }
 
     result.sort((a, b) => {
-      const dateA = new Date(a.createdAt).getTime();
-      const dateB = new Date(b.createdAt).getTime();
+      const dateA = new Date(a.createdAt).getTime()
+      const dateB = new Date(b.createdAt).getTime()
 
       if (sortBy === 'newest') {
-        return dateB - dateA;
+        return dateB - dateA
       } else if (sortBy === 'oldest') {
-        return dateA - dateB;
+        return dateA - dateB
       } else if (sortBy === 'price-high') {
-        return b.amount - a.amount;
+        return b.amount - a.amount
       } else if (sortBy === 'price-low') {
-        return a.amount - b.amount;
+        return a.amount - b.amount
       }
-      return 0;
-    });
+      return 0
+    })
 
-    setFilteredPurchases(result);
-  }, [purchases, searchQuery, statusFilter, sortBy]);
+    setFilteredPurchases(result)
+  }, [purchases, searchQuery, statusFilter, sortBy])
 
   const openCancelDialog = (purchaseId: string) => {
-    setPurchaseToCancel(purchaseId);
-    setCancelReason('');
-    setCancelDialogOpen(true);
-  };
+    setPurchaseToCancel(purchaseId)
+    setCancelReason('')
+    setCancelDialogOpen(true)
+  }
 
   const handleCancelPurchase = async () => {
-    if (!purchaseToCancel || !cancelReason.trim()) return;
+    if (!purchaseToCancel || !cancelReason.trim()) return
 
-    setCancelLoading(true);
-    const success = await cancelPurchase(purchaseToCancel, cancelReason);
-    setCancelLoading(false);
+    setCancelLoading(true)
+    const success = await cancelPurchase(purchaseToCancel, cancelReason)
+    setCancelLoading(false)
 
     if (success) {
       setPurchases(
@@ -151,46 +151,46 @@ export default function Purchases() {
               ? { ...purchase, status: 'CANCELLED', cancelReason }
               : purchase
           ) || null
-      );
-      setCancelDialogOpen(false);
-      toast.success('Compra cancelada com sucesso');
+      )
+      setCancelDialogOpen(false)
+      toast.success('Compra cancelada com sucesso')
     }
-  };
+  }
 
   const openRetryDialog = (purchase: Purchase) => {
-    setPurchaseToRetry(purchase);
-    setSelectedPaymentMethod(purchase.paymentMethod || 'credit_card');
-    setRetryDialogOpen(true);
-  };
+    setSelectedPaymentMethod(purchase.paymentMethod || 'credit_card')
+    setRetryDialogOpen(true)
+  }
 
-  const handleRetryPayment = async () => {
-    if (!purchaseToRetry) return;
+  const handleRetryPayment = async (purchase: Purchase) => {
+    console.log(purchase)
+    if (!purchase) return
 
-    setRetryLoading(true);
+    setRetryLoading(true)
     try {
-      const successUrl = `${window.location.origin}/purchase-success/${purchaseToRetry.professionalId}/${purchaseToRetry.planId}`;
-      const cancelUrl = `${window.location.origin}/purchase-cancel`;
+      const successUrl = `${window.location.origin}/purchase-success/${purchase.professionalId}/${purchase.planId}`
+      const cancelUrl = `${window.location.origin}/purchase-cancel`
 
       const result = await retryPayment(
-        purchaseToRetry.id,
+        purchase.id,
         selectedPaymentMethod,
         successUrl,
         cancelUrl
-      );
+      )
 
       if (result.paymentUrl) {
-        window.location.href = result.paymentUrl;
+        window.location.href = result.paymentUrl
       } else {
-        throw new Error('Falha ao processar pagamento');
+        throw new Error('Falha ao processar pagamento')
       }
     } catch (error) {
-      console.error('Error retrying payment:', error);
-      toast.error('Falha ao processar pagamento');
+      console.error('Error retrying payment:', error)
+      toast.error('Falha ao processar pagamento')
     } finally {
-      setRetryLoading(false);
-      setRetryDialogOpen(false);
+      setRetryLoading(false)
+      setRetryDialogOpen(false)
     }
-  };
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -199,30 +199,30 @@ export default function Purchases() {
           <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
             Concluído
           </Badge>
-        );
+        )
       case 'PENDING':
         return (
           <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
             Pendente
           </Badge>
-        );
+        )
       case 'CANCELLED':
         return (
           <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Cancelado</Badge>
-        );
+        )
       case 'REFUNDED':
         return (
           <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
             Reembolsado
           </Badge>
-        );
+        )
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{status}</Badge>
     }
-  };
+  }
 
   const getPaymentMethodLabel = (method?: string) => {
-    if (!method) return 'Não informado';
+    if (!method) return 'Não informado'
 
     const methods: Record<string, string> = {
       credit_card: 'Cartão de Crédito',
@@ -231,30 +231,30 @@ export default function Purchases() {
       bank_transfer: 'Transferência Bancária',
       mobile_payment: 'Pagamento por Celular',
       wallet: 'Carteira Digital',
-    };
+    }
 
-    return methods[method] || method;
-  };
+    return methods[method] || method
+  }
 
   const getPaymentIcon = (method?: string) => {
     switch (method) {
       case 'credit_card':
       case 'debit_card':
-        return <CreditCard className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />
       case 'pix':
-        return <DollarSign className="h-4 w-4" />;
+        return <DollarSign className="h-4 w-4" />
       case 'bank_transfer':
-        return <Briefcase className="h-4 w-4" />;
+        return <Briefcase className="h-4 w-4" />
       default:
-        return <CreditCard className="h-4 w-4" />;
+        return <CreditCard className="h-4 w-4" />
     }
-  };
+  }
 
   const getStatusCount = (status: string) => {
-    if (!purchases) return 0;
-    if (status === 'all') return purchases.length;
-    return purchases.filter((purchase) => purchase.status === status).length;
-  };
+    if (!purchases) return 0
+    if (status === 'all') return purchases.length
+    return purchases.filter((purchase) => purchase.status === status).length
+  }
 
   return (
     <>
@@ -374,81 +374,8 @@ export default function Purchases() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Retry Payment Dialog */}
-      <Dialog open={retryDialogOpen} onOpenChange={setRetryDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Refazer Pagamento</DialogTitle>
-            <DialogDescription>
-              {purchaseToRetry && (
-                <div className="mt-2">
-                  <p className="font-medium">{purchaseToRetry.Plan?.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {purchaseToRetry.Plan?.description}
-                  </p>
-                  <p className="text-lg font-bold mt-2">
-                    R$ {purchaseToRetry.amount.toFixed(2)}
-                  </p>
-                </div>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <div className="space-y-3">
-              <h4 className="font-medium">Escolha a forma de pagamento</h4>
-
-              <Select
-                value={selectedPaymentMethod}
-                onValueChange={setSelectedPaymentMethod}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione o método de pagamento" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="credit_card">Cartão de Crédito</SelectItem>
-                  <SelectItem value="debit_card">Cartão de Débito</SelectItem>
-                  <SelectItem value="pix">PIX</SelectItem>
-                  <SelectItem value="bank_transfer">Transferência Bancária</SelectItem>
-                  <SelectItem value="mobile_payment">Pagamento por Celular</SelectItem>
-                  <SelectItem value="wallet">Carteira Digital</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setRetryDialogOpen(false)}
-              className="mb-2 sm:mb-0"
-              disabled={retryLoading}
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleRetryPayment}
-              disabled={retryLoading || !selectedPaymentMethod}
-              className="w-full sm:w-auto"
-            >
-              {retryLoading ? (
-                <>
-                  <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  {getPaymentIcon(selectedPaymentMethod)}
-                  <span className="ml-2">Continuar para Pagamento</span>
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
-  );
+  )
 
   function renderPurchasesList() {
     if (isLoading) {
@@ -456,7 +383,7 @@ export default function Purchases() {
         <div className="flex justify-center items-center py-12">
           <LoadingSpinner />
         </div>
-      );
+      )
     }
 
     if (!filteredPurchases || filteredPurchases.length === 0) {
@@ -470,10 +397,10 @@ export default function Purchases() {
               : 'Você ainda não realizou nenhuma compra. Explore nossos profissionais e planos disponíveis.'}
           </p>
           <Button asChild>
-            <Link to="/professionals">Explorar Profissionais</Link>
+            <Link to="/professional">Explorar Profissionais</Link>
           </Button>
         </div>
-      );
+      )
     }
 
     return (
@@ -579,7 +506,7 @@ export default function Purchases() {
                       </Link>
                     </Button>
 
-                    {purchase.status === 'PENDING' && (
+                    {purchase.status === 'WAITINGPAYMENT' && (
                       <>
                         <Button
                           variant="destructive"
@@ -595,7 +522,7 @@ export default function Purchases() {
                           variant="default"
                           size="sm"
                           className="w-full sm:w-auto"
-                          onClick={() => openRetryDialog(purchase)}
+                          onClick={() => handleRetryPayment(purchase)}
                         >
                           <RefreshCcw className="mr-1 h-4 w-4" />
                           Refazer pagamento
@@ -624,6 +551,6 @@ export default function Purchases() {
           </Card>
         ))}
       </ContainerContent>
-    );
+    )
   }
 }

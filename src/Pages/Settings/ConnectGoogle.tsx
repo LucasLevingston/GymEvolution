@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,10 +7,10 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+} from '@/components/ui/card'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 import {
   Calendar,
   CheckCircle,
@@ -20,60 +20,59 @@ import {
   RefreshCw,
   Shield,
   XCircle,
-} from 'lucide-react';
-import { toast } from 'sonner';
-import SiedbarComponent from '@/components/sidebar/SiedbarComponent';
-import { useGoogleAuth } from '@/hooks/use-google-auth';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { AvatarImage } from '@radix-ui/react-avatar';
-import useUser from '@/hooks/user-hooks';
+} from 'lucide-react'
+import { toast } from 'sonner'
+import { useGoogleAuth } from '@/hooks/use-google-auth'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { AvatarImage } from '@radix-ui/react-avatar'
+import useUser from '@/hooks/user-hooks'
 
 export default function ConnectGooglePage() {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const { isConnected, isConnecting, connect, disconnect, connectionInfo, error } =
-    useGoogleAuth();
-  const [authError, setAuthError] = useState<string | null>(null);
+    useGoogleAuth()
+  const [authError, setAuthError] = useState<string | null>(null)
 
-  const { user } = useUser();
+  const { user } = useUser()
 
   useEffect(() => {
-    const errorParam = searchParams.get('error');
+    const errorParam = searchParams.get('error')
 
     if (errorParam) {
       if (errorParam === 'access_denied') {
         setAuthError(
           'Acesso negado: O aplicativo está em modo de teste e seu e-mail não está na lista de testadores aprovados.'
-        );
+        )
       } else {
-        setAuthError(`Erro de autenticação: ${errorParam}`);
+        setAuthError(`Erro de autenticação: ${errorParam}`)
       }
     } else {
-      setAuthError(null);
+      setAuthError(null)
     }
-  }, [searchParams]);
+  }, [searchParams])
 
   const handleConnect = async () => {
     try {
-      await connect();
+      await connect()
     } catch (error) {
-      console.error('Error connecting to Google:', error);
+      console.error('Error connecting to Google:', error)
     }
-  };
+  }
 
   const handleDisconnect = async () => {
     try {
-      await disconnect();
-      toast.success('Successfully disconnected from Google Calendar');
+      await disconnect()
+      toast.success('Successfully disconnected from Google Calendar')
     } catch (error) {
-      console.error('Error disconnecting from Google:', error);
-      toast.error('Failed to disconnect from Google Calendar');
+      console.error('Error disconnecting from Google:', error)
+      toast.error('Failed to disconnect from Google Calendar')
     }
-  };
+  }
 
   return (
-    <SiedbarComponent>
+    <>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -285,6 +284,6 @@ export default function ConnectGooglePage() {
           </div>
         )}
       </CardContent>
-    </SiedbarComponent>
-  );
+    </>
+  )
 }

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Clock, XCircle, UserRound } from 'lucide-react';
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { Clock, XCircle, UserRound } from 'lucide-react'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -10,94 +10,90 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { toast } from 'sonner';
-import useUser from '@/hooks/user-hooks';
-import { useNotifications } from '@/components/notifications/NotificationProvider';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerTitle,
-} from '@/components/Container';
+} from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
+import useUser from '@/hooks/user-hooks'
+import { useNotifications } from '@/components/notifications/NotificationProvider'
+import LoadingSpinner from '../../components/LoadingSpinner'
+import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
 
 interface Relationship {
-  id: string;
+  id: string
   nutritionist?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
+    id: string
+    name: string
+    email: string
+  } | null
   trainer?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
+    id: string
+    name: string
+    email: string
+  } | null
   student?: {
-    id: string;
-    name: string;
-    email: string;
-  } | null;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
-  createdAt: string;
+    id: string
+    name: string
+    email: string
+  } | null
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED'
+  createdAt: string
 }
 
 export default function RelationshipManagement() {
-  const [relationships, setRelationships] = useState<Relationship[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { user, getRelationships, updateRelationship } = useUser();
-  const { addNotification } = useNotifications();
+  const [relationships, setRelationships] = useState<Relationship[]>([])
+  const [loading, setLoading] = useState(true)
+  const { user, getRelationships, updateRelationship } = useUser()
+  const { addNotification } = useNotifications()
 
   useEffect(() => {
     const fetchRelationships = async () => {
-      if (!user) return;
+      if (!user) return
 
       try {
-        setLoading(true);
-        const data = await getRelationships(user.id);
-        setRelationships(data);
+        setLoading(true)
+        const data = await getRelationships(user.id)
+        setRelationships(data)
 
         if (data.length > 0) {
-          const pendingCount = data.filter((rel) => rel.status === 'PENDING').length;
+          const pendingCount = data.filter((rel) => rel.status === 'PENDING').length
           if (pendingCount > 0) {
             addNotification({
               title: 'Pending Requests',
               message: `You have ${pendingCount} pending professional ${pendingCount === 1 ? 'request' : 'requests'}.`,
               type: 'info',
-            });
+            })
           }
         }
       } catch (error) {
-        console.error('Error fetching relationships:', error);
-        toast.error('Failed to load relationships');
+        console.error('Error fetching relationships:', error)
+        toast.error('Failed to load relationships')
         addNotification({
           title: 'Error',
           message: 'Failed to load your professional relationships.',
           type: 'error',
-        });
+        })
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
+    }
 
-    fetchRelationships();
-  }, [user, getRelationships, addNotification]);
+    fetchRelationships()
+  }, [user, getRelationships, addNotification])
 
   const handleUpdateStatus = async (
     relationshipId: string,
     status: 'ACCEPTED' | 'REJECTED'
   ) => {
     try {
-      await updateRelationship(relationshipId, { status });
+      await updateRelationship(relationshipId, { status })
 
       // Update local state
       setRelationships((prev) =>
         prev.map((rel) => (rel.id === relationshipId ? { ...rel, status } : rel))
-      );
+      )
 
-      toast.success(`Request ${status.toLowerCase()}`);
+      toast.success(`Request ${status.toLowerCase()}`)
 
       // Add notification
       addNotification({
@@ -107,26 +103,26 @@ export default function RelationshipManagement() {
             ? 'You have successfully accepted the professional request.'
             : 'You have rejected the professional request.',
         type: status === 'ACCEPTED' ? 'success' : 'info',
-      });
+      })
     } catch (error) {
-      console.error('Error updating relationship:', error);
-      toast.error('Failed to update request');
+      console.error('Error updating relationship:', error)
+      toast.error('Failed to update request')
       addNotification({
         title: 'Error',
         message: 'Failed to update the professional request.',
         type: 'error',
-      });
+      })
     }
-  };
+  }
 
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
-    });
-  };
+    })
+  }
 
   if (!user) {
     return (
@@ -141,7 +137,7 @@ export default function RelationshipManagement() {
           </Button>
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -176,7 +172,7 @@ export default function RelationshipManagement() {
                     You don't have any active relationships with professionals yet.
                   </p>
                   <Button asChild>
-                    <Link to="/professionals">Find Professionals</Link>
+                    <Link to="/professional">Find Professionals</Link>
                   </Button>
                 </CardContent>
               </Card>
@@ -185,9 +181,8 @@ export default function RelationshipManagement() {
                 {relationships
                   .filter((rel) => rel.status === 'ACCEPTED')
                   .map((relationship) => {
-                    const professional =
-                      relationship.nutritionist || relationship.trainer;
-                    const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer';
+                    const professional = relationship.nutritionist || relationship.trainer
+                    const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer'
 
                     return (
                       <Card key={relationship.id}>
@@ -213,7 +208,7 @@ export default function RelationshipManagement() {
                         </CardContent>
                         <CardFooter className="flex justify-between">
                           <Button variant="outline" asChild>
-                            <Link to={`/professionals/${professional?.id}`}>
+                            <Link to={`/professional/${professional?.id}`}>
                               View Profile
                             </Link>
                           </Button>
@@ -222,7 +217,7 @@ export default function RelationshipManagement() {
                           </Button>
                         </CardFooter>
                       </Card>
-                    );
+                    )
                   })}
               </div>
             )}
@@ -248,9 +243,8 @@ export default function RelationshipManagement() {
                 {relationships
                   .filter((rel) => rel.status === 'PENDING')
                   .map((relationship) => {
-                    const professional =
-                      relationship.nutritionist || relationship.trainer;
-                    const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer';
+                    const professional = relationship.nutritionist || relationship.trainer
+                    const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer'
 
                     return (
                       <Card key={relationship.id}>
@@ -276,7 +270,7 @@ export default function RelationshipManagement() {
                         </CardContent>
                         <CardFooter className="flex justify-between">
                           <Button variant="outline" asChild>
-                            <Link to={`/professionals/${professional?.id}`}>
+                            <Link to={`/professional/${professional?.id}`}>
                               View Profile
                             </Link>
                           </Button>
@@ -294,7 +288,7 @@ export default function RelationshipManagement() {
                           </div>
                         </CardFooter>
                       </Card>
-                    );
+                    )
                   })}
               </div>
             )}
@@ -314,32 +308,32 @@ export default function RelationshipManagement() {
                     You haven't connected with any professionals yet.
                   </p>
                   <Button asChild>
-                    <Link to="/professionals">Find Professionals</Link>
+                    <Link to="/professional">Find Professionals</Link>
                   </Button>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-6">
                 {relationships.map((relationship) => {
-                  const professional = relationship.nutritionist || relationship.trainer;
-                  const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer';
+                  const professional = relationship.nutritionist || relationship.trainer
+                  const type = relationship.nutritionist ? 'Nutritionist' : 'Trainer'
 
-                  let badgeClass = '';
-                  let badgeText = '';
+                  let badgeClass = ''
+                  let badgeText = ''
 
                   switch (relationship.status) {
                     case 'ACCEPTED':
-                      badgeClass = 'bg-green-50 text-green-700';
-                      badgeText = 'Active';
-                      break;
+                      badgeClass = 'bg-green-50 text-green-700'
+                      badgeText = 'Active'
+                      break
                     case 'PENDING':
-                      badgeClass = 'bg-amber-50 text-amber-700';
-                      badgeText = 'Pending';
-                      break;
+                      badgeClass = 'bg-amber-50 text-amber-700'
+                      badgeText = 'Pending'
+                      break
                     case 'REJECTED':
-                      badgeClass = 'bg-red-50 text-red-700';
-                      badgeText = 'Cancelled';
-                      break;
+                      badgeClass = 'bg-red-50 text-red-700'
+                      badgeText = 'Cancelled'
+                      break
                   }
 
                   return (
@@ -366,7 +360,7 @@ export default function RelationshipManagement() {
                       </CardContent>
                       <CardFooter className="flex justify-between">
                         <Button variant="outline" asChild>
-                          <Link to={`/professionals/${professional?.id}`}>
+                          <Link to={`/professional/${professional?.id}`}>
                             View Profile
                           </Link>
                         </Button>
@@ -389,7 +383,7 @@ export default function RelationshipManagement() {
                         )}
                       </CardFooter>
                     </Card>
-                  );
+                  )
                 })}
               </div>
             )}
@@ -397,5 +391,5 @@ export default function RelationshipManagement() {
         </Tabs>{' '}
       </ContainerContent>
     </>
-  );
+  )
 }

@@ -1,7 +1,7 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import {
   Calendar,
   MapPin,
@@ -15,37 +15,31 @@ import {
   Save,
   Plus,
   X,
-} from 'lucide-react';
-import { z } from 'zod';
+} from 'lucide-react'
+import { z } from 'zod'
 
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { toast } from 'sonner';
-import useUser from '@/hooks/user-hooks';
-import type { Professional } from '@/types/ProfessionalType';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useProfessionals } from '@/hooks/professional-hooks';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { toast } from 'sonner'
+import useUser from '@/hooks/user-hooks'
+import type { Professional } from '@/types/ProfessionalType'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import { useProfessionals } from '@/hooks/professional-hooks'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from '@/components/ui/form';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { calculateAverageRating } from '@/lib/utils/calculateAverageRating';
+} from '@/components/ui/select'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { calculateAverageRating } from '@/lib/utils/calculateAverageRating'
 
 const professionalSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -60,28 +54,28 @@ const professionalSchema = z.object({
   certifications: z.array(z.string()).optional(),
   education: z.array(z.string()).optional(),
   availability: z.array(z.string()).optional(),
-});
+})
 
-type ProfessionalFormValues = z.infer<typeof professionalSchema>;
+type ProfessionalFormValues = z.infer<typeof professionalSchema>
 
 export default function ProfessionalDetail() {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [professional, setProfessional] = useState<Professional | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { user, updateUser } = useUser();
-  const { getProfessionalById } = useProfessionals();
-  const isOwner = user?.id === id;
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [loading, setLoading] = useState(false)
+  const [professional, setProfessional] = useState<Professional | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const { user, updateUser } = useUser()
+  const { getProfessionalById } = useProfessionals()
+  const isOwner = user?.id === id
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false)
 
   const [newInputs, setNewInputs] = useState({
     specialty: '',
     certification: '',
     education: '',
     availability: '',
-  });
+  })
 
   const form = useForm<ProfessionalFormValues>({
     resolver: zodResolver(professionalSchema),
@@ -97,41 +91,41 @@ export default function ProfessionalDetail() {
       education: [],
       availability: [],
     },
-  });
+  })
 
   useEffect(() => {
     const fetchProfessional = async () => {
-      console.log(user?.ProfessionalSettings);
+      console.log(user?.ProfessionalSettings)
       try {
-        setIsLoading(true);
+        setIsLoading(true)
         if (!id) {
-          throw new Error('Id is missing');
+          throw new Error('Id is missing')
         }
 
-        const professional = await getProfessionalById(id);
+        const professional = await getProfessionalById(id)
         if (!professional) {
-          throw new Error('Professional not found');
+          throw new Error('Professional not found')
         }
-        setProfessional(professional);
+        setProfessional(professional)
 
         // Parse string arrays if they're stored as strings
         const parseStringArray = (value: any) => {
-          if (!value) return [];
-          if (Array.isArray(value)) return value;
+          if (!value) return []
+          if (Array.isArray(value)) return value
           if (typeof value === 'string') {
             try {
-              const parsed = JSON.parse(value);
-              return Array.isArray(parsed) ? parsed : [];
+              const parsed = JSON.parse(value)
+              return Array.isArray(parsed) ? parsed : []
             } catch {
               // If it's a string but not JSON, split by commas
               return value
                 .split(',')
                 .map((item) => item.trim())
-                .filter(Boolean);
+                .filter(Boolean)
             }
           }
-          return [];
-        };
+          return []
+        }
 
         form.reset({
           name: professional.name || '',
@@ -143,44 +137,44 @@ export default function ProfessionalDetail() {
           certifications: parseStringArray(professional.certifications),
           education: parseStringArray(professional.education),
           availability: parseStringArray(professional.availability),
-        });
+        })
       } catch (error) {
-        console.error('Error fetching professional:', error);
+        console.error('Error fetching professional:', error)
       } finally {
-        setIsLoading(false);
+        setIsLoading(false)
       }
-    };
+    }
 
     if (id) {
-      fetchProfessional();
+      fetchProfessional()
     }
-  }, []);
+  }, [])
 
   const startEditing = () => {
-    setIsEditing(true);
-  };
+    setIsEditing(true)
+  }
 
   const cancelEditing = () => {
-    setIsEditing(false);
+    setIsEditing(false)
     if (professional) {
       // Parse string arrays if they're stored as strings
       const parseStringArray = (value: any) => {
-        if (!value) return [];
-        if (Array.isArray(value)) return value;
+        if (!value) return []
+        if (Array.isArray(value)) return value
         if (typeof value === 'string') {
           try {
-            const parsed = JSON.parse(value);
-            return Array.isArray(parsed) ? parsed : [];
+            const parsed = JSON.parse(value)
+            return Array.isArray(parsed) ? parsed : []
           } catch {
             // If it's a string but not JSON, split by commas
             return value
               .split(',')
               .map((item) => item.trim())
-              .filter(Boolean);
+              .filter(Boolean)
           }
         }
-        return [];
-      };
+        return []
+      }
 
       form.reset({
         name: professional.name || '',
@@ -192,7 +186,7 @@ export default function ProfessionalDetail() {
         certifications: parseStringArray(professional.certifications),
         education: parseStringArray(professional.education),
         availability: parseStringArray(professional.availability),
-      });
+      })
     }
 
     setNewInputs({
@@ -200,34 +194,34 @@ export default function ProfessionalDetail() {
       certification: '',
       education: '',
       availability: '',
-    });
-  };
+    })
+  }
 
   const addItemToArray = (
     field: 'specialties' | 'certifications' | 'education' | 'availability',
     inputField: 'specialty' | 'certification' | 'education' | 'availability'
   ) => {
-    const value = newInputs[inputField];
-    if (!value.trim()) return;
+    const value = newInputs[inputField]
+    if (!value.trim()) return
 
-    const currentValues = form.getValues(field) || [];
-    form.setValue(field, [...currentValues, value.trim()], { shouldValidate: true });
+    const currentValues = form.getValues(field) || []
+    form.setValue(field, [...currentValues, value.trim()], { shouldValidate: true })
 
-    setNewInputs({ ...newInputs, [inputField]: '' });
-  };
+    setNewInputs({ ...newInputs, [inputField]: '' })
+  }
 
   const removeItemFromArray = (
     field: 'specialties' | 'certifications' | 'education' | 'availability',
     index: number
   ) => {
-    const currentValues = [...(form.getValues(field) || [])];
-    currentValues.splice(index, 1);
-    form.setValue(field, currentValues, { shouldValidate: true });
-  };
+    const currentValues = [...(form.getValues(field) || [])]
+    currentValues.splice(index, 1)
+    form.setValue(field, currentValues, { shouldValidate: true })
+  }
 
   const onSubmit = async (data: ProfessionalFormValues) => {
     try {
-      setLoading(true);
+      setLoading(true)
 
       const prepareDataForSubmission = {
         ...data,
@@ -236,51 +230,51 @@ export default function ProfessionalDetail() {
         certifications: Array.isArray(data.certifications) ? data.certifications : [],
         education: Array.isArray(data.education) ? data.education : [],
         availability: Array.isArray(data.availability) ? data.availability : [],
-      };
+      }
 
-      const result = await updateUser(prepareDataForSubmission);
+      const result = await updateUser(prepareDataForSubmission)
 
       if (result) {
         const updatedProfessional = {
           ...professional,
           ...prepareDataForSubmission,
-        } as Professional;
+        } as Professional
 
-        setProfessional(updatedProfessional);
-        setIsEditing(false);
-        toast.success('Profile updated successfully');
+        setProfessional(updatedProfessional)
+        setIsEditing(false)
+        toast.success('Profile updated successfully')
       } else {
-        throw new Error('Failed to update profile');
+        throw new Error('Failed to update profile')
       }
     } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
+      console.error('Error updating profile:', error)
+      toast.error('Failed to update profile')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   // Helper function to safely get array data
   const getArrayData = (data: any): string[] => {
-    if (!data) return [];
-    if (Array.isArray(data)) return data;
+    if (!data) return []
+    if (Array.isArray(data)) return data
     if (typeof data === 'string') {
       try {
-        const parsed = JSON.parse(data);
-        return Array.isArray(parsed) ? parsed : [];
+        const parsed = JSON.parse(data)
+        return Array.isArray(parsed) ? parsed : []
       } catch {
         // If it's a string but not JSON, split by commas
         return data
           .split(',')
           .map((item) => item.trim())
-          .filter(Boolean);
+          .filter(Boolean)
       }
     }
-    return [];
-  };
+    return []
+  }
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner />
   }
 
   if (!professional) {
@@ -291,26 +285,26 @@ export default function ProfessionalDetail() {
           The professional you're looking for doesn't exist or has been removed.
         </p>
         <Button asChild>
-          <Link to="/professionals">View All Professionals</Link>
+          <Link to="/professional">View All Professionals</Link>
         </Button>
       </div>
-    );
+    )
   }
 
   // Ensure reviews is an array
-  const reviews = Array.isArray(professional.reviews) ? professional.reviews : [];
+  const reviews = Array.isArray(professional.reviews) ? professional.reviews : []
 
   // Get array data safely
-  const specialties = getArrayData(professional.specialties);
-  const certifications = getArrayData(professional.certifications);
-  const education = getArrayData(professional.education);
-  const availability = getArrayData(professional.availability);
+  const specialties = getArrayData(professional.specialties)
+  const certifications = getArrayData(professional.certifications)
+  const education = getArrayData(professional.education)
+  const availability = getArrayData(professional.availability)
 
   return (
     <>
       <div className="flex justify-between items-center mb-6">
         <Button variant="ghost" asChild>
-          <Link to="/professionals">
+          <Link to="/professional">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Professionals
           </Link>
@@ -536,9 +530,9 @@ export default function ProfessionalDetail() {
                                       onChange={(e) => {
                                         const updatedAvailability = [
                                           ...(field.value || []),
-                                        ];
-                                        updatedAvailability[index] = e.target.value;
-                                        field.onChange(updatedAvailability);
+                                        ]
+                                        updatedAvailability[index] = e.target.value
+                                        field.onChange(updatedAvailability)
                                       }}
                                       className="flex-1"
                                     />
@@ -743,9 +737,9 @@ export default function ProfessionalDetail() {
                                         <Input
                                           value={cert}
                                           onChange={(e) => {
-                                            const updatedCerts = [...(field.value || [])];
-                                            updatedCerts[index] = e.target.value;
-                                            field.onChange(updatedCerts);
+                                            const updatedCerts = [...(field.value || [])]
+                                            updatedCerts[index] = e.target.value
+                                            field.onChange(updatedCerts)
                                           }}
                                           className="flex-1"
                                         />
@@ -802,7 +796,11 @@ export default function ProfessionalDetail() {
                             certifications.map((cert, index) => (
                               <li key={index} className="flex items-start gap-2">
                                 <CheckCircle className="mt-1 h-4 w-4 text-green-500 flex-shrink-0" />
-                                <span>{cert}</span>
+                                <span>
+                                  {typeof cert === 'string'
+                                    ? cert
+                                    : `${cert.name} - ${cert.organization} (${cert.year})`}
+                                </span>
                               </li>
                             ))
                           ) : (
@@ -836,13 +834,17 @@ export default function ProfessionalDetail() {
                                         className="flex items-start gap-2 border-l-2 border-primary/20 pl-4 mb-2"
                                       >
                                         <Input
-                                          value={edu}
+                                          value={
+                                            typeof edu === 'string'
+                                              ? edu
+                                              : `${edu.degree} - ${edu.institution} (${edu.year})`
+                                          }
                                           onChange={(e) => {
                                             const updatedEducation = [
                                               ...(field.value || []),
-                                            ];
-                                            updatedEducation[index] = e.target.value;
-                                            field.onChange(updatedEducation);
+                                            ]
+                                            updatedEducation[index] = e.target.value
+                                            field.onChange(updatedEducation)
                                           }}
                                           className="flex-1"
                                         />
@@ -898,7 +900,11 @@ export default function ProfessionalDetail() {
                                 key={index}
                                 className="border-l-2 border-primary/20 pl-4"
                               >
-                                <h3 className="font-medium">{edu}</h3>
+                                <h3 className="font-medium">
+                                  {typeof edu === 'string'
+                                    ? edu
+                                    : `${edu.degree} - ${edu.institution} (${edu.year})`}
+                                </h3>
                               </div>
                             ))
                           ) : (
@@ -1064,5 +1070,5 @@ export default function ProfessionalDetail() {
         </form>
       </Form>
     </>
-  );
+  )
 }

@@ -106,7 +106,7 @@ const getSpecialtiesArray = (
   return specialties.split(',').map((s) => s.trim())
 }
 
-export default function AllProfessionals() {
+export default function AdminProfessionals() {
   const [professionals, setProfessionals] = useState<Professional[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')

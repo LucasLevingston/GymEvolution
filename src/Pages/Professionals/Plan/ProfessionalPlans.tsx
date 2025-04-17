@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
-import { useNavigate, Link, useParams } from 'react-router-dom';
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useNavigate, Link, useParams } from 'react-router-dom'
 import {
   Plus,
   Edit,
@@ -14,7 +16,13 @@ import {
   QrCode,
   Smartphone,
   Wallet,
-} from 'lucide-react';
+  Dumbbell,
+  Utensils,
+  MessageSquare,
+  Video,
+  RotateCcw,
+  LinkIcon,
+} from 'lucide-react'
 
 import {
   Dialog,
@@ -23,9 +31,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/ui/dialog'
 
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -33,104 +41,115 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { toast } from 'sonner';
-import { ContainerRoot } from '@/components/Container';
-import { usePlans, type Plan } from '@/hooks/use-plans';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import { useNotifications } from '@/components/notifications/NotificationProvider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
-import { usePurchases } from '@/hooks/purchase-hooks';
-import useUser from '@/hooks/user-hooks';
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
+import { toast } from 'sonner'
+import { ContainerRoot } from '@/components/Container'
+import { usePlans } from '@/hooks/use-plans'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import { useNotifications } from '@/components/notifications/NotificationProvider'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
+import { Label } from '@/components/ui/label'
+import { usePurchases } from '@/hooks/purchase-hooks'
+import useUser from '@/hooks/user-hooks'
+import type { Feature, Plan } from '@/types/PlanType'
 
 export default function ProfessionalPlans() {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const { user } = useUser();
-  const { getPlansByProfessionalId, deactivatePlan, isLoading } = usePlans();
-  const { createPurchase, isLoading: isLoadingPayment } = usePurchases();
-  const { addNotification } = useNotifications();
-  const [plans, setPlans] = useState<Plan[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [planToDeactivate, setPlanToDeactivate] = useState<string | null>(null);
+  const navigate = useNavigate()
+  const { id } = useParams<{ id: string }>()
+  const { user } = useUser()
+  const { getPlansByProfessionalId, deactivatePlan, isLoading } = usePlans()
+  const { createPurchase, isLoading: isLoadingPayment } = usePurchases()
+  const { addNotification } = useNotifications()
+  const [plans, setPlans] = useState<Plan[]>([])
+  const [loading, setLoading] = useState(false)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [planToDeactivate, setPlanToDeactivate] = useState<string | null>(null)
 
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('pix');
-  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
+  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('pix')
+  const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
 
-  const isOwner = user?.id === id;
+  const isOwner =
+    user?.id === id || (plans.length > 0 && plans[0].professionalId === user?.id)
 
   useEffect(() => {
     const fetchPlans = async () => {
-      if (!id) return;
+      try {
+        let data: Plan[]
+        if (!id && user?.id) {
+          data = await getPlansByProfessionalId(user.id)
+          setPlans(data)
+        } else if (id) {
+          data = await getPlansByProfessionalId(id)
+          setPlans(data)
+        }
+      } catch (error) {
+        console.error('Error fetching plans:', error)
+        toast.error('Falha ao carregar planos')
+      }
+    }
 
-      const data = await getPlansByProfessionalId(id);
-      setPlans(data);
-    };
-
-    fetchPlans();
-  }, [id, getPlansByProfessionalId]);
+    fetchPlans()
+  }, [id, getPlansByProfessionalId, user?.id])
 
   useEffect(() => {
     if (selectedPlanId) {
-      const plan = plans.find((p) => p.id === selectedPlanId) || null;
-      setSelectedPlan(plan);
+      const plan = plans.find((p) => p.id === selectedPlanId) || null
+      setSelectedPlan(plan)
     }
-  }, [selectedPlanId, plans]);
+  }, [selectedPlanId, plans])
 
   const handleDeactivatePlan = async (planId: string) => {
-    if (!isOwner) return;
+    if (!isOwner) return
 
-    setPlanToDeactivate(planId);
-    setDialogOpen(true);
-  };
+    setPlanToDeactivate(planId)
+    setDialogOpen(true)
+  }
 
   const confirmDeactivation = async () => {
-    if (!planToDeactivate) return;
+    if (!planToDeactivate) return
 
-    const result = await deactivatePlan(planToDeactivate);
+    const result = await deactivatePlan(planToDeactivate)
     if (result) {
       setPlans(
         plans.map((plan) =>
           plan.id === planToDeactivate ? { ...plan, isActive: false } : plan
         )
-      );
-      toast.success('Plano desativado com sucesso');
+      )
+      toast.success('Plano desativado com sucesso')
     }
 
-    setDialogOpen(false);
-    setPlanToDeactivate(null);
-  };
+    setDialogOpen(false)
+    setPlanToDeactivate(null)
+  }
 
   const handlePurchase = async (planId: string) => {
     if (!user) {
-      toast.error('Por favor, faça login para contratar um profissional');
+      toast.error('Por favor, faça login para contratar um profissional')
       addNotification({
         title: 'Autenticação Necessária',
         message: 'Por favor, faça login para contratar um profissional',
         type: 'info',
-      });
-      navigate('/login');
-      return;
+      })
+      navigate('/login')
+      return
     }
 
-    setSelectedPlanId(planId);
-    setPaymentDialogOpen(true);
-  };
+    setSelectedPlanId(planId)
+    setPaymentDialogOpen(true)
+  }
 
   const processPayment = async () => {
-    if (!selectedPlanId) return;
+    if (!selectedPlanId) return
 
     try {
-      setLoading(true);
+      setLoading(true)
 
-      const successUrl = `${window.location.origin}/purchase-success/${id}/${selectedPlanId}`;
-      const cancelUrl = `${window.location.origin}/purchase-cancel`;
+      const successUrl = `${window.location.origin}/purchase-success/${id}/${selectedPlanId}`
+      const cancelUrl = `${window.location.origin}/purchase-cancel`
 
       const paymentResult = await createPurchase({
         planId: selectedPlanId,
@@ -139,46 +158,59 @@ export default function ProfessionalPlans() {
         paymentMethod: selectedPaymentMethod,
         amount: selectedPlan?.price!,
         professonalId: selectedPlan?.professionalId!,
-      });
+      })
 
       if (paymentResult) {
-        window.location.href = paymentResult.paymentUrl;
+        window.location.href = paymentResult.paymentUrl
       } else {
-        throw new Error('Falha ao criar pagamento');
+        throw new Error('Falha ao criar pagamento')
       }
     } catch (error) {
-      console.error('Error purchasing plan:', error);
-      toast.error('Falha ao processar pagamento');
+      console.error('Error purchasing plan:', error)
+      toast.error('Falha ao processar pagamento')
       addNotification({
         title: 'Pagamento Falhou',
         message:
           'Ocorreu um erro ao processar seu pagamento. Por favor, tente novamente.',
         type: 'error',
-      });
-      setPaymentDialogOpen(false);
+      })
+      setPaymentDialogOpen(false)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
+
+  const getFeatureIcon = (feature: Feature) => {
+    if (feature.isTrainingWeek)
+      return <Dumbbell className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.isDiet) return <Utensils className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.isFeedback)
+      return <MessageSquare className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.isConsultation) return <Video className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.isReturn) return <RotateCcw className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.linkToResolve)
+      return <LinkIcon className="h-4 w-4 text-green-500 mt-0.5" />
+    return <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
+  }
 
   const getPaymentMethodIcon = (method: string) => {
     switch (method) {
       case 'credit_card':
-        return <CreditCard className="h-5 w-5" />;
+        return <CreditCard className="h-5 w-5" />
       case 'debit_card':
-        return <CreditCard className="h-5 w-5" />;
+        return <CreditCard className="h-5 w-5" />
       case 'bank_transfer':
-        return <Landmark className="h-5 w-5" />;
+        return <Landmark className="h-5 w-5" />
       case 'pix':
-        return <QrCode className="h-5 w-5" />;
+        return <QrCode className="h-5 w-5" />
       case 'mobile_payment':
-        return <Smartphone className="h-5 w-5" />;
+        return <Smartphone className="h-5 w-5" />
       case 'wallet':
-        return <Wallet className="h-5 w-5" />;
+        return <Wallet className="h-5 w-5" />
       default:
-        return <CreditCard className="h-5 w-5" />;
+        return <CreditCard className="h-5 w-5" />
     }
-  };
+  }
 
   if (!user) {
     return (
@@ -193,7 +225,7 @@ export default function ProfessionalPlans() {
           </Button>
         </div>
       </ContainerRoot>
-    );
+    )
   }
 
   return (
@@ -211,7 +243,7 @@ export default function ProfessionalPlans() {
         </div>
         {isOwner && (
           <Button asChild>
-            <Link to="/create-plan">
+            <Link to="/professional/create-plan">
               <Plus className="mr-2 h-4 w-4" />
               Criar Novo Plano
             </Link>
@@ -274,19 +306,23 @@ export default function ProfessionalPlans() {
 
                 <h4 className="font-medium mb-2">Recursos incluídos:</h4>
                 <ul className="space-y-2">
-                  {plan.features.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
-                    </li>
-                  ))}
+                  {plan.features?.length > 0 ? (
+                    plan.features.map((feature) => (
+                      <li key={feature.id} className="flex items-start gap-2">
+                        {getFeatureIcon(feature)}
+                        <span className="text-sm">{feature.name}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-sm text-gray-500">Nenhuma feature disponível.</li>
+                  )}
                 </ul>
               </CardContent>
               <CardFooter className="flex justify-between">
                 {isOwner ? (
                   <>
                     <Button variant="outline" asChild>
-                      <Link to={`/edit-plan/${plan.id}`}>
+                      <Link to={`/professional/edit-plan/${plan.id}`}>
                         <Edit className="mr-2 h-4 w-4" />
                         Editar
                       </Link>
@@ -483,5 +519,5 @@ export default function ProfessionalPlans() {
         </DialogContent>
       </Dialog>
     </>
-  );
+  )
 }

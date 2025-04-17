@@ -17,22 +17,22 @@ import {
   ClipboardList,
   FileText,
 } from 'lucide-react'
-import type { RequiredAction } from './purchase-status-analyzer'
+import type { RequiredTask } from './purchase-status-analyzer'
 
-interface RequiredActionsListProps {
-  actions: RequiredAction[]
+interface RequiredTasksListProps {
+  tasks: RequiredTask[]
   title?: string
   description?: string
   emptyMessage?: string
 }
 
-export default function RequiredActionsList({
-  actions,
+export default function RequiredTasksList({
+  tasks,
   title = 'Ações Necessárias',
   description = 'Estas são as ações que você precisa realizar',
   emptyMessage = 'Não há ações pendentes no momento',
-}: RequiredActionsListProps) {
-  if (!actions || actions.length === 0) {
+}: RequiredTasksListProps) {
+  if (!tasks || tasks.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -49,8 +49,8 @@ export default function RequiredActionsList({
     )
   }
 
-  // Sort actions by priority
-  const sortedActions = [...actions].sort((a, b) => {
+  // Sort tasks by priority
+  const sortedTasks = [...tasks].sort((a, b) => {
     const priorityOrder = { high: 0, medium: 1, low: 2 }
     return priorityOrder[a.priority] - priorityOrder[b.priority]
   })
@@ -63,21 +63,21 @@ export default function RequiredActionsList({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {sortedActions.map((action, index) => (
+          {sortedTasks.map((task, index) => (
             <div key={index} className="flex items-start p-4 border rounded-lg">
-              {getActionIcon(action.type)}
+              {getTaskIcon(task.type)}
               <div className="ml-4 flex-1">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium">{action.label}</h4>
-                  <Badge variant={getPriorityVariant(action.priority)}>
-                    {getPriorityLabel(action.priority)}
+                  <h4 className="font-medium">{task.title}</h4>
+                  <Badge variant={getPriorityVariant(task.priority)}>
+                    {getPriorityLabel(task.priority)}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">{action.description}</p>
-                {action.dueDate && (
+                <p className="text-sm text-muted-foreground mt-1">{task.description}</p>
+                {task.dueDate && (
                   <p className="text-sm mt-2 flex items-center">
                     <Calendar className="h-3 w-3 mr-1" />
-                    Prazo: {formatDate(action.dueDate)}
+                    Prazo: {formatDate(task.dueDate)}
                   </p>
                 )}
               </div>
@@ -87,7 +87,7 @@ export default function RequiredActionsList({
       </CardContent>
       <CardFooter>
         <Button asChild variant="outline" className="w-full">
-          <Link to="/purchases">
+          <Link to={sortedTasks[0]?.actionLink || '/purchases'}>
             Ver Todas as Compras
             <ArrowRight className="ml-2 h-4 w-4" />
           </Link>
@@ -98,7 +98,7 @@ export default function RequiredActionsList({
 }
 
 // Helper functions
-function getActionIcon(type: string) {
+function getTaskIcon(type: string) {
   switch (type) {
     case 'SCHEDULE_MEETING':
     case 'SCHEDULE_FOLLOWUP':

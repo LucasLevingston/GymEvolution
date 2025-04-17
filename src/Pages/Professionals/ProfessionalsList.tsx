@@ -551,7 +551,7 @@ export default function ProfessionalsList() {
                   </div>
 
                   <Button asChild className="w-full">
-                    <Link to={`/professionals/${professional.id}`}>
+                    <Link to={`/professional/${professional.id}`}>
                       View Profile
                       <ArrowUpRight className="ml-2 h-4 w-4" />
                     </Link>
@@ -571,7 +571,7 @@ export default function ProfessionalsList() {
               platform and connect with motivated clients.
             </p>
             <Button asChild size="lg">
-              <Link to="/professionals/register-professional">
+              <Link to="/professional/register-professional">
                 Apply as a Professional
               </Link>
             </Button>
