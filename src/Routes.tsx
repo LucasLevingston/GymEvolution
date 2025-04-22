@@ -9,13 +9,12 @@ import NotFound from './Pages/Not-Found'
 import { ThemeProvider } from './components/providers/ThemeProvider'
 import Profile from './Pages/Profile'
 import ThemeSettings from './Pages/Settings/ThemeSettings'
-import PastWorkouts from './Pages/Training/PastTrainings'
-import CurrentWorkoutWeek from './Pages/Training/TrainingWeekPlan'
+import { ListTrainings } from './Pages/Training/ListTrainings'
+import TrainingWeekPlan from './Pages/Training/TrainingWeekPlan'
 import Progress from './Pages/Progress'
 import ResetPassword from './Pages/Authentication/ResetPassword'
 import PasswordRecovery from './Pages/Authentication/PasswordRecovery'
 import DietPlan from './Pages/Diet/DietPlan'
-import PastDiets from './Pages/Diet/PastDiets'
 import CreateDiet from './Pages/Diet/CreateDiet'
 import ProfessionalsList from './Pages/Professionals/ProfessionalsList'
 import ProfessionalDetail from './Pages/Professionals/ProfessionalDetail'
@@ -46,6 +45,9 @@ import AdminPurchases from './Pages/Admin/AdminPurchases'
 import SettingsLayout from './components/settings/settings-layout'
 import ProfessionalPayments from './Pages/Professionals/ProfessionalPayments'
 import ProfessionalTasks from './Pages/Professionals/ProfessionalTasks'
+import { ListDiets } from './Pages/Diet/ListDiets'
+import { SubscriptionPlans } from './Pages/subscription-plans'
+import { SubscriptionStatus } from './Pages/subscription-status'
 
 interface PrivateRouteProps {
   element: JSX.Element
@@ -126,15 +128,36 @@ const SettingsRoutes = [
 ]
 
 const TrainingRoutes = [
-  { path: '/workout-week', element: <PrivateRoute element={<CurrentWorkoutWeek />} /> },
-  { path: '/training-weeks', element: <PrivateRoute element={<PastWorkouts />} /> },
-  { path: '/create-training', element: <PrivateRoute element={<CreateTraining />} /> },
+  {
+    path: '/training/',
+    children: [
+      {
+        path: ':trainingWeekId',
+        element: <PrivateRoute element={<TrainingWeekPlan />} />,
+      },
+      {
+        path: '',
+        element: <PrivateRoute element={<TrainingWeekPlan />} />,
+      },
+      { path: 'list', element: <PrivateRoute element={<ListTrainings />} /> },
+      {
+        path: 'create',
+        element: <PrivateRoute element={<CreateTraining />} />,
+      },
+    ],
+  },
 ]
 
 const DietRoutes = [
-  { path: '/diet', element: <PrivateRoute element={<DietPlan />} /> },
-  { path: '/past-diets', element: <PrivateRoute element={<PastDiets />} /> },
-  { path: '/create-diet', element: <PrivateRoute element={<CreateDiet />} /> },
+  {
+    path: '/diet/',
+    children: [
+      { path: ':dietId', element: <PrivateRoute element={<DietPlan />} /> },
+      { path: '', element: <PrivateRoute element={<DietPlan />} /> },
+      { path: 'list', element: <PrivateRoute element={<ListDiets />} /> },
+      { path: 'create', element: <PrivateRoute element={<CreateDiet />} /> },
+    ],
+  },
 ]
 
 const AdminRoutes = [
@@ -189,6 +212,14 @@ const GeneralRoutes = [
   {
     path: '/relationships',
     element: <PrivateRoute element={<RelationshipManagement />} />,
+  },
+  {
+    path: '/subscription',
+    element: <PrivateRoute element={<SubscriptionPlans />} />,
+  },
+  {
+    path: '/subscription/status',
+    element: <PrivateRoute element={<SubscriptionStatus />} />,
   },
   { path: '*', element: <NotFound /> },
 ]

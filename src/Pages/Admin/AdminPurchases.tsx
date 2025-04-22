@@ -391,7 +391,7 @@ export default function AdminPurchases() {
                         </Button>
                         {!student.hasTraining && (
                           <Button size="sm" asChild>
-                            <Link to={`/create-training?studentId=${student.id}`}>
+                            <Link to={`/training/create?studentId=${student.id}`}>
                               <Dumbbell className="mr-2 h-4 w-4" />
                               Criar Treino
                             </Link>
@@ -399,7 +399,7 @@ export default function AdminPurchases() {
                         )}
                         {!student.hasDiet && (
                           <Button size="sm" asChild>
-                            <Link to={`/create-diet?studentId=${student.id}`}>
+                            <Link to={`diet/create?studentId=${student.id}`}>
                               <Utensils className="mr-2 h-4 w-4" />
                               Criar Dieta
                             </Link>
@@ -498,7 +498,7 @@ export default function AdminPurchases() {
                         </Button>
                         {!student.hasTraining && (
                           <Button size="sm" asChild>
-                            <Link to={`/create-training?studentId=${student.id}`}>
+                            <Link to={`/training/create?studentId=${student.id}`}>
                               <Dumbbell className="mr-2 h-4 w-4" />
                               Criar Treino
                             </Link>
@@ -506,7 +506,7 @@ export default function AdminPurchases() {
                         )}
                         {!student.hasDiet && (
                           <Button size="sm" asChild>
-                            <Link to={`/create-diet?studentId=${student.id}`}>
+                            <Link to={`diet/create?studentId=${student.id}`}>
                               <Utensils className="mr-2 h-4 w-4" />
                               Criar Dieta
                             </Link>

@@ -3,7 +3,9 @@
 import { useState } from 'react'
 import api from '@/lib/api'
 import { useUserStore } from '@/store/user-store'
-import type { Professional } from '@/types/ProfessionalType'
+import type { Professional, Task } from '@/types/ProfessionalType'
+import { TrainingWeekFormData } from '@/schemas/trainingWeekSchema'
+import { RequiredTask } from '@/components/purchase-workflow/purchase-status-analyzer'
 
 export const useProfessionals = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -212,7 +214,9 @@ export const useProfessionals = () => {
     }
   }
 
-  const getTasksByProfessionalId = async (professionalId: string) => {
+  const getTasksByProfessionalId = async (
+    professionalId: string
+  ): Promise<Task[] | null> => {
     try {
       setIsLoading(true)
       setError(null)
@@ -226,11 +230,99 @@ export const useProfessionals = () => {
           },
         }
       )
-      console.log(data)
 
       if (!data) {
         throw new Error('Error on request of get professionals')
       }
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error
+      setError(errorMessage)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  interface CreateTrainingForClientParams extends TrainingWeekFormData {
+    clientId: string
+    featureId: string
+    purchaseId: string
+    professionalId: string
+  }
+  const createTrainingForClient = async (
+    newTrainingWeekData: CreateTrainingForClientParams
+  ) => {
+    setIsLoading(true)
+    try {
+      const formattedData = {
+        weekNumber: newTrainingWeekData.weekNumber,
+        startDate: newTrainingWeekData.startDate,
+        endDate: newTrainingWeekData.endDate,
+        information: newTrainingWeekData.information,
+        clientId: newTrainingWeekData.clientId,
+        purchaseId: newTrainingWeekData.purchaseId,
+        featureId: newTrainingWeekData.featureId,
+        trainingDays: newTrainingWeekData.trainingDays.map((day) => ({
+          group: day.group,
+          dayOfWeek: day.dayOfWeek,
+          comments: day.comments,
+          exercises: day.exercises.map((exercise) => ({
+            name: exercise.name,
+            variation: exercise.variation,
+            repetitions: exercise.repetitions,
+            sets: exercise.sets,
+            seriesResults: exercise.seriesResults,
+          })),
+        })),
+      }
+
+      const { data } = await api.post(
+        '/professionals/client/training',
+        { trainingWeek: formattedData },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      console.log(data)
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error
+      setError(errorMessage)
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  interface CreateDietForClientParams {
+    clientId: string
+    featureId: string
+    purchaseId: string
+    professionalId: string
+  }
+
+  const createDietForClient = async (newDietData: any) => {
+    setIsLoading(true)
+    try {
+      const formattedData = {
+        clientId: newDietData.clientId,
+        purchaseId: newDietData.purchaseId,
+        featureId: newDietData.featureId,
+      }
+      console.log(newDietData)
+      const { data } = await api.post(
+        '/professionals/client/diet',
+        { diet: newDietData },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
       return data
     } catch (err: any) {
       const errorMessage = err.response?.data?.error
@@ -277,5 +369,7 @@ export const useProfessionals = () => {
     getClientsByProfessionalId,
     getTasksByProfessionalId,
     getMetricsByProfessionalId,
+    createTrainingForClient,
+    createDietForClient,
   }
 }

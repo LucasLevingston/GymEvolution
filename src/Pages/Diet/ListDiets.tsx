@@ -1,37 +1,32 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerRoot,
-  ContainerTitle,
-} from '@/components/Container';
-import { DietComponent } from '@/components/diet/DietComponent';
-import useUser from '@/hooks/user-hooks';
-import { ClipboardIcon, Edit, Save } from 'lucide-react';
-import { toast } from 'sonner';
-import type { DietType } from '@/types/DietType';
-import { useDiets } from '@/hooks/use-diets';
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
+import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
+import { DietComponent } from '@/components/diet/DietComponent'
+import useUser from '@/hooks/user-hooks'
+import { ClipboardIcon, Edit, Save } from 'lucide-react'
+import { toast } from 'sonner'
+import type { DietType } from '@/types/DietType'
+import { useDiets } from '@/hooks/use-diets'
 
-export default function PastDiets() {
-  const { user } = useUser();
-  const navigate = useNavigate();
-  const { updateDiet } = useDiets();
-  const [selectedDietId, setSelectedDietId] = useState<string | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentDiet, setCurrentDiet] = useState<DietType | null>(null);
+export const ListDiets = () => {
+  const { user } = useUser()
+  const navigate = useNavigate()
+  const { updateDiet } = useDiets()
+  const [selectedDietId, setSelectedDietId] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [currentDiet, setCurrentDiet] = useState<DietType | null>(null)
 
   if (!user || !user.diets.length) {
     return (
@@ -49,72 +44,30 @@ export default function PastDiets() {
           </Button>
         </div>
       </>
-    );
+    )
   }
 
   // Initialize the selected diet
   const selectedDiet =
-    user.diets.find((diet) => diet.id === selectedDietId) || user.diets[0];
+    user.diets.find((diet) => diet.id === selectedDietId) || user.diets[0]
 
   // Initialize currentDiet if it's null and selectedDiet exists
   if (!currentDiet && selectedDiet) {
-    setCurrentDiet(selectedDiet);
+    setCurrentDiet(selectedDiet)
   }
 
   const handleDietSelect = (dietId: string) => {
-    setSelectedDietId(dietId);
-    const newSelectedDiet = user.diets.find((diet) => diet.id === dietId);
+    setSelectedDietId(dietId)
+    const newSelectedDiet = user.diets.find((diet) => diet.id === dietId)
     if (newSelectedDiet) {
-      setCurrentDiet(newSelectedDiet);
-      setIsEditing(false); // Reset editing state when changing diets
+      setCurrentDiet(newSelectedDiet)
+      setIsEditing(false) // Reset editing state when changing diets
     }
-  };
-
-  const handleDietUpdate = (updatedDiet: DietType) => {
-    console.log('Diet updated in DietComponent:', updatedDiet);
-    setCurrentDiet(updatedDiet);
-  };
-
-  const handleSave = async () => {
-    if (!currentDiet) {
-      toast.error('No diet data to save');
-      return;
-    }
-
-    const dietId = currentDiet.id;
-    if (!dietId) {
-      toast.error('Cannot update diet without an ID');
-      return;
-    }
-
-    try {
-      setIsSubmitting(true);
-
-      const response = await updateDiet(currentDiet);
-
-      if (!response) {
-        throw new Error(`API error: ${response}`);
-      }
-
-      toast.success('Diet plan updated successfully!');
-      setIsEditing(false);
-
-      if (user.diets) {
-        const updatedDiets = user.diets.map((diet) =>
-          diet.id === dietId ? currentDiet : diet
-        );
-      }
-    } catch (err: any) {
-      console.error('Error saving diet:', err);
-      toast.error(`Error updating diet plan: ${err.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }
 
   const toggleEditMode = () => {
-    setIsEditing(!isEditing);
-  };
+    setIsEditing(!isEditing)
+  }
 
   return (
     <>
@@ -171,8 +124,7 @@ export default function PastDiets() {
               <SelectContent>
                 {user.diets.map((diet) => (
                   <SelectItem key={diet.id} value={diet.id!}>
-                    Week {diet.weekNumber} -{' '}
-                    {new Date(diet.createdAt!).toLocaleDateString()}
+                    Week {diet.weekNumber} - {diet.createdAt}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -180,15 +132,8 @@ export default function PastDiets() {
           </CardContent>
         </Card>
 
-        {currentDiet && (
-          <DietComponent
-            diet={currentDiet}
-            onSave={handleDietUpdate}
-            readOnly={!isEditing}
-            onSaveClick={handleSave}
-          />
-        )}
+        {currentDiet && <DietComponent diet={selectedDiet} readOnly={!isEditing} />}
       </ContainerContent>
     </>
-  );
+  )
 }

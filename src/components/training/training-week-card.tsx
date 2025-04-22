@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import {
   type TrainingWeekFormData,
   trainingWeekSchema,
-} from '../../schemas/trainingWeekSchema'
+} from '@/schemas/trainingWeekSchema'
 import {
   Form,
   FormField,
@@ -67,15 +67,20 @@ import {
 } from '@/components/ui/select'
 import { useNavigate } from 'react-router-dom'
 import type { ExerciseType, TrainingDayType } from '@/types/TrainingType'
+import { useProfessionals } from '@/hooks/professional-hooks'
 
 interface TrainingWeekCardProps {
   initialData?: TrainingWeekFormData
   isCreating?: boolean
+  readOnly?: boolean
+  professionalId?: string
 }
 
 export function TrainingWeekCard({
   initialData,
   isCreating = false,
+  readOnly = false,
+  professionalId,
 }: TrainingWeekCardProps) {
   const [activeTab, setActiveTab] = useState('0')
   const [trainingNow, setTrainingNow] = useState(false)
@@ -94,7 +99,15 @@ export function TrainingWeekCard({
     isCurrentWeek,
     getTrainingWeek,
   } = useTraining()
+  const { createTrainingForClient } = useProfessionals()
   const navigate = useNavigate()
+
+  const searchParams = new URLSearchParams(location.search)
+  const purchaseId = searchParams.get('purchaseId')
+  const featureId = searchParams.get('featureId')
+  const clientId = searchParams.get('clientId')
+
+  const isProfessionalMode = !!clientId && !!featureId && !!purchaseId
 
   const form = useForm<TrainingWeekFormData>({
     resolver: zodResolver(trainingWeekSchema),
@@ -102,13 +115,12 @@ export function TrainingWeekCard({
       weekNumber: 1,
       trainingDays: [],
       startDate: new Date(),
-      endDate: addDays(new Date(), 6), // Default end date is 6 days after start date
+      endDate: addDays(new Date(), 6),
       isCompleted: false,
-      userId: user?.id,
+      userId: isProfessionalMode ? clientId : user?.id,
     },
   })
 
-  // Update endDate when startDate changes (if in creating mode or editing)
   useEffect(() => {
     if (isCreating || isEditing) {
       const startDate = form.watch('startDate')
@@ -201,18 +213,32 @@ export function TrainingWeekCard({
   async function onSubmit(data: TrainingWeekFormData) {
     try {
       // Log the full data object to verify endDate is included
-      console.log('Submitting form data:', data)
+      console.log('Submitting form data for clienttttt:', data, isProfessionalMode)
 
       if (isCreating) {
-        await createTraining(data)
-        toast.success('Training created successfully')
-        // navigate('/training-weeks')
+        if (isProfessionalMode) {
+          // Use the professional training service
+          await createTrainingForClient({
+            ...data,
+            clientId,
+            featureId,
+            purchaseId,
+            professionalId,
+          })
+          toast.success('Training plan created for client successfully')
+          // navigate(`/professional/clients/${clientId}`)
+        } else {
+          // Use the regular training service
+          await createTraining(data)
+          toast.success('Training created successfully')
+        }
       } else {
         await updateTraining(data)
         toast.success('Saved successfully')
         setIsEditing(false)
       }
     } catch (error) {
+      console.error('Error submitting form:', error)
       toast.error(
         isCreating ? 'Error creating training week' : 'Error saving training week'
       )
@@ -241,7 +267,7 @@ export function TrainingWeekCard({
 
   const handleStartTraining = (dayIndex: number) => {
     if (isCreating) {
-      toast.error('Please save your workout plan before starting training')
+      toast.error('Please save your training plan before starting training')
       return
     }
 
@@ -262,7 +288,7 @@ export function TrainingWeekCard({
     try {
       await deleteTraining(initialData.id)
       toast.success('Training week deleted successfully')
-      navigate('/training-weeks')
+      navigate('/training/list')
     } catch (error) {
       toast.error('Error deleting training week')
     }
@@ -286,6 +312,7 @@ export function TrainingWeekCard({
         endDate: currentEndDate, // Make sure endDate is explicitly set
         weekNumber: currentWeekNumber,
         isCompleted: false,
+        userId: isProfessionalMode ? clientId : user?.id,
         trainingDays: template.trainingDays.map((day: TrainingDayType) => ({
           ...day,
           id: undefined,
@@ -321,6 +348,8 @@ export function TrainingWeekCard({
             onEndTraining={handleEndTraining}
             isCurrentWeek={isCurrentWeek(form.watch('startDate'), form.watch('endDate'))}
             isCreating={isCreating}
+            isProfessionalMode={isProfessionalMode}
+            clientId={clientId}
           />
 
           <div className="flex-1">
@@ -329,7 +358,11 @@ export function TrainingWeekCard({
                 <div>
                   <div className="flex items-center gap-2">
                     <CardTitle className="text-3xl font-bold text-primary">
-                      {isCreating ? 'Create New Training Week' : 'Training Week'}
+                      {isCreating
+                        ? isProfessionalMode
+                          ? 'Create Training Plan for Client'
+                          : 'Create New Training Week'
+                        : 'Training Week'}
                     </CardTitle>
                     {isCurrentWeek(form.watch('startDate'), form.watch('endDate')) && (
                       <Badge className="bg-green-600">Current Week</Badge>
@@ -337,10 +370,15 @@ export function TrainingWeekCard({
                     {trainingNow && (
                       <Badge className="bg-blue-600 animate-pulse">Training Now</Badge>
                     )}
+                    {isProfessionalMode && (
+                      <Badge className="bg-purple-600">Professional Mode</Badge>
+                    )}
                   </div>
                   <CardDescription className="text-lg mt-2">
                     {isCreating
-                      ? 'Create your new training week'
+                      ? isProfessionalMode
+                        ? 'Create a training plan for your client'
+                        : 'Create your new training week'
                       : 'Manage your training week'}
                   </CardDescription>
                 </div>
@@ -396,6 +434,16 @@ export function TrainingWeekCard({
               </CardHeader>
 
               <CardContent className="p-6 space-y-8">
+                {isProfessionalMode && isCreating && (
+                  <div className="mb-6 p-4 border rounded-md bg-blue-50">
+                    <h3 className="text-lg font-medium mb-2">Creating for Client</h3>
+                    <p className="text-sm text-muted-foreground">
+                      You are creating a training plan for your client. This plan will be
+                      associated with the selected feature.
+                    </p>
+                  </div>
+                )}
+
                 {isCreating && (
                   <div className="mb-6 p-4 border rounded-md bg-muted/20">
                     <h3 className="text-lg font-medium mb-2 flex items-center">
@@ -649,6 +697,7 @@ export function TrainingWeekCard({
                             isEditing={isEditing || isCreating}
                             isCreating={isCreating}
                             onStartTraining={() => handleStartTraining(index)}
+                            isProfessionalMode={isProfessionalMode}
                           />
                         </TabsContent>
                       ))}

@@ -1,6 +1,8 @@
 import { DietType } from './DietType'
 import { Meeting } from './MeetingType'
 import { Notification } from './NotificationType'
+import { Plan } from './PlanType'
+import { Task } from './ProfessionalType'
 import { TrainingWeekType } from './TrainingType'
 
 export type UserType = {
@@ -43,7 +45,101 @@ export type UserType = {
   diets: DietType[]
   notifications: Notification[]
   meetings: Meeting
+  plans: Plan[]
   role: 'STUDENT' | 'NUTRITIONIST' | 'TRAINER' | 'ADMIN'
+
+  studentsAsNutritionist?: {
+    id: string
+    status: string
+    createdAt: string | Date
+    student: {
+      id: string
+      name?: string
+      email: string
+      imageUrl?: string
+    }
+  }[]
+
+  studentsAsTrainer?: {
+    id: string
+    status: string
+    createdAt: string | Date
+    student2: {
+      id: string
+      name?: string
+      email: string
+      imageUrl?: string
+    }
+  }[]
+
+  professionalAsNutritionist?: {
+    id: string
+    status: string
+    createdAt: string | Date
+    professional: {
+      id: string
+      name?: string
+      email: string
+      imageUrl?: string
+    }
+  }[]
+
+  professionalAsTrainer?: {
+    id: string
+    status: string
+    createdAt: string | Date
+    professional2: {
+      id: string
+      name?: string
+      email: string
+      imageUrl?: string
+    }
+  }[]
+
+  // Meetings
+  meetingsAsStudent?: {
+    id: string
+    title: string
+    description?: string
+    startTime: string | Date
+    endTime: string | Date
+    status: string
+    professional?: {
+      id: string
+      name?: string
+      email: string
+    }
+  }[]
+
+  meetingsAsProfessional?: {
+    id: string
+    title: string
+    description?: string
+    startTime: string | Date
+    endTime: string | Date
+    status: string
+    student?: {
+      id: string
+      name?: string
+      email: string
+      imageUrl?: string
+    }
+  }[]
+
+  clients: Client[]
+
+  tasks: Task[]
+}
+interface Client {
+  id: string
+  name: string
+  email: string
+  phone?: string
+  imageUrl?: string
+  totalSpent: number
+  tasks: Task[]
+  isActive: boolean
+  latestPlanName?: string
 }
 
 export type HistoryType = {

@@ -1,87 +1,56 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { AlertCircle, Save, ArrowLeft, PlusCircleIcon, Edit } from 'lucide-react';
-import { useDiets } from '@/hooks/use-diets';
-import { toast } from 'sonner';
-import type { DietType } from '@/types/DietType';
-import { Skeleton } from '@/components/ui/skeleton';
-import useUser from '@/hooks/user-hooks';
-import { DietComponent } from '@/components/diet/DietComponent';
-import {
-  ContainerContent,
-  ContainerHeader,
-  ContainerRoot,
-  ContainerTitle,
-} from '@/components/Container';
+import { useState, useEffect } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircle, ArrowLeft, PlusCircleIcon } from 'lucide-react'
+import { useDiets } from '@/hooks/use-diets'
+import type { DietType } from '@/types/DietType'
+import { Skeleton } from '@/components/ui/skeleton'
+import useUser from '@/hooks/user-hooks'
+import { DietComponent } from '@/components/diet/DietComponent'
+import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
 
 export default function DietPlan() {
-  const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
-  const { updateDiet } = useDiets();
-  const { user } = useUser();
-  const [diet, setDiet] = useState<DietType | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { id } = useParams<{ id: string }>()
+  const navigate = useNavigate()
+  const { getDiet } = useDiets()
+  const { user } = useUser()
+  const [diet, setDiet] = useState<DietType | null>(null)
+
+  const [error, setError] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const { dietId } = useParams()
 
   useEffect(() => {
-    if (user?.diets && user.diets.length > 0) {
-      const dietToLoad = id
-        ? user.diets.find((d) => d.id === id)
-        : user.diets[user.diets.length - 1];
+    const fetchDiet = async () => {
+      if (dietId) {
+        const data = await getDiet(dietId)
+        setDiet(data)
 
-      if (dietToLoad) {
-        setDiet(dietToLoad);
-      } else {
-        setError('Diet plan not found');
+        return
       }
-    } else {
-      setError('No diet plans available');
-    }
-    setIsLoading(false);
-  }, [user, id]);
 
-  const handleDietUpdate = (updatedDiet: DietType) => {
-    console.log('Diet updated in DietComponent:', updatedDiet);
-    setDiet(updatedDiet);
-  };
+      if (user?.diets && user.diets.length > 0) {
+        const dietToLoad = id
+          ? user.diets.find((d) => d.id === id)
+          : user.diets[user.diets.length - 1]
 
-  const handleSave = async () => {
-    if (!diet) {
-      toast.error('No diet data to save');
-      return;
-    }
-
-    const dietId = id || diet.id;
-    if (!dietId) {
-      toast.error('Cannot update diet without an ID');
-      return;
+        if (dietToLoad) {
+          setDiet(dietToLoad)
+        } else {
+          setError('Diet plan not found')
+        }
+      } else {
+        setError('No diet plans available')
+      }
     }
 
-    try {
-      setIsSubmitting(true);
-      setError(null);
-
-      console.log('Saving diet from diet-plan.tsx:', diet);
-      const result = await updateDiet(diet);
-      console.log('Save result:', result);
-
-      toast.success('Diet plan updated successfully!');
-      setIsEditing(false);
-    } catch (err: any) {
-      console.error('Error saving diet:', err);
-      toast.error('Error updating diet plan');
-      setError(err.response?.data?.message || 'Failed to update diet plan');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    fetchDiet()
+    setIsLoading(false)
+  }, [user, id])
 
   if (isLoading) {
     return (
@@ -107,7 +76,7 @@ export default function DietPlan() {
           </Card>
         </div>
       </>
-    );
+    )
   }
 
   return (
@@ -117,54 +86,19 @@ export default function DietPlan() {
           Diet Plan{diet?.weekNumber ? ` - Week ${diet.weekNumber}` : ''}
         </ContainerTitle>
         <section className="flex gap-2">
-          {isEditing ? (
-            <>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditing(false)}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleSave}
-                disabled={isSubmitting}
-                className="flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </>
-          ) : (
-            <>
-              {diet && (
-                <Button
-                  onClick={() => setIsEditing(true)}
-                  variant="outline"
-                  className="flex items-center gap-2"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit Diet
-                </Button>
-              )}
-              <Button onClick={() => navigate('/create-diet')} variant="secondary">
-                Create new Diet
-                <PlusCircleIcon className="h-4 w-4 ml-2" />
-              </Button>
-              <Button onClick={() => navigate('/past-diets')}>View past diets</Button>
-            </>
-          )}
+          <>
+            <Button onClick={() => navigate('/training/create')} variant="secondary">
+              Create new Diet
+              <PlusCircleIcon className="h-4 w-4 ml-2" />
+            </Button>
+            <Button onClick={() => navigate('/diet/list')}>View past diets</Button>
+          </>
         </section>
       </ContainerHeader>
 
       <ContainerContent>
         {diet ? (
-          <DietComponent
-            diet={diet}
-            onSave={handleDietUpdate}
-            readOnly={!isEditing}
-            onSaveClick={handleSave}
-          />
+          <DietComponent diet={diet} />
         ) : (
           <div>
             <Alert variant="destructive">
@@ -180,5 +114,5 @@ export default function DietPlan() {
         )}
       </ContainerContent>
     </>
-  );
+  )
 }

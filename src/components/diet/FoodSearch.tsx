@@ -1,19 +1,27 @@
 'use client'
 
 import type React from 'react'
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Search, Clock, TrendingUp, Check } from 'lucide-react'
+import { Search, Check, Plus, Minus } from 'lucide-react'
 import {
   useMealItem,
   type FoodSearchResult,
   type NutritionData,
 } from '@/hooks/use-meal-item'
+import { Slider } from '@/components/ui/slider'
+import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface FoodSearchProps {
   onSelectFood: (nutritionData: NutritionData) => void
@@ -22,8 +30,9 @@ interface FoodSearchProps {
 
 export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
   const [searchQuery, setSearchQuery] = useState('')
-  const [activeTab, setActiveTab] = useState('search')
   const [selectedServingIndex, setSelectedServingIndex] = useState(0)
+  const [customQuantity, setCustomQuantity] = useState(1)
+  const [quantityUnit, setQuantityUnit] = useState<string>('serving')
 
   const {
     isLoading,
@@ -31,20 +40,10 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
     searchResults,
     selectedFood,
     nutritionData,
-    recentFoods,
-    popularFoods,
     searchFoods,
     getFoodDetails,
     changeServing,
-    getRecentFoods,
-    getPopularFoods,
   } = useMealItem()
-
-  // Load recent and popular foods on mount
-  useEffect(() => {
-    getRecentFoods()
-    getPopularFoods()
-  }, [getRecentFoods, getPopularFoods])
 
   // Handle search input changes
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -57,7 +56,11 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
   }
 
   // Handle search button click
-  const handleSearchClick = () => {
+  const handleSearchClick = (e: React.MouseEvent) => {
+    // Prevent event propagation to stop it from triggering parent handlers
+    e.preventDefault()
+    e.stopPropagation()
+
     if (searchQuery.length >= 2) {
       searchFoods(searchQuery)
     }
@@ -67,18 +70,69 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
   const handleSelectFood = async (food: FoodSearchResult) => {
     await getFoodDetails(food.food_id)
     setSelectedServingIndex(0)
+    setCustomQuantity(1)
   }
 
   // Handle serving selection
   const handleServingChange = (index: number) => {
     setSelectedServingIndex(index)
     changeServing(index)
+
+    // Reset quantity when changing serving
+    setCustomQuantity(1)
+
+    // Set default unit based on serving
+    if (selectedFood?.servings[index]) {
+      const serving = selectedFood.servings[index]
+      if (serving.metric_serving_unit) {
+        setQuantityUnit(serving.metric_serving_unit)
+      } else if (serving.serving_weight) {
+        setQuantityUnit('g')
+      } else {
+        setQuantityUnit('serving')
+      }
+    }
+  }
+
+  // Handle quantity change
+  const handleQuantityChange = (value: number) => {
+    setCustomQuantity(value)
+
+    // Update nutrition data with new quantity
+    if (nutritionData) {
+      const updatedNutrition = {
+        ...nutritionData,
+        calories: Math.round(nutritionData.calories * value),
+        protein: Number.parseFloat((nutritionData.protein * value).toFixed(1)),
+        carbohydrate: Number.parseFloat((nutritionData.calories * value).toFixed(1)),
+        fat: Number.parseFloat((nutritionData.fat * value).toFixed(1)),
+        quantity: value,
+      }
+
+      // This assumes your changeServing function can handle custom quantities
+      // You might need to modify your hook to support this
+      changeServing(selectedServingIndex, value)
+    }
+  }
+
+  // Handle increment/decrement quantity
+  const incrementQuantity = () => handleQuantityChange(customQuantity + 0.5)
+  const decrementQuantity = () => {
+    if (customQuantity > 0.5) {
+      handleQuantityChange(customQuantity - 0.5)
+    }
   }
 
   // Handle final selection
   const handleConfirmSelection = () => {
     if (nutritionData) {
-      onSelectFood(nutritionData)
+      // Include custom quantity in the nutrition data
+      const finalNutritionData = {
+        ...nutritionData,
+        quantity: customQuantity,
+        unit: quantityUnit,
+      }
+      onSelectFood(finalNutritionData)
     }
   }
 
@@ -101,6 +155,28 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
     </div>
   )
 
+  // Get available units for the selected serving
+  const getAvailableUnits = () => {
+    if (!selectedFood || !selectedFood.servings[selectedServingIndex]) {
+      return ['serving']
+    }
+
+    const serving = selectedFood.servings[selectedServingIndex]
+    const units = []
+
+    if (serving.metric_serving_unit) {
+      units.push(serving.metric_serving_unit)
+    }
+
+    if (serving.serving_weight) {
+      units.push('g')
+    }
+
+    units.push('serving')
+
+    return units
+  }
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -118,81 +194,47 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
                   className="pl-8"
                   value={searchQuery}
                   onChange={handleSearchChange}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSearchClick()}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      if (searchQuery.length >= 2) {
+                        searchFoods(searchQuery)
+                      }
+                    }
+                  }}
                 />
               </div>
-              <Button onClick={handleSearchClick} disabled={searchQuery.length < 2}>
+              <Button
+                type="button"
+                onClick={handleSearchClick}
+                disabled={searchQuery.length < 2}
+              >
                 Search
               </Button>
             </div>
 
-            <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="search">
-                  <Search className="h-4 w-4 mr-2" />
-                  Search
-                </TabsTrigger>
-                <TabsTrigger value="recent">
-                  <Clock className="h-4 w-4 mr-2" />
-                  Recent
-                </TabsTrigger>
-                <TabsTrigger value="popular">
-                  <TrendingUp className="h-4 w-4 mr-2" />
-                  Popular
-                </TabsTrigger>
-              </TabsList>
+            <ScrollArea className="h-[400px] pr-4">
+              {error && <div className="text-center py-4 text-destructive">{error}</div>}
 
-              <TabsContent value="search">
-                <ScrollArea className="h-[300px] pr-4">
-                  {error && (
-                    <div className="text-center py-4 text-destructive">{error}</div>
-                  )}
-
-                  {isLoading ? (
-                    <div className="space-y-2">
-                      {[1, 2, 3].map((i) => (
-                        <div key={i} className="p-3 border rounded-md">
-                          <Skeleton className="h-4 w-3/4 mb-2" />
-                          <Skeleton className="h-3 w-1/2" />
-                        </div>
-                      ))}
+              {isLoading ? (
+                <div className="space-y-2">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="p-3 border rounded-md">
+                      <Skeleton className="h-4 w-3/4 mb-2" />
+                      <Skeleton className="h-3 w-1/2" />
                     </div>
-                  ) : searchResults.length > 0 ? (
-                    <div className="space-y-2">{searchResults.map(renderFoodItem)}</div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      {searchQuery.length > 0
-                        ? 'No foods found. Try a different search term.'
-                        : 'Type at least 2 characters to search for foods.'}
-                    </div>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="recent">
-                <ScrollArea className="h-[300px] pr-4">
-                  {recentFoods.length > 0 ? (
-                    <div className="space-y-2">{recentFoods.map(renderFoodItem)}</div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No recent foods found.
-                    </div>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-
-              <TabsContent value="popular">
-                <ScrollArea className="h-[300px] pr-4">
-                  {popularFoods.length > 0 ? (
-                    <div className="space-y-2">{popularFoods.map(renderFoodItem)}</div>
-                  ) : (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No popular foods found.
-                    </div>
-                  )}
-                </ScrollArea>
-              </TabsContent>
-            </Tabs>
+                  ))}
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="space-y-2">{searchResults.map(renderFoodItem)}</div>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  {searchQuery.length > 0
+                    ? 'No foods found. Try a different search term.'
+                    : 'Type at least 2 characters to search for foods.'}
+                </div>
+              )}
+            </ScrollArea>
           </>
         ) : (
           <div className="space-y-4">
@@ -208,48 +250,167 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
             <div className="space-y-2">
               <h4 className="font-medium">Select Serving Size:</h4>
               <div className="space-y-2">
-                {selectedFood.servings &&
-                  selectedFood.servings.map((serving, index) => (
-                    <div
-                      key={serving.serving_id || index}
-                      className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                        selectedServingIndex === index
-                          ? 'border-primary bg-primary/5'
-                          : ''
-                      }`}
-                      onClick={() => handleServingChange(index)}
-                    >
-                      <div className="flex justify-between">
-                        <div className="font-medium">
-                          {serving.serving_description ||
-                            serving.measurement_description ||
-                            'Standard Serving'}
-                        </div>
-                        {selectedServingIndex === index && (
-                          <Check className="h-5 w-5 text-primary" />
-                        )}
+                {selectedFood.servings.map((serving, index) => (
+                  <div
+                    key={serving.serving_id || index}
+                    className={`p-3 border rounded-md cursor-pointer transition-colors ${
+                      selectedServingIndex === index ? 'border-primary bg-primary/5' : ''
+                    }`}
+                    onClick={() => handleServingChange(index)}
+                  >
+                    <div className="flex justify-between">
+                      <div className="font-medium">
+                        {serving.serving_description ||
+                          serving.measurement_description ||
+                          'Standard Serving'}
                       </div>
-                      <div className="text-sm">
-                        {serving.metric_serving_amount
-                          ? `${serving.metric_serving_amount} ${serving.metric_serving_unit || 'g'}`
-                          : serving.serving_size
-                            ? `${serving.serving_size} ${serving.serving_weight ? 'g' : 'serving'}`
-                            : '1 serving'}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {serving.calories} cal • {serving.protein}g protein •{' '}
-                        {serving.carbohydrate}g carbs • {serving.fat}g fat
-                      </div>
+                      {selectedServingIndex === index && (
+                        <Check className="h-5 w-5 text-primary" />
+                      )}
                     </div>
-                  ))}
+                    <div className="text-sm">
+                      {serving.metric_serving_amount
+                        ? `${serving.metric_serving_amount} ${serving.metric_serving_unit || 'g'}`
+                        : serving.serving_size
+                          ? `${serving.serving_size} ${serving.serving_weight ? 'g' : 'serving'}`
+                          : '1 serving'}
+                    </div>
+                    <div className="text-sm text-muted-foreground">
+                      {serving.calories} cal • {serving.protein}g protein •{' '}
+                      {serving.carbohydrate}g carbs • {serving.fat}g fat
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* Custom Quantity Selection */}
+            <div className="space-y-3 pt-2 border-t">
+              <h4 className="font-medium">Quantity:</h4>
+
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    decrementQuantity()
+                  }}
+                  disabled={customQuantity <= 0.5}
+                >
+                  <Minus className="h-4 w-4" />
+                </Button>
+
+                <div className="flex-1">
+                  <Slider
+                    value={[customQuantity]}
+                    min={0.5}
+                    max={10}
+                    step={0.5}
+                    onValueChange={(values) => handleQuantityChange(values[0])}
+                  />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    incrementQuantity()
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
+                <div className="w-20">
+                  <Input
+                    type="number"
+                    value={customQuantity}
+                    onChange={(e) => handleQuantityChange(Number(e.target.value))}
+                    min={0.5}
+                    step={0.5}
+                    className="text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                </div>
+
+                <div className="w-24">
+                  <Select value={quantityUnit} onValueChange={setQuantityUnit}>
+                    <SelectTrigger onClick={(e) => e.stopPropagation()}>
+                      <SelectValue placeholder="Unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {getAvailableUnits().map((unit) => (
+                        <SelectItem key={unit} value={unit}>
+                          {unit}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {nutritionData && (
+                <div className="bg-muted/50 p-3 rounded-md mt-2">
+                  <Label className="font-medium">
+                    Nutrition (for {customQuantity} {quantityUnit}):
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2">
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <div className="text-sm text-muted-foreground">Calories</div>
+                      <div className="font-medium">
+                        {Math.round(nutritionData.calories * customQuantity)}
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <div className="text-sm text-muted-foreground">Protein</div>
+                      <div className="font-medium">
+                        {(nutritionData.protein * customQuantity).toFixed(1)}g
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <div className="text-sm text-muted-foreground">Carbs</div>
+                      <div className="font-medium">
+                        {(nutritionData.carbohydrates * customQuantity).toFixed(1)}g
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-background rounded-md">
+                      <div className="text-sm text-muted-foreground">Fat</div>
+                      <div className="font-medium">
+                        {(nutritionData.fat * customQuantity).toFixed(1)}g
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex gap-2 pt-2">
-              <Button variant="outline" onClick={onCancel} className="flex-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  onCancel()
+                }}
+                className="flex-1"
+              >
                 Cancel
               </Button>
-              <Button onClick={handleConfirmSelection} className="flex-1">
+              <Button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmSelection()
+                }}
+                className="flex-1"
+              >
                 Select Food
               </Button>
             </div>
@@ -258,7 +419,16 @@ export function FoodSearch({ onSelectFood, onCancel }: FoodSearchProps) {
 
         {!selectedFood && (
           <div className="flex gap-2 mt-4">
-            <Button variant="outline" onClick={onCancel} className="flex-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                onCancel()
+              }}
+              className="flex-1"
+            >
               Cancel
             </Button>
           </div>

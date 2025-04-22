@@ -21,7 +21,6 @@ interface MacroNutrientsCardProps {
 }
 
 export function MacroNutrientsCard({ diet }: MacroNutrientsCardProps) {
-  console.log(diet)
   const { getBasalMetabolicRate } = useUser()
   const bmr = getBasalMetabolicRate()
 

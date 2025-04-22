@@ -99,7 +99,7 @@ export default function HireProfessional() {
             description: 'Great for beginners looking to establish a routine',
             features: [
               'Initial fitness assessment',
-              'Personalized workout plan',
+              'Personalized training plan',
               '1 revision per month',
               'Email support',
             ],

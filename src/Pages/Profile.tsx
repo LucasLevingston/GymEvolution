@@ -161,7 +161,7 @@ export default function Profile() {
 
         <div className="mt-8 flex flex-col space-y-4 md:flex-row md:justify-between md:space-x-4 md:space-y-0">
           <Button variant="outline" className="flex-1">
-            <Link to="/past-trainings" className="w-full">
+            <Link to="/training/list" className="w-full">
               Past Trainings
             </Link>
           </Button>

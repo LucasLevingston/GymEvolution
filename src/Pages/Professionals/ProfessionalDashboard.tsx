@@ -14,6 +14,12 @@ import {
   AlertCircle,
   ArrowRight,
   Loader2,
+  Utensils,
+  Dumbbell,
+  MessageCircle,
+  Video,
+  RotateCcw,
+  Server,
 } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
@@ -26,6 +32,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Badge } from '@/components/ui/badge'
 
 import type { Purchase } from '@/types/PurchaseType'
 import useUser from '@/hooks/user-hooks'
@@ -33,8 +40,7 @@ import useUser from '@/hooks/user-hooks'
 import PurchaseWorkflowCard from '@/components/purchase-workflow/purchase-workflow-card'
 import { usePurchases } from '@/hooks/purchase-hooks'
 import { useProfessionals } from '@/hooks/professional-hooks'
-import RequiredTasksList from '@/components/purchase-workflow/required-tasks-list'
-import type { RequiredTask } from '@/components/purchase-workflow/purchase-status-analyzer'
+import { Task } from '@/types/ProfessionalType'
 
 interface Activity {
   type: 'meeting' | 'plan' | 'payment' | 'message' | 'analytics'
@@ -46,11 +52,12 @@ interface Activity {
 export default function ProfessionalDashboard() {
   const { user } = useUser()
   const { getPurchasesByProfessionalId } = usePurchases()
-  const { getTasksByProfessionalId, isLoading: tasksLoading } = useProfessionals()
+  const { getTasksByProfessionalId } = useProfessionals()
   const [purchases, setPurchases] = useState<Purchase[]>([])
+  const [tasks, setTasks] = useState<Task[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [requiredTasks, setRequiredTasks] = useState<RequiredTask[]>([])
+  const [tasksLoading, setTasksLoading] = useState(true)
   const [stats, setStats] = useState({
     totalStudents: 0,
     activeStudents: 0,
@@ -68,25 +75,29 @@ export default function ProfessionalDashboard() {
         const purchaseData = await getPurchasesByProfessionalId()
         setPurchases(purchaseData)
 
-        // Calcular estatísticas
+        // Calculate statistics
+        const uniqueStudents = new Set(purchaseData.map((p: Purchase) => p.buyerId)).size
+        const activeStudents = new Set(
+          purchaseData
+            .filter((p: Purchase) => p.status === 'ACTIVE')
+            .map((p: Purchase) => p.buyerId)
+        ).size
+
+        const upcomingMeetings = purchaseData.filter(
+          (p: Purchase) => p.status === 'SCHEDULEDMEETING'
+        ).length
+
+        const monthlyRevenue = purchaseData.reduce(
+          (sum: number, p: Purchase) => sum + (p.amount || 0),
+          0
+        )
+
         setStats({
-          totalStudents: new Set(purchaseData.map((p: Purchase) => p.buyerId)).size,
-          activeStudents: new Set(
-            purchaseData
-              .filter(
-                (p: Purchase) =>
-                  p.paymentStatus !== 'COMPLETED' && p.paymentStatus !== 'PENDING'
-              )
-              .map((p: Purchase) => p.buyerId)
-          ).size,
-          pendingTasks: requiredTasks.length,
-          monthlyRevenue: purchaseData.reduce(
-            (sum: number, p: Purchase) => sum + (p.amount || 0),
-            0
-          ),
-          upcomingMeetings: purchaseData.filter(
-            (p: Purchase) => p.status === 'SCHEDULEDMEETING'
-          ).length,
+          totalStudents: uniqueStudents,
+          activeStudents: activeStudents,
+          pendingTasks: 0, // Will be updated after fetching tasks
+          monthlyRevenue: monthlyRevenue,
+          upcomingMeetings: upcomingMeetings,
         })
       } catch (error) {
         console.error('Error fetching purchases:', error)
@@ -96,40 +107,50 @@ export default function ProfessionalDashboard() {
     }
 
     fetchPurchases()
-  }, [user?.id, requiredTasks])
+  }, [user?.id])
 
   useEffect(() => {
     const fetchTasks = async () => {
       if (!user?.id) return
 
       try {
+        setTasksLoading(true)
         const tasksData = await getTasksByProfessionalId(user.id)
-        setRequiredTasks(tasksData || [])
+        if (!tasksData) throw new Error('Error on get tasks')
 
-        // Converter tarefas em atividades para exibição
-        if (tasksData && Array.isArray(tasksData)) {
-          const activityData = tasksData.map((task) => ({
-            type: mapTaskTypeToActivityType(task.type),
-            title: task.title,
-            description: task.description,
-            time: task.dueDate ? formatDate(task.dueDate) : 'Sem prazo definido',
-          }))
-          setActivities(activityData)
-        }
+        setTasks(tasksData)
+
+        const pendingTasksCount = tasksData?.filter(
+          (task) => task.status === 'PENDING'
+        ).length
+        setStats((prev) => ({
+          ...prev,
+          pendingTasks: pendingTasksCount,
+        }))
+
+        const activityData = tasksData.map((task) => ({
+          type: mapTaskTypeToActivityType(task.type),
+          title: task.title,
+          description: `${task.description} para ${task.clientName}`,
+          time: task.dueDate ? formatDate(task.dueDate) : 'Sem prazo definido',
+        }))
+        setActivities(activityData)
       } catch (error) {
         console.error('Error fetching tasks:', error)
+      } finally {
+        setTasksLoading(false)
       }
     }
 
     fetchTasks()
   }, [user?.id])
 
-  // Agrupar compras por status
-  const activeWorkflows = purchases.filter(
-    (p) => p.status !== 'COMPLETED' && p.status !== 'WAITINGPAYMENT'
-  )
+  // Group purchases by status
+  const activeWorkflows = purchases.filter((p) => p.status === 'ACTIVE')
   const completedWorkflows = purchases.filter((p) => p.status === 'COMPLETED')
   const pendingWorkflows = purchases.filter((p) => p.status === 'WAITINGPAYMENT')
+
+  const requiredTasks = tasks.filter((task) => task.status !== 'COMPLETED')
 
   return (
     <div className="container mx-auto py-6 space-y-8">
@@ -191,7 +212,7 @@ export default function ProfessionalDashboard() {
               </div>
             ) : (
               <>
-                <div className="text-2xl font-bold">{requiredTasks.length}</div>
+                <div className="text-2xl font-bold">{stats.pendingTasks}</div>
                 <p className="text-xs text-muted-foreground">
                   Tarefas que precisam de sua atenção
                 </p>
@@ -251,12 +272,75 @@ export default function ProfessionalDashboard() {
           </CardContent>
         </Card>
       ) : (
-        <RequiredTasksList
-          tasks={requiredTasks}
-          title="Ações Necessárias"
-          description="Estas são as tarefas que você precisa realizar para seus alunos"
-          emptyMessage="Não há tarefas pendentes no momento. Bom trabalho!"
-        />
+        <Card>
+          <CardHeader>
+            <CardTitle>Ações Necessárias</CardTitle>
+            <CardDescription>
+              Estas são as tarefas que você precisa realizar para seus alunos
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {requiredTasks.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-6 text-center">
+                <CheckCircle2 className="h-12 w-12 text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">
+                  Não há tarefas pendentes no momento. Bom trabalho!
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {requiredTasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-start gap-4 p-4 rounded-lg border"
+                  >
+                    <div
+                      className={`mt-0.5 rounded-full p-2 ${getTaskTypeBackground(task.type)}`}
+                    >
+                      {getTaskTypeIcon(task.type)}
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium">{task.title}</h4>
+                        <Badge variant={getStatusVariant(task.status)}>
+                          {task.status}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{task.description}</p>
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <Users className="mr-1 h-3 w-3" />
+                        <span>{task.clientName}</span>
+                        {task.dueDate && (
+                          <>
+                            <Clock className="ml-3 mr-1 h-3 w-3" />
+                            <span>{formatDate(task.dueDate)}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                    <div>
+                      {task.status === 'COMPLETED' ? (
+                        <Button asChild size="sm">
+                          <Link to={task.title}>
+                            Ver
+                            <Server className="ml-2 h-3 w-3" />
+                          </Link>
+                        </Button>
+                      ) : (
+                        <Button asChild size="sm">
+                          <Link to={getTaskActionLink(task)}>
+                            Resolver
+                            <ArrowRight className="ml-2 h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* Workflows */}
@@ -419,7 +503,7 @@ function getActivityIcon(type: string) {
     case 'payment':
       return <DollarSign className="h-4 w-4 text-white" />
     case 'message':
-      return <Users className="h-4 w-4 text-white" />
+      return <MessageCircle className="h-4 w-4 text-white" />
     case 'analytics':
       return <BarChart3 className="h-4 w-4 text-white" />
     default:
@@ -444,27 +528,87 @@ function getActivityIconBackground(type: string) {
   }
 }
 
+function getTaskTypeIcon(type: string) {
+  switch (type) {
+    case 'TRAINING':
+      return <Dumbbell className="h-4 w-4 text-white" />
+    case 'DIET':
+      return <Utensils className="h-4 w-4 text-white" />
+    case 'FEEDBACK':
+      return <MessageCircle className="h-4 w-4 text-white" />
+    case 'CONSULTATION':
+      return <Video className="h-4 w-4 text-white" />
+    case 'RETURN':
+      return <RotateCcw className="h-4 w-4 text-white" />
+    default:
+      return <CheckCircle2 className="h-4 w-4 text-white" />
+  }
+}
+
+function getTaskTypeBackground(type: string) {
+  switch (type) {
+    case 'TRAINING':
+      return 'bg-blue-500'
+    case 'DIET':
+      return 'bg-green-500'
+    case 'FEEDBACK':
+      return 'bg-amber-500'
+    case 'CONSULTATION':
+      return 'bg-purple-500'
+    case 'RETURN':
+      return 'bg-indigo-500'
+    default:
+      return 'bg-gray-500'
+  }
+}
+
+function getStatusVariant(status: string) {
+  switch (status) {
+    case 'PENDING':
+      return 'secondary'
+    case 'IN_PROGRESS':
+      return 'default'
+    case 'COMPLETED':
+      return 'success'
+    default:
+      return 'outline'
+  }
+}
+
 function mapTaskTypeToActivityType(
   taskType: string
 ): 'meeting' | 'plan' | 'payment' | 'message' | 'analytics' {
   switch (taskType) {
-    case 'SCHEDULE_MEETING':
-    case 'SCHEDULE_FOLLOWUP':
-    case 'ATTEND_MEETING':
+    case 'CONSULTATION':
+    case 'RETURN':
       return 'meeting'
-    case 'CREATE_DIET':
-    case 'CREATE_TRAINING':
+    case 'DIET':
+    case 'TRAINING':
       return 'plan'
-    case 'REVIEW_PROGRESS':
-      return 'analytics'
-    case 'SUPPORT':
+    case 'FEEDBACK':
       return 'message'
     default:
       return 'plan'
   }
 }
 
-function formatDate(date: Date): string {
+function getTaskActionLink(task: any) {
+  switch (task.type) {
+    case 'DIET':
+      return `/diet/create?clientId=${task.clientId}&purchaseId=${task.purchaseId}&featureId=${task.featureId}`
+    case 'TRAINING':
+      return `/training/create?clientId=${task.clientId}&purchaseId=${task.purchaseId}&featureId=${task.featureId}`
+    case 'CONSULTATION':
+    case 'RETURN':
+      return `/schedule-meeting?clientId=${task.clientId}&purchaseId=${task.purchaseId}&featureId=${task.featureId}`
+    case 'FEEDBACK':
+      return `/provide-feedback?clientId=${task.clientId}&purchaseId=${task.purchaseId}&featureId=${task.featureId}`
+    default:
+      return `/client/${task.clientId}`
+  }
+}
+
+function formatDate(date: string | Date): string {
   return new Intl.DateTimeFormat('pt-BR', {
     day: '2-digit',
     month: '2-digit',

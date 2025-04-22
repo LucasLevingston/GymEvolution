@@ -1,5 +1,5 @@
-import { z } from 'zod';
-import { exerciseSchema } from './exerciseSchema';
+import { z } from 'zod'
+import { exerciseSchema } from './exerciseSchema'
 
 export const trainingDaySchema = z.object({
   id: z.string().optional(),
@@ -7,6 +7,6 @@ export const trainingDaySchema = z.object({
   dayOfWeek: z.string().default(''),
   day: z.date().default(() => new Date()),
   isCompleted: z.boolean().default(false),
-  comments: z.string().optional().default(''),
+  comments: z.string().optional(),
   exercises: z.array(exerciseSchema).default([]),
-});
+})

@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import useUser from '@/hooks/user-hooks'
 import { useProfessionals } from '@/hooks/professional-hooks'
+import { Task } from '@/types/ProfessionalType'
 
 interface professionalRouteType {
   title: string
@@ -94,7 +95,10 @@ export function ProfessionalSidebar() {
       try {
         const data = await getTasksByProfessionalId(user.id)
 
-        setPendingTasks(data.length)
+        const pendingTasks = data?.filter(({ status }: Task) => status === 'PENDING')
+        if (pendingTasks && pendingTasks?.length > 0) {
+          setPendingTasks(pendingTasks.length)
+        }
       } catch (error) {
         console.error('Error fetching pending tasks:', error)
       }

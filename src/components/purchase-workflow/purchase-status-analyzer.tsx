@@ -181,10 +181,10 @@ export function analyzePurchasesForTasks(
 
       if (userRole === 'professional') {
         title = `${title} para ${purchase.buyer?.name || 'Cliente'}`
-        actionLink = `/client/${purchase.buyer?.id}/plan/${purchase.Plan.id}`
+        actionLink = `/client/${purchase.buyer?.id}/plan/${purchase.Plan?.id}`
       } else {
         title = `${title} com ${purchase.professional?.name || 'Profissional'}`
-        actionLink = `/professional/${purchase.professional?.id}/plan/${purchase.Plan.id}`
+        actionLink = `/professional/${purchase.professional?.id}/plan/${purchase.Plan?.id}`
       }
 
       tasks.push({

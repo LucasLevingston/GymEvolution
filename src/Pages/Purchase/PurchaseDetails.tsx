@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import {
-  ArrowLeft,
   Calendar,
   CheckCircle,
   CreditCard,
@@ -29,7 +28,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ContainerRoot } from '@/components/Container'
+import { ContainerHeader, ContainerRoot, ContainerTitle } from '@/components/Container'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { usePurchases } from '@/hooks/purchase-hooks'
 import {
@@ -83,15 +82,6 @@ const getStatusInfo = (status: string) => {
       return { label: 'Reembolsado', color: 'bg-blue-50 text-blue-700 border-blue-200' }
     default:
       return { label: status, color: 'bg-gray-50 text-gray-700 border-gray-200' }
-  }
-}
-
-const getProgressByStatus = (status: string) => {
-  switch (status) {
-    case 'FINALIZED':
-      return 100
-    default:
-      return 0
   }
 }
 
@@ -423,24 +413,15 @@ export default function PurchaseDetails() {
   return (
     <>
       <div className="mb-6">
-        <Button
-          variant="ghost"
-          className="mb-4 pl-0"
-          onClick={() => navigate('/purchases')}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Voltar para Compras
-        </Button>
-
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <ContainerHeader className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold">Detalhes da Compra</h1>
+            <ContainerTitle>Detalhes da Compra</ContainerTitle>
             <p className="text-muted-foreground">
               {purchase.Plan.name} • {formatDate(purchase.createdAt)}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {getStatusBadge(purchase.paymentStatus)}
+            {getStatusBadge(purchase.status)}
             {purchase.paymentStatus === 'PENDING' && (
               <>
                 <Button
@@ -466,7 +447,7 @@ export default function PurchaseDetails() {
               </Button>
             )}
           </div>
-        </div>
+        </ContainerHeader>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -484,28 +465,7 @@ export default function PurchaseDetails() {
                   <CheckCircle className="mr-2 h-5 w-5 text-primary" />
                   Status do Atendimento
                 </h3>
-                <div className="bg-muted/50 p-4 rounded-lg">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium">
-                      {getStatusInfo(purchase.paymentStatus).label}
-                    </span>
-                    {getStatusBadge(purchase.paymentStatus)}
-                  </div>
-
-                  <div className="mt-3">
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span>Início</span>
-                        <span>Conclusão</span>
-                      </div>
-                      <Progress
-                        value={getProgressByStatus(purchase.paymentStatus)}
-                        className="h-2"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Action buttons based on status */}
+                <div>
                   {user && !checkIsProfessional(user) && (
                     <div className="mt-4">
                       {getStudentActionButton(purchase.paymentStatus)}
@@ -541,20 +501,6 @@ export default function PurchaseDetails() {
                     <div className="flex items-center mt-3 text-sm">
                       <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
                       <span>Duração: {purchase.Plan.duration} dias</span>
-                    </div>
-                  )}
-
-                  {purchase.Plan.features.length > 0 && (
-                    <div className="mt-4">
-                      <h5 className="text-sm font-medium mb-2">Recursos incluídos:</h5>
-                      <ul className="space-y-1">
-                        {purchase.Plan.features.map((feature: string, index: number) => (
-                          <li key={index} className="flex items-start text-sm">
-                            <CheckCircle className="h-4 w-4 text-green-500 mr-2 mt-0.5 flex-shrink-0" />
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
                     </div>
                   )}
                 </div>

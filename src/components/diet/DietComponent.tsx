@@ -29,38 +29,104 @@ import { calculateCalories } from '@/lib/utils/calculateCalories'
 import { MacroNutrientsCard } from '../diet/MacroNutrientsComponent'
 import { AddMealForm } from '@/components/diet/Forms/AddMealForm'
 import { MealComponent } from '@/components/diet/MealCard'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
+import { useDiets } from '@/hooks/use-diets'
+import { useProfessionals } from '@/hooks/professional-hooks'
+import { IsProfessionalComponentCard } from '../professional/is-professional-card'
+import { usePurchases } from '@/hooks/purchase-hooks'
+import { Purchase } from '@/types/PurchaseType'
+import { BsBack } from 'react-icons/bs'
 
 interface DietComponentProps {
-  diet: DietType
-  onSave?: (updatedDiet: DietType) => void
+  diet?: any
   readOnly?: boolean
   isCreating?: boolean
-  onSaveClick?: () => void
 }
 
 export function DietComponent({
-  diet: initialDiet,
-  onSave,
+  diet: dietData,
   readOnly = false,
   isCreating = false,
-  onSaveClick,
 }: DietComponentProps) {
-  const [diet, setDiet] = useState<DietType>(initialDiet)
+  const dietDefaultValues = {
+    weekNumber: 1,
+    totalCalories: 0,
+    totalProtein: 0,
+    totalCarbohydrates: 0,
+    totalFat: 0,
+    isCurrent: true,
+    meals: [],
+  }
+
+  const [diet, setDiet] = useState<DietType>(dietData || dietDefaultValues)
   const [selectedDay, setSelectedDay] = useState<number>(1)
-  const [isEditing, setIsEditing] = useState<boolean>(isCreating || false)
+  const [isEditing, setIsEditing] = useState<boolean>(false)
   const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState(false)
+  const [purchase, setPurchase] = useState<Purchase | null>(null)
+
+  const navigate = useNavigate()
+  const { createDiet, updateDiet } = useDiets()
+  const { getPurchaseById } = usePurchases()
+  const { createDietForClient } = useProfessionals()
+  const searchParams = new URLSearchParams(location.search)
+
+  const purchaseId = searchParams.get('purchaseId')
+  const featureId = searchParams.get('featureId')
+  const clientId = searchParams.get('clientId')
+  const professionalId = searchParams.get('professionalId')
+
+  const isProfessionalMode = !!clientId && !!featureId && !!purchaseId && !!professionalId
 
   useEffect(() => {
     if (isCreating) {
       setIsEditing(true)
-    } else {
-      setIsEditing(!readOnly)
     }
-  }, [isCreating, readOnly])
+
+    if (purchaseId) {
+      const fetchPurchase = async () => {
+        const data = await getPurchaseById(purchaseId)
+        setPurchase(data)
+      }
+      fetchPurchase()
+    }
+  }, [isCreating])
 
   useEffect(() => {
-    setDiet(initialDiet)
-  }, [initialDiet])
+    setDiet(diet)
+  }, [diet])
+
+  useEffect(() => {
+    const calculateTotalMacros = () => {
+      const macroTotals = {
+        totalCalories: 0,
+        totalProtein: 0,
+        totalFat: 0,
+        totalCarbohydrates: 0,
+      }
+
+      diet?.meals?.map((meal) => {
+        meal.mealItems?.map((item) => {
+          macroTotals.totalCalories += item.calories || 0
+          macroTotals.totalProtein += item.protein || 0
+          macroTotals.totalFat += item.fat || 0
+          macroTotals.totalCarbohydrates += item.carbohydrates || 0
+        })
+      })
+
+      return macroTotals
+    }
+
+    const calculatedMacros = calculateTotalMacros()
+    setDiet((prevDiet) => ({
+      ...prevDiet,
+      totalCalories: calculatedMacros.totalCalories,
+      totalProtein: calculatedMacros.totalProtein,
+      totalFat: calculatedMacros.totalFat,
+      totalCarbohydrates: calculatedMacros.totalCarbohydrates,
+    }))
+  }, [diet])
 
   const mealsForDay = diet.meals?.filter((meal) => meal.day === selectedDay) || []
 
@@ -89,38 +155,11 @@ export function DietComponent({
   }
 
   const toggleEditMode = () => {
-    if (isEditing && !isCreating) {
-      console.log('Sending updated diet to parent:', diet)
-      onSave?.(diet)
-
-      if (onSaveClick) {
-        console.log('Calling external save handler directly')
-        setTimeout(() => {
-          onSaveClick()
-        }, 0)
-        return
-      }
-    }
-
     if (!isCreating) {
       setIsEditing(!isEditing)
       setShowAddMealForm(false)
     }
   }
-
-  const handleDirectSave = () => {
-    onSave?.(diet)
-
-    if (onSaveClick) {
-      onSaveClick()
-    }
-  }
-
-  useEffect(() => {
-    if (isCreating) {
-      onSave?.(diet)
-    }
-  }, [diet, isCreating, onSave])
 
   const updateDietMacros = (field: keyof DietType, value: number) => {
     setDiet((prev) => {
@@ -194,9 +233,63 @@ export function DietComponent({
     })
   }
 
+  const handleSubmit = async () => {
+    setIsLoading(true)
+
+    try {
+      const dietData: any = {
+        weekNumber: diet.weekNumber,
+        totalCalories: diet.totalCalories,
+        totalProtein: diet.totalProtein,
+        totalCarbohydrates: diet.totalCarbohydrates,
+        totalFat: diet.totalFat,
+        isCurrent: diet.isCurrent,
+        meals:
+          diet.meals?.map((meal) => ({
+            name: meal.name,
+            mealType: meal.mealType,
+            calories: meal.calories,
+            protein: meal.protein,
+            carbohydrates: meal.carbohydrates,
+            fat: meal.fat,
+            day: meal.day,
+            hour: meal.hour,
+            isCompleted: false,
+            mealItems: meal.mealItems || [],
+          })) || [],
+      }
+
+      let result: DietType
+      console.log(isEditing)
+      if (isEditing) {
+        result = await updateDiet({ ...dietData, id: diet.id })
+        toast.success('Diet plan updated successfully!')
+      } else if (isProfessionalMode) {
+        result = await createDietForClient({
+          ...dietData,
+          purchaseId,
+          clientId,
+          featureId,
+          professionalId,
+        })
+        toast.success('Diet plan created successfully!')
+      } else {
+        result = await createDiet(dietData)
+        toast.success('Diet plan created successfully!')
+      }
+
+      navigate(`/diet/${result.id}`)
+    } catch (error) {
+      console.error('Error creating diet:', error)
+      toast.error('Failed to create diet plan. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
   return (
-    <div className="space-y-8">
+    <>
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
+        <IsProfessionalComponentCard feature={diet.Feature} client={diet.User} />
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
@@ -207,9 +300,9 @@ export function DietComponent({
                     <Input
                       type="number"
                       value={diet.weekNumber || 1}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         updateDietMacros('weekNumber', Number.parseInt(e.target.value))
-                      }
+                      }}
                       className="w-20 h-8 inline-block"
                     />
                   </div>
@@ -230,10 +323,7 @@ export function DietComponent({
                   className="gap-1"
                 >
                   {isEditing ? (
-                    <>
-                      <Save className="h-4 w-4" />
-                      Save Changes
-                    </>
+                    <>Cancel</>
                   ) : (
                     <>
                       <Edit className="h-4 w-4" />
@@ -373,15 +463,15 @@ export function DietComponent({
         </Card>
       </div>
 
-      {/* Direct save button at the bottom */}
-      {isEditing && !isCreating && onSaveClick && (
+      {(isCreating || isEditing) && handleSubmit && (
         <div className="flex justify-end">
-          <Button onClick={handleDirectSave} size="lg" className="gap-2">
+          <Button onClick={handleSubmit} size="lg" className="gap-2">
             <Save className="h-5 w-5" />
-            Save Diet Plan
+            {isCreating ? 'Create ' : isEditing ? 'Save ' : null}
+            Diet Plan
           </Button>
         </div>
       )}
-    </div>
+    </>
   )
 }

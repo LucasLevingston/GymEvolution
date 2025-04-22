@@ -113,8 +113,13 @@ export function usePurchases() {
         setIsLoading(true)
         setError(null)
 
-        const response = await api.get(`/purchases/${purchaseId}`)
-        return response.data
+        const { data } = await api.get<Purchase>(`/purchases/${purchaseId}`)
+
+        if (!data) {
+          throw new Error('Error on fetch purchase')
+        }
+
+        return data
       } catch (err: any) {
         const errorMessage = err.response?.data?.error || 'Falha ao buscar compra'
         setError(errorMessage)

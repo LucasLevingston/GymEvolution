@@ -21,20 +21,19 @@ export function useTraining() {
   const [error, setError] = useState<string | null>(null)
   const { token } = useUser()
 
-  const createTraining = async (data: TrainingData) => {
+  const createTraining = async (newTrainingWeekData: TrainingData) => {
     setIsLoading(true)
     setError(null)
 
     try {
-      const response = await axios.post(`${baseUrl}`, data, {
+      const { data } = await axios.post(`${baseUrl}`, newTrainingWeekData, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      console.log(response.data)
-      if (!response) {
+      if (!data) {
         throw new Error('Failed to create training plan')
       }
-      return response.data
+      return data
     } catch (error: any) {
       console.log(error.response.data)
       throw new Error(error.response.data.message)
@@ -111,15 +110,15 @@ export function useTraining() {
     setError(null)
 
     try {
-      const response = await api.get('/training-weeks', {
+      const { data } = await api.get('/training-weeks', {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (!response) {
+      if (!data) {
         throw new Error('Failed to fetch training weeks')
       }
 
-      return await response.data
+      return await data
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       throw err
@@ -132,15 +131,15 @@ export function useTraining() {
     setError(null)
 
     try {
-      const response = await api.get(`/training-weeks/${id}`, {
+      const { data } = await api.get(`/training-weeks/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
-      if (!response) {
+      if (!data) {
         throw new Error('Failed to fetch training week')
       }
 
-      return await response.data
+      return await data
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
       throw err

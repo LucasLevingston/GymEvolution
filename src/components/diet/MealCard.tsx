@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import type React from 'react';
+import type React from 'react'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   Edit,
   Trash2,
@@ -23,30 +23,30 @@ import {
   RefreshCw,
   Check,
   CheckCircle2,
-} from 'lucide-react';
-import type { MealType, MealItemType } from '@/types/DietType';
-import { calculateCalories } from '@/lib/utils/calculateCalories';
-import { MealItemForm, type AddMealItemFormValues } from './Forms/AddMealItemForm';
+} from 'lucide-react'
+import type { MealType, MealItemType } from '@/types/DietType'
+import { calculateCalories } from '@/lib/utils/calculateCalories'
+import { MealItemForm, type AddMealItemFormValues } from './Forms/AddMealItemForm'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from '@/components/ui/collapsible';
+} from '@/components/ui/collapsible'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { cn } from '@/lib/utils';
+} from '@/components/ui/select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { cn } from '@/lib/utils'
 
 interface MealComponentProps {
-  meal: MealType;
-  onUpdate?: (updatedMeal: MealType) => void;
-  onDelete?: (mealId: string) => void;
-  readOnly?: boolean;
+  meal: MealType
+  onUpdate?: (updatedMeal: MealType) => void
+  onDelete?: (mealId: string) => void
+  readOnly?: boolean
 }
 
 const DEFAULT_MEAL_NAMES = [
@@ -56,7 +56,7 @@ const DEFAULT_MEAL_NAMES = [
   'Afternoon Snack',
   'Dinner',
   'Evening Snack',
-];
+]
 
 export function MealComponent({
   meal: initialMeal,
@@ -64,40 +64,40 @@ export function MealComponent({
   onDelete,
   readOnly = false,
 }: MealComponentProps) {
-  const [meal, setMeal] = useState<MealType>(initialMeal);
-  const [isEditing, setIsEditing] = useState<boolean>(!readOnly);
-  const [editingItemId, setEditingItemId] = useState<string | null>(null);
-  const [showAddMealItemForm, setShowAddMealItemForm] = useState<boolean>(false);
-  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({});
+  const [meal, setMeal] = useState<MealType>(initialMeal)
+  const [isEditing, setIsEditing] = useState<boolean>(!readOnly)
+  const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const [showAddMealItemForm, setShowAddMealItemForm] = useState<boolean>(false)
+  const [expandedItems, setExpandedItems] = useState<Record<string, boolean>>({})
   const [customName, setCustomName] = useState<boolean>(
     !DEFAULT_MEAL_NAMES.includes(initialMeal.name)
-  );
-  const [tempMealName, setTempMealName] = useState<string>(initialMeal.name);
-  const [tempHour, setTempHour] = useState<string>(initialMeal.hour || '12:00');
+  )
+  const [tempMealName, setTempMealName] = useState<string>(initialMeal.name)
+  const [tempHour, setTempHour] = useState<string>(initialMeal.hour || '12:00')
 
   // Update local state when props change
   useEffect(() => {
-    setMeal(initialMeal);
-    setCustomName(!DEFAULT_MEAL_NAMES.includes(initialMeal.name));
-    setTempMealName(initialMeal.name);
-    setTempHour(initialMeal.hour || '12:00');
-  }, [initialMeal]);
+    setMeal(initialMeal)
+    setCustomName(!DEFAULT_MEAL_NAMES.includes(initialMeal.name))
+    setTempMealName(initialMeal.name)
+    setTempHour(initialMeal.hour || '12:00')
+  }, [initialMeal])
 
   const toggleEditMode = () => {
     if (isEditing) {
-      onUpdate?.(meal);
+      onUpdate?.(meal)
     }
-    setIsEditing(!isEditing);
-    setEditingItemId(null);
-    setShowAddMealItemForm(false);
-  };
+    setIsEditing(!isEditing)
+    setEditingItemId(null)
+    setShowAddMealItemForm(false)
+  }
 
   const recalculateMealTotals = () => {
-    const items = meal.mealItems || [];
-    const calories = items.reduce((sum, item) => sum + (item.calories || 0), 0);
-    const protein = items.reduce((sum, item) => sum + (item.protein || 0), 0);
-    const carbs = items.reduce((sum, item) => sum + (item.carbohydrates || 0), 0);
-    const fat = items.reduce((sum, item) => sum + (item.fat || 0), 0);
+    const items = meal.mealItems || []
+    const calories = items.reduce((sum, item) => sum + (item.calories || 0), 0)
+    const protein = items.reduce((sum, item) => sum + (item.protein || 0), 0)
+    const carbs = items.reduce((sum, item) => sum + (item.carbohydrates || 0), 0)
+    const fat = items.reduce((sum, item) => sum + (item.fat || 0), 0)
 
     const updatedMeal = {
       ...meal,
@@ -105,22 +105,22 @@ export function MealComponent({
       protein,
       carbohydrates: carbs,
       fat,
-    };
+    }
 
-    setMeal(updatedMeal);
-    return updatedMeal;
-  };
+    setMeal(updatedMeal)
+    return updatedMeal
+  }
 
   const handleAddMealItem = (
     formValues: AddMealItemFormValues,
     substitutions?: MealItemType[]
   ) => {
-    const newItemId = `item-${Date.now()}`;
+    const newItemId = `item-${Date.now()}`
     const calculatedCalories = calculateCalories(
       formValues.protein,
       formValues.carbohydrates,
       formValues.fat
-    );
+    )
 
     const newItem: MealItemType = {
       id: newItemId,
@@ -139,17 +139,17 @@ export function MealComponent({
           isSubstitution: true,
           originalItemId: newItemId,
         })) || [],
-    };
+    }
 
-    const updatedMealItems = [...(meal.mealItems || []), newItem];
+    const updatedMealItems = [...(meal.mealItems || []), newItem]
 
     const updatedMeal = {
       ...meal,
       mealItems: updatedMealItems,
-    };
+    }
 
-    setMeal(updatedMeal);
-    setShowAddMealItemForm(false);
+    setMeal(updatedMeal)
+    setShowAddMealItemForm(false)
 
     // Recalculate meal totals after adding the item
     const finalMeal = {
@@ -161,10 +161,10 @@ export function MealComponent({
         0
       ),
       fat: updatedMealItems.reduce((sum, item) => sum + (item.fat || 0), 0),
-    };
+    }
 
-    onUpdate?.(finalMeal);
-  };
+    onUpdate?.(finalMeal)
+  }
 
   const handleUpdateMealItem = (
     itemId: string,
@@ -175,7 +175,7 @@ export function MealComponent({
       formValues.protein,
       formValues.carbohydrates,
       formValues.fat
-    );
+    )
 
     const updatedMealItems = meal.mealItems?.map((item) => {
       if (item.id === itemId) {
@@ -199,33 +199,33 @@ export function MealComponent({
             })) ||
             item.substitutions ||
             [],
-        };
+        }
       }
-      return item;
-    });
+      return item
+    })
 
     const updatedMeal = {
       ...meal,
       mealItems: updatedMealItems,
-    };
+    }
 
-    setMeal(updatedMeal);
-    setEditingItemId(null);
+    setMeal(updatedMeal)
+    setEditingItemId(null)
 
     // Recalculate meal totals after updating the item
-    const finalMeal = recalculateMealTotals();
-    onUpdate?.(finalMeal);
-  };
+    const finalMeal = recalculateMealTotals()
+    onUpdate?.(finalMeal)
+  }
 
   const deleteMealItem = (itemId: string) => {
-    const updatedMealItems = meal.mealItems?.filter((item) => item.id !== itemId);
+    const updatedMealItems = meal.mealItems?.filter((item) => item.id !== itemId)
 
     const updatedMeal = {
       ...meal,
       mealItems: updatedMealItems,
-    };
+    }
 
-    setMeal(updatedMeal);
+    setMeal(updatedMeal)
 
     // Recalculate meal totals after deleting the item
     const finalMeal = {
@@ -236,25 +236,25 @@ export function MealComponent({
       carbohydrates:
         updatedMealItems?.reduce((sum, item) => sum + (item.carbohydrates || 0), 0) || 0,
       fat: updatedMealItems?.reduce((sum, item) => sum + (item.fat || 0), 0) || 0,
-    };
+    }
 
-    onUpdate?.(finalMeal);
-  };
+    onUpdate?.(finalMeal)
+  }
 
   const toggleItemExpanded = (itemId: string) => {
     setExpandedItems((prev) => ({
       ...prev,
       [itemId]: !prev[itemId],
-    }));
-  };
+    }))
+  }
 
   const substituteItem = (originalItemId: string, substitutionId: string) => {
-    const originalItem = meal.mealItems?.find((item) => item.id === originalItemId);
+    const originalItem = meal.mealItems?.find((item) => item.id === originalItemId)
     const substitution = originalItem?.substitutions?.find(
       (sub) => sub.id === substitutionId
-    );
+    )
 
-    if (!originalItem || !substitution) return;
+    if (!originalItem || !substitution) return
 
     const updatedMealItems = meal.mealItems?.map((item) => {
       if (item.id === originalItemId) {
@@ -266,32 +266,32 @@ export function MealComponent({
           originalItemId: null,
           // Keep the substitutions array from the original item
           substitutions: originalItem.substitutions,
-        };
+        }
       }
-      return item;
-    });
+      return item
+    })
 
     const updatedMeal = {
       ...meal,
       mealItems: updatedMealItems,
-    };
+    }
 
-    setMeal(updatedMeal);
+    setMeal(updatedMeal)
 
     // Recalculate meal totals after substitution
-    const finalMeal = recalculateMealTotals();
-    onUpdate?.(finalMeal);
-  };
+    const finalMeal = recalculateMealTotals()
+    onUpdate?.(finalMeal)
+  }
 
   const toggleMealCompleted = () => {
     const updatedMeal = {
       ...meal,
       isCompleted: !meal.isCompleted,
-    };
+    }
 
-    setMeal(updatedMeal);
-    onUpdate?.(updatedMeal);
-  };
+    setMeal(updatedMeal)
+    onUpdate?.(updatedMeal)
+  }
 
   const toggleMealItemCompleted = (itemId: string) => {
     const updatedMealItems = meal.mealItems?.map((item) => {
@@ -299,71 +299,71 @@ export function MealComponent({
         return {
           ...item,
           isCompleted: !item.isCompleted,
-        };
+        }
       }
-      return item;
-    });
+      return item
+    })
 
     const updatedMeal = {
       ...meal,
       mealItems: updatedMealItems,
-    };
+    }
 
-    setMeal(updatedMeal);
-    onUpdate?.(updatedMeal);
-  };
+    setMeal(updatedMeal)
+    onUpdate?.(updatedMeal)
+  }
 
   const handleMealNameChange = (value: string) => {
     if (value === 'custom') {
-      setCustomName(true);
-      return;
+      setCustomName(true)
+      return
     }
 
-    setCustomName(false);
-    setTempMealName(value);
+    setCustomName(false)
+    setTempMealName(value)
 
     const updatedMeal = {
       ...meal,
       name: value,
-    };
+    }
 
-    setMeal(updatedMeal);
-    onUpdate?.(updatedMeal);
-  };
+    setMeal(updatedMeal)
+    onUpdate?.(updatedMeal)
+  }
 
   const handleCustomNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTempMealName(e.target.value);
-  };
+    setTempMealName(e.target.value)
+  }
 
   const saveCustomName = () => {
     const updatedMeal = {
       ...meal,
       name: tempMealName,
-    };
+    }
 
-    setMeal(updatedMeal);
-    onUpdate?.(updatedMeal);
-  };
+    setMeal(updatedMeal)
+    onUpdate?.(updatedMeal)
+  }
 
   const handleTimeChange = (time: string) => {
-    setTempHour(time);
+    setTempHour(time)
 
     const updatedMeal = {
       ...meal,
       hour: time,
-    };
+    }
 
-    setMeal(updatedMeal);
-    onUpdate?.(updatedMeal);
-  };
+    setMeal(updatedMeal)
+    onUpdate?.(updatedMeal)
+  }
 
   // Ensure we call onUpdate after recalculating totals
   useEffect(() => {
     if (meal.mealItems && meal.mealItems.length > 0) {
-      const updatedMeal = recalculateMealTotals();
-      onUpdate?.(updatedMeal);
+      const updatedMeal = recalculateMealTotals()
+      onUpdate?.(updatedMeal)
     }
-  }, [meal.mealItems]);
+  }, [meal.mealItems])
 
   return (
     <Card
@@ -704,5 +704,5 @@ export function MealComponent({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

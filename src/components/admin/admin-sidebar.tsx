@@ -24,7 +24,7 @@ const adminRoutes = [
   },
   {
     title: 'Professionals',
-    href: '/admin/professional',
+    href: '/admin/professionals',
     icon: Users,
   },
   {

@@ -20,6 +20,7 @@ import {
   DollarSign,
   AmpersandIcon,
   LayoutDashboardIcon,
+  Star,
 } from 'lucide-react'
 import useUser from '@/hooks/user-hooks'
 import { toast } from 'sonner'
@@ -61,10 +62,7 @@ export default function Header() {
           </Link>
           {user && (
             <>
-              <Link
-                to="/workout-week"
-                className="transition-colors hover:text-foreground/80"
-              >
+              <Link to="/training" className="transition-colors hover:text-foreground/80">
                 Workout Week
               </Link>
 
@@ -79,6 +77,12 @@ export default function Header() {
                 className="transition-colors hover:text-foreground/80"
               >
                 Professionals
+              </Link>
+              <Link
+                to="/subscription"
+                className="transition-colors hover:text-foreground/80 flex items-center gap-1 text-sm"
+              >
+                Plans <Star className="w-4" />
               </Link>
             </>
           )}
@@ -128,10 +132,7 @@ export default function Header() {
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link
-                        to="/workout-week"
-                        className="flex cursor-pointer items-center"
-                      >
+                      <Link to="/training" className="flex cursor-pointer items-center">
                         <Dumbbell className="mr-2 h-4 w-4" />
                         <span>Workout Week</span>
                       </Link>
@@ -167,6 +168,8 @@ export default function Header() {
                       <span>Purchases</span>
                     </Link>
                   </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+
                   <DropdownMenuSeparator />
                   {user.role === 'ADMIN' && (
                     <>

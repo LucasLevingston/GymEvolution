@@ -1,10 +1,7 @@
-'use client'
-
 import api from '@/lib/api'
 import { useState, useCallback } from 'react'
 import useUser from './user-hooks'
 
-// Types for the FatSecret API data
 export interface FoodSearchResult {
   food_id: string
   food_name: string
@@ -86,12 +83,10 @@ export function useMealItem() {
   const [searchResults, setSearchResults] = useState<FoodSearchResult[]>([])
   const [selectedFood, setSelectedFood] = useState<FoodDetails | null>(null)
   const [nutritionData, setNutritionData] = useState<NutritionData | null>(null)
-  const [recentFoods, setRecentFoods] = useState<FoodSearchResult[]>([])
-  const [popularFoods, setPopularFoods] = useState<FoodSearchResult[]>([])
   const [error, setError] = useState<string | null>(null)
+
   const { token } = useUser()
 
-  // Search for foods
   const searchFoods = useCallback(
     async (query: string, page = 0, maxResults = 10) => {
       if (query.length < 2) return
@@ -108,6 +103,7 @@ export function useMealItem() {
             },
           }
         )
+        console.log(data)
 
         if (!data) {
           throw new Error(`Search failed: ${data}`)
@@ -115,8 +111,6 @@ export function useMealItem() {
 
         // Handle the FatSecret API data format
         if (data.foods.food) {
-          // FatSecret API returns a single object if there's only one result
-          // and an array if there are multiple results
           const foodArray = Array.isArray(data.foods.food)
             ? data.foods.food
             : [data.foods.food]
@@ -148,6 +142,7 @@ export function useMealItem() {
             Authorization: `Bearer ${token}`,
           },
         })
+        console.log(data)
 
         if (!data || !data.food) {
           throw new Error(`Failed to get food details: ${data}`)
@@ -238,91 +233,7 @@ export function useMealItem() {
   )
 
   // Get recent foods
-  const getRecentFoods = useCallback(
-    async (maxResults = 10) => {
-      setIsLoading(true)
-      setError(null)
 
-      try {
-        const { data } = await api.get(
-          `/fatsecret/foods/recent?maxResults=${maxResults}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        if (!data) {
-          throw new Error(`Failed to get recent foods: ${data}`)
-        }
-
-        if (data.foods.food) {
-          // FatSecret API returns a single object if there's only one result
-          // and an array if there are multiple results
-          const foodArray = Array.isArray(data.foods.food)
-            ? data.foods.food
-            : [data.foods.food]
-
-          setRecentFoods(foodArray)
-        } else {
-          setRecentFoods([])
-        }
-      } catch (error) {
-        console.error('Error getting recent foods:', error)
-        setError('Failed to get recent foods. Please try again.')
-        setRecentFoods([])
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [token]
-  )
-
-  // Get popular foods
-  const getPopularFoods = useCallback(
-    async (maxResults = 10) => {
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        const { data } = await api.get(
-          `/fatsecret/foods/popular?maxResults=${maxResults}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-
-        if (!data) {
-          throw new Error(`Failed to get popular foods: ${data}`)
-        }
-
-        // Handle the FatSecret API data format
-        if (data.foods.food) {
-          // FatSecret API returns a single object if there's only one result
-          // and an array if there are multiple results
-          const foodArray = Array.isArray(data.foods.food)
-            ? data.foods.food
-            : [data.foods.food]
-
-          setPopularFoods(foodArray)
-        } else {
-          setPopularFoods([])
-        }
-      } catch (error) {
-        console.error('Error getting popular foods:', error)
-        setError('Failed to get popular foods. Please try again.')
-        setPopularFoods([])
-      } finally {
-        setIsLoading(false)
-      }
-    },
-    [token]
-  )
-
-  // Convert food details to meal item data
   const convertToMealItem = useCallback(
     (food: FoodDetails, servingIndex: number): MealItemData | null => {
       if (!food.servings || servingIndex >= food.servings.length) return null
@@ -354,6 +265,7 @@ export function useMealItem() {
   const deleteMealItem = useCallback(async (id: string) => {
     try {
       const { data } = await api.delete(`/meal-items/${id}`)
+      console.log(data)
 
       if (!data) {
         throw new Error(`Failed to delete meal item: ${data}`)
@@ -372,13 +284,9 @@ export function useMealItem() {
     searchResults,
     selectedFood,
     nutritionData,
-    recentFoods,
-    popularFoods,
     searchFoods,
     getFoodDetails,
     changeServing,
-    getRecentFoods,
-    getPopularFoods,
     convertToMealItem,
     deleteMealItem,
     resetSelection,

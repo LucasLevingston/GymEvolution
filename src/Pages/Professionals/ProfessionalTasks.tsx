@@ -23,6 +23,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProfessionals } from '@/hooks/professional-hooks'
 import useUser from '@/hooks/user-hooks'
+import { useNavigate } from 'react-router-dom'
 
 interface Task {
   id: string
@@ -41,13 +42,15 @@ interface Task {
 export default function ProfessionalTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
-  const [activeTab, setActiveTab] = useState('all')
+  const [activeTab, setActiveTab] = useState('pending')
   const { getTasksByProfessionalId } = useProfessionals()
   const { user } = useUser()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchTasks = async () => {
       try {
+        if (!user?.id) return
         const data = await getTasksByProfessionalId(user?.id)
 
         setTasks(data)
@@ -125,11 +128,11 @@ export default function ProfessionalTasks() {
         <h1 className="text-3xl font-bold">Tasks</h1>
       </div>
 
-      <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+      <Tabs defaultValue="pending" className="w-full" onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="all">All Tasks</TabsTrigger>
           <TabsTrigger value="pending">Pending</TabsTrigger>
           <TabsTrigger value="completed">Completed</TabsTrigger>
+          <TabsTrigger value="all">All Tasks</TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab} className="mt-0">
@@ -177,18 +180,17 @@ export default function ProfessionalTasks() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => (window.location.href = `/client/${task.clientId}`)}
+                      onClick={() => navigate(`/client/${task.clientId}`)}
                     >
                       View Client
                     </Button>
                     {task.status !== 'COMPLETED' && (
                       <Button
                         size="sm"
-                        onClick={() => {
+                        onClick={async () => {
                           if (task.linkToResolve) {
                             window.location.href = task.linkToResolve
                           } else {
-                            // Handle based on task type
                             switch (task.type) {
                               case 'TRAINING':
                                 window.location.href = `/client/${task.clientId}/training`
@@ -201,7 +203,7 @@ export default function ProfessionalTasks() {
                                 break
                               case 'CONSULTATION':
                               case 'RETURN':
-                                window.location.href = `/professional/meetings`
+                                window.location.href = '/professional/meetings'
                                 break
                               default:
                                 window.location.href = `/client/${task.clientId}`

@@ -9,8 +9,8 @@ interface UseDietsReturn {
   currentDiet: DietType | null
   isLoading: boolean
   error: string | null
-  fetchDiets: (userId?: string) => Promise<void>
-  fetchDietById: (dietId: string) => Promise<void>
+  getDiets: (userId?: string) => Promise<void>
+  getDiet: (dietId: string) => Promise<DietType>
   createDiet: (diet: DietFormValues) => Promise<DietType>
   updateDiet: (diet: Partial<DietType>) => Promise<DietType>
   deleteDiet: (dietId: string) => Promise<void>
@@ -27,7 +27,7 @@ export function useDiets(): UseDietsReturn {
   /**
    * Fetch all diets for a user
    */
-  const fetchDiets = async (userId?: string) => {
+  const getDiets = async (userId?: string) => {
     try {
       setIsLoading(true)
       setError(null)
@@ -44,17 +44,18 @@ export function useDiets(): UseDietsReturn {
     }
   }
 
-  /**
-   * Fetch a specific diet by ID
-   */
-  const fetchDietById = async (dietId: string) => {
+  const getDiet = async (dietId: string) => {
     try {
       setIsLoading(true)
       setError(null)
 
-      const response = await api.get(`/diets/${dietId}`)
-
-      setCurrentDiet(response.data)
+      const { data } = await api.get(`/diets/${dietId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!data) {
+        throw new Error('Error on fetching diet')
+      }
+      return data
     } catch (err: any) {
       console.error('Error fetching diet:', err)
       setError(err.response?.data?.message || 'Failed to fetch diet')
@@ -170,9 +171,9 @@ export function useDiets(): UseDietsReturn {
     currentDiet,
     isLoading,
     error,
-    fetchDiets,
+    getDiets,
     markMealAsCompleted,
-    fetchDietById,
+    getDiet,
     createDiet,
     updateDiet,
     deleteDiet,
