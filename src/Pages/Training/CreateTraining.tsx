@@ -1,11 +1,9 @@
-'use client'
-
 import { useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { ContainerContent, ContainerHeader, ContainerTitle } from '@/components/Container'
 import { TrainingWeekCard } from '@/components/training/training-week-card'
 import { Button } from '@/components/ui/button'
-import { ClipboardIcon, ArrowLeft } from 'lucide-react'
+import { ClipboardIcon } from 'lucide-react'
 import { useUser } from '@/hooks/user-hooks'
 import { usePurchases } from '@/hooks/purchase-hooks'
 
@@ -62,16 +60,13 @@ export default function CreateTraining() {
     <>
       <ContainerHeader>
         <div className="flex items-center">
-          <Button variant="ghost" onClick={() => navigate(-1)} className="mr-2">
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
           <ContainerTitle>
             {clientName ? `Criar Treino para ${clientName}` : 'Criar Novo Treino'}
           </ContainerTitle>
         </div>
         <div className="flex gap-2">
           <Button onClick={() => navigate('/training')} variant="secondary">
-            Ver treinos atuais
+            Ver treinos
             <ClipboardIcon className="h-4 w-4 ml-2" />
           </Button>
         </div>

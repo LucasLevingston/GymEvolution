@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import {
@@ -38,8 +36,6 @@ import type { Purchase } from '@/types/PurchaseType'
 import useUser from '@/hooks/user-hooks'
 
 import PurchaseWorkflowCard from '@/components/purchase-workflow/purchase-workflow-card'
-import { usePurchases } from '@/hooks/purchase-hooks'
-import { useProfessionals } from '@/hooks/professional-hooks'
 import { Task } from '@/types/ProfessionalType'
 
 interface Activity {
@@ -51,8 +47,6 @@ interface Activity {
 
 export default function ProfessionalDashboard() {
   const { user } = useUser()
-  const { getPurchasesByProfessionalId } = usePurchases()
-  const { getTasksByProfessionalId } = useProfessionals()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [activities, setActivities] = useState<Activity[]>([])
@@ -72,7 +66,7 @@ export default function ProfessionalDashboard() {
 
       try {
         setIsLoading(true)
-        const purchaseData = await getPurchasesByProfessionalId()
+        const purchaseData = user.purchases
         setPurchases(purchaseData)
 
         // Calculate statistics
@@ -83,11 +77,11 @@ export default function ProfessionalDashboard() {
             .map((p: Purchase) => p.buyerId)
         ).size
 
-        const upcomingMeetings = purchaseData.filter(
-          (p: Purchase) => p.status === 'SCHEDULEDMEETING'
+        const upcomingMeetings = tasks.filter(
+          (task) => task.type === 'CONSULTATION'
         ).length
 
-        const monthlyRevenue = purchaseData.reduce(
+        const monthlyRevenue = purchaseData?.reduce(
           (sum: number, p: Purchase) => sum + (p.amount || 0),
           0
         )
@@ -115,7 +109,7 @@ export default function ProfessionalDashboard() {
 
       try {
         setTasksLoading(true)
-        const tasksData = await getTasksByProfessionalId(user.id)
+        const tasksData = user.tasks
         if (!tasksData) throw new Error('Error on get tasks')
 
         setTasks(tasksData)
@@ -146,9 +140,9 @@ export default function ProfessionalDashboard() {
   }, [user?.id])
 
   // Group purchases by status
-  const activeWorkflows = purchases.filter((p) => p.status === 'ACTIVE')
-  const completedWorkflows = purchases.filter((p) => p.status === 'COMPLETED')
-  const pendingWorkflows = purchases.filter((p) => p.status === 'WAITINGPAYMENT')
+  const activeWorkflows = purchases?.filter((p) => p.status === 'ACTIVE')
+  const completedWorkflows = purchases?.filter((p) => p.status === 'COMPLETED')
+  const pendingWorkflows = purchases?.filter((p) => p.status === 'WAITINGPAYMENT')
 
   const requiredTasks = tasks.filter((task) => task.status !== 'COMPLETED')
 
@@ -163,7 +157,7 @@ export default function ProfessionalDashboard() {
         </div>
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/create-plan">
+            <Link to="/professional/create-plan">
               <FileText className="mr-2 h-4 w-4" />
               Criar Plano
             </Link>
@@ -280,7 +274,7 @@ export default function ProfessionalDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {requiredTasks.length === 0 ? (
+            {requiredTasks?.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-6 text-center">
                 <CheckCircle2 className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">
@@ -346,10 +340,12 @@ export default function ProfessionalDashboard() {
       {/* Workflows */}
       <Tabs defaultValue="active" className="w-full">
         <TabsList>
-          <TabsTrigger value="active">Ativos ({activeWorkflows.length})</TabsTrigger>
-          <TabsTrigger value="pending">Pendentes ({pendingWorkflows.length})</TabsTrigger>
+          <TabsTrigger value="active">Ativos ({activeWorkflows?.length})</TabsTrigger>
+          <TabsTrigger value="pending">
+            Pendentes ({pendingWorkflows?.length})
+          </TabsTrigger>
           <TabsTrigger value="completed">
-            Concluídos ({completedWorkflows.length})
+            Concluídos ({completedWorkflows?.length})
           </TabsTrigger>
         </TabsList>
 
@@ -362,7 +358,7 @@ export default function ProfessionalDashboard() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {activeWorkflows.length > 0 ? (
+              {activeWorkflows?.length > 0 ? (
                 activeWorkflows.map((purchase) => (
                   <PurchaseWorkflowCard key={purchase.id} purchase={purchase} />
                 ))
@@ -395,7 +391,7 @@ export default function ProfessionalDashboard() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {pendingWorkflows.length > 0 ? (
+              {pendingWorkflows?.length > 0 ? (
                 pendingWorkflows.map((purchase) => (
                   <PurchaseWorkflowCard key={purchase.id} purchase={purchase} />
                 ))
@@ -422,7 +418,7 @@ export default function ProfessionalDashboard() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {completedWorkflows.length > 0 ? (
+              {completedWorkflows?.length > 0 ? (
                 completedWorkflows.map((purchase) => (
                   <PurchaseWorkflowCard key={purchase.id} purchase={purchase} />
                 ))
@@ -448,7 +444,7 @@ export default function ProfessionalDashboard() {
           <CardDescription>Últimas interações com seus alunos</CardDescription>
         </CardHeader>
         <CardContent>
-          {activities.length === 0 && !isLoading ? (
+          {activities?.length === 0 && !isLoading ? (
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <Clock className="h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground">
@@ -569,7 +565,7 @@ function getStatusVariant(status: string) {
     case 'IN_PROGRESS':
       return 'default'
     case 'COMPLETED':
-      return 'success'
+      return 'outline'
     default:
       return 'outline'
   }

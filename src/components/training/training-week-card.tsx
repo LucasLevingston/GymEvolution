@@ -68,6 +68,9 @@ import {
 import { useNavigate } from 'react-router-dom'
 import type { ExerciseType, TrainingDayType } from '@/types/TrainingType'
 import { useProfessionals } from '@/hooks/professional-hooks'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
+import { ClientTasksCard } from '../purchase-workflow/clients-needing-training-card'
+import { IsProfessionalComponentCard } from '../professional/is-professional-card'
 
 interface TrainingWeekCardProps {
   initialData?: TrainingWeekFormData
@@ -212,12 +215,10 @@ export function TrainingWeekCard({
 
   async function onSubmit(data: TrainingWeekFormData) {
     try {
-      // Log the full data object to verify endDate is included
       console.log('Submitting form data for clienttttt:', data, isProfessionalMode)
 
       if (isCreating) {
-        if (isProfessionalMode) {
-          // Use the professional training service
+        if (isProfessionalMode && professionalId) {
           await createTrainingForClient({
             ...data,
             clientId,
@@ -228,7 +229,6 @@ export function TrainingWeekCard({
           toast.success('Training plan created for client successfully')
           // navigate(`/professional/clients/${clientId}`)
         } else {
-          // Use the regular training service
           await createTraining(data)
           toast.success('Training created successfully')
         }
@@ -248,7 +248,7 @@ export function TrainingWeekCard({
   const handleAddTrainingDay = () => {
     const startDate = form.getValues().startDate
     appendTrainingDay({
-      group: '',
+      muscleGroups: [],
       dayOfWeek: `Day ${trainingDays.length + 1}`,
       isCompleted: false,
       comments: '',
@@ -338,6 +338,12 @@ export function TrainingWeekCard({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        {checkIsProfessional(user) && user?.tasks && (
+          <ClientTasksCard tasks={user?.tasks} taskType="TRAINING" />
+        )}
+        {isProfessionalMode && (
+          <IsProfessionalComponentCard featureId={featureId} clientId={clientId} />
+        )}
         <div className="flex flex-col lg:flex-row gap-6">
           <TrainingSidebar
             stats={stats}
@@ -348,8 +354,6 @@ export function TrainingWeekCard({
             onEndTraining={handleEndTraining}
             isCurrentWeek={isCurrentWeek(form.watch('startDate'), form.watch('endDate'))}
             isCreating={isCreating}
-            isProfessionalMode={isProfessionalMode}
-            clientId={clientId}
           />
 
           <div className="flex-1">
@@ -539,7 +543,7 @@ export function TrainingWeekCard({
                                 disabled={!isEditing && !isCreating}
                               >
                                 {field.value ? (
-                                  format(field.value, 'PPP')
+                                  format(new Date(field.value), 'PPP') // Ensure field.value is a Date
                                 ) : (
                                   <span>Pick a date</span>
                                 )}
@@ -550,8 +554,8 @@ export function TrainingWeekCard({
                           <PopoverContent className="w-auto p-0" align="start">
                             <CalendarComponent
                               mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
+                              selected={field.value && new Date(field.value)} // Ensure correct type
+                              onSelect={(date) => field.onChange(date)} // Ensure date is a Date object
                               disabled={!isEditing && !isCreating}
                               initialFocus
                             />
@@ -596,8 +600,8 @@ export function TrainingWeekCard({
                           <PopoverContent className="w-auto p-0" align="start">
                             <CalendarComponent
                               mode="single"
-                              selected={field.value}
-                              onSelect={field.onChange}
+                              selected={field.value && new Date(field.value)} // Ensure correct type
+                              onSelect={(date) => field.onChange(date)} // Ensure date is a Date object
                               disabled={!isEditing && !isCreating}
                               initialFocus
                             />
@@ -697,7 +701,6 @@ export function TrainingWeekCard({
                             isEditing={isEditing || isCreating}
                             isCreating={isCreating}
                             onStartTraining={() => handleStartTraining(index)}
-                            isProfessionalMode={isProfessionalMode}
                           />
                         </TabsContent>
                       ))}

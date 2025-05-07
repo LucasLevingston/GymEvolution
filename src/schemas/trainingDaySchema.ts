@@ -3,7 +3,7 @@ import { exerciseSchema } from './exerciseSchema'
 
 export const trainingDaySchema = z.object({
   id: z.string().optional(),
-  group: z.string().default(''),
+  muscleGroups: z.array(z.string()),
   dayOfWeek: z.string().default(''),
   day: z.date().default(() => new Date()),
   isCompleted: z.boolean().default(false),

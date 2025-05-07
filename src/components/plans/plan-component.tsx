@@ -33,9 +33,8 @@ import { ContainerRoot } from '@/components/Container'
 import { usePlans } from '@/hooks/use-plans'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { FeatureSelector } from '@/components/plans/feature-selector'
-import { type Feature, Plan, defaultFeatures } from '@/types/PlanType'
+import type { Feature, Plan } from '@/types/PlanType'
 
-// Define the form schema with Zod
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Nome é obrigatório' }),
   description: z.string().optional(),
@@ -71,6 +70,7 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
   const [selectedFeatures, setSelectedFeatures] = useState<Feature[]>([])
   const [featuresError, setFeaturesError] = useState<string | null>(null)
   const [isInitialLoading, setIsInitialLoading] = useState(mode === 'edit')
+  const [planDuration, setPlanDuration] = useState<number>(30)
 
   // Initialize the form
   const form = useForm<FormValues>({
@@ -79,19 +79,29 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
       name: '',
       description: '',
       price: '',
-      duration: '',
+      duration: '30',
       isActive: true,
     },
   })
+
+  // Watch the duration field to update planDuration
+  const watchDuration = form.watch('duration')
+
+  useEffect(() => {
+    const durationValue = Number.parseInt(watchDuration || '30')
+    if (durationValue && durationValue > 0) {
+      setPlanDuration(durationValue)
+    }
+  }, [watchDuration])
 
   useEffect(() => {
     const fetchPlan = async () => {
       if (mode === 'edit' && id) {
         try {
           setIsInitialLoading(true)
+
           const plan = await getPlanById(id)
           if (plan) {
-            // Set form values
             form.reset({
               name: plan.name,
               description: plan.description || '',
@@ -100,39 +110,10 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
               isActive: plan.isActive,
             })
 
-            // Set features
+            setPlanDuration(plan.duration)
+
             if (plan.features && Array.isArray(plan.features)) {
-              if (typeof plan.features[0] === 'string') {
-                // Converter strings para objetos Feature
-                const featureObjects = plan.features.map((featureName: string) => {
-                  // Procurar uma feature pré-definida com nome correspondente
-                  const matchedFeature = defaultFeatures.find(
-                    (f) => f.name === featureName
-                  )
-                  if (matchedFeature) {
-                    return matchedFeature
-                  }
-
-                  // Se não encontrar, criar um objeto Feature básico
-                  return {
-                    id: `legacy-${featureName}`,
-                    name: featureName,
-                    isTrainingWeek: false,
-                    isDiet: false,
-                    isFeedback: false,
-                    feedback: '',
-                    isConsultation: false,
-                    consultationMeetingId: '',
-                    isReturn: false,
-                    returnMeetingId: '',
-                  }
-                })
-
-                setSelectedFeatures(featureObjects)
-              } else {
-                // Já são objetos Feature
-                setSelectedFeatures(plan.features)
-              }
+              setSelectedFeatures(plan.features)
             }
           } else {
             navigate('/professional-plans')
@@ -149,7 +130,6 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
   }, [id, getPlanById, navigate, form, mode])
 
   const onSubmit = async (values: FormValues) => {
-    // Validate features
     if (selectedFeatures.length === 0) {
       setFeaturesError('Adicione pelo menos um recurso ao plano')
       return
@@ -213,7 +193,7 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
             Esta área é exclusiva para nutricionistas e personal trainers.
           </p>
           <Button asChild>
-            <Link to="/register-professional">Cadastrar como Profissional</Link>
+            <Link to="/professional/register">Cadastrar como Profissional</Link>
           </Button>
         </div>
       </ContainerRoot>
@@ -320,6 +300,9 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
                       <FormControl>
                         <Input type="number" min="1" {...field} placeholder="30" />
                       </FormControl>
+                      <FormDescription>
+                        A duração do plano afeta a quantidade de feedbacks programados
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -348,13 +331,16 @@ export default function PlanComponent({ mode }: PlanComponentProps) {
             <CardHeader>
               <CardTitle>Recursos do Plano</CardTitle>
               <CardDescription>
-                Selecione os recursos que estarão incluídos neste plano
+                Selecione os recursos que estarão incluídos neste plano. Apenas recursos
+                compatíveis com seu perfil profissional serão exibidos.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <FeatureSelector
                 selectedFeatures={selectedFeatures}
                 onFeaturesChange={setSelectedFeatures}
+                planDuration={planDuration}
+                userRole={user.role}
               />
               {featuresError && <p className="text-red-500 text-sm">{featuresError}</p>}
             </CardContent>

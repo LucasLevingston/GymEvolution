@@ -41,6 +41,8 @@ import FeatureCard from '@/components/FeatureCard'
 import { Helmet } from 'react-helmet-async'
 import RequiredTasksList from '@/components/purchase-workflow/required-tasks-list'
 import { PendingTasksList } from '@/components/professional/pending-task-list'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
+import { UserType } from '@/types/userType'
 
 // Animation variants
 const containerVariants = {
@@ -74,9 +76,8 @@ export default function Home() {
   })
 
   const isAdmin = user?.role === 'ADMIN'
-  const isNutritionist = user?.role === 'NUTRITIONIST'
-  const isTrainer = user?.role === 'TRAINER'
-  const isProfessional = isNutritionist || isTrainer
+
+  const isProfessional = checkIsProfessional(user)
   const isStudent = user?.role === 'STUDENT'
 
   const currentTraining = user?.trainingWeeks
@@ -114,7 +115,7 @@ export default function Home() {
     }
   }, [user, isStudent])
 
-  const calculateCaloriesBurned = (user) => {
+  const calculateCaloriesBurned = (user: UserType) => {
     const completedWorkouts =
       user.trainingWeeks?.reduce(
         (total, week) =>
@@ -210,7 +211,8 @@ export default function Home() {
         <section className="rounded-3xl bg-gradient-to-r from-blue-600/80 to-blue-700 py-12 px-6 text-white shadow-xl">
           <div className="mx-auto max-w-4xl">
             <h1 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl">
-              {isNutritionist ? 'Nutritionist' : 'Personal Trainer'} Dashboard
+              {user.role === 'NUTRITIONIST' ? 'Nutritionist' : 'Personal Trainer'}{' '}
+              Dashboard
             </h1>
             <p className="mb-6 max-w-2xl text-lg text-white/90">
               Welcome back, {user.name}. Manage your clients and professional services.
@@ -221,7 +223,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-white/70">Active Clients</p>
-                      <p className="text-3xl font-bold">{user.clients.length}</p>
+                      <p className="text-3xl font-bold">{user?.clients?.length}</p>
                     </div>
                     <Users className="h-8 w-8 text-white/70" />
                   </div>
@@ -950,7 +952,7 @@ export default function Home() {
                           <Dumbbell className="h-4 w-4" />
                         </div>
                         <div>
-                          <p className="font-medium">{day.group}</p>
+                          <p className="font-medium">{day.muscleGroups}</p>
                           <p className="text-xs text-muted-foreground">{day.dayOfWeek}</p>
                         </div>
                       </div>

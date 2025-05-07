@@ -11,72 +11,28 @@ import { Badge } from '@/components/ui/badge'
 import { ShoppingBag, Calendar, Clock, User, CheckCircle2 } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-
-// Define types based on the Prisma schema
-interface Feature {
-  id: string
-  name: string
-  isDiet: boolean
-  Plan?: {
-    id: string
-    name: string
-    description?: string
-    price: number
-    duration: number
-  } | null
-  planId?: string
-  createdAt: Date | string
-  updatedAt: Date | string
-  linkToResolve?: string
-  // Related entities
-  Diet?: Diet[]
-  Purchase?: Purchase
-}
-
-interface Diet {
-  id: string
-  userId?: string
-  User?: {
-    id: string
-    name?: string
-    email: string
-    imageUrl?: string
-  }
-}
-
-interface Purchase {
-  id: string
-  amount: number
-  status: string
-  paymentStatus: string
-  createdAt: Date | string
-  User: {
-    id: string
-    name?: string
-    email: string
-    imageUrl?: string
-  }
-  professional: {
-    id: string
-    name?: string
-    email: string
-  }
-}
+import { getInitials } from '@/lib/utils/getInitias'
+import useUser from '@/hooks/user-hooks'
 
 interface IsProfessionalComponentCardProps {
-  feature: Feature
-  client: {
-    id: string
-    name?: string
-    email: string
-    imageUrl?: string
-  }
+  featureId: string
+  clientId: string
 }
 
 export function IsProfessionalComponentCard({
-  feature,
-  client,
+  featureId,
+  clientId,
 }: IsProfessionalComponentCardProps) {
+  const { user } = useUser()
+
+  const purchase = user?.purchases.find((purchase) => {
+    purchase.Plan.features.find((feature) => feature.id === featureId)
+  })
+
+  const feature = purchase?.Plan.features.find((feature) => feature.id === featureId)
+
+  const client = user?.clients?.find((client) => client.id === clientId)
+
   if (!feature) return null
   const formatDate = (date: Date | string) => {
     if (!date) return 'N/A'
@@ -85,15 +41,6 @@ export function IsProfessionalComponentCard({
       month: 'short',
       day: 'numeric',
     })
-  }
-  const getInitials = (name?: string) => {
-    if (!name) return 'CL'
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2)
   }
 
   const calculateExpiryDate = () => {
@@ -120,7 +67,6 @@ export function IsProfessionalComponentCard({
   const expiryDate = calculateExpiryDate()
   const daysRemaining = getDaysRemaining()
 
-  const purchase = feature.Plan
   const planName = feature.Plan?.name || feature.name
 
   return (
@@ -179,7 +125,7 @@ export function IsProfessionalComponentCard({
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   <span>Created On:</span>
                 </div>
-                <span className="font-medium">{formatDate(feature.createdAt)}</span>
+                <span className="font-medium">{formatDate(feature.createdAt || '')}</span>
               </div>
 
               {expiryDate && (
@@ -210,7 +156,7 @@ export function IsProfessionalComponentCard({
                       purchase.status === 'ACTIVE'
                         ? 'default'
                         : purchase.status === 'COMPLETED'
-                          ? 'success'
+                          ? 'secondary'
                           : purchase.status === 'CANCELLED'
                             ? 'destructive'
                             : 'secondary'

@@ -17,6 +17,16 @@ import {
   AlertTriangle,
   CheckCircle2,
   CircleXIcon as XCircle2,
+  MapPin,
+  Phone,
+  Calendar,
+  Clock,
+  Star,
+  Award,
+  GraduationCap,
+  Briefcase,
+  Settings,
+  User,
 } from 'lucide-react'
 
 import { Input } from '@/components/ui/input'
@@ -66,37 +76,17 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardFooter,
 } from '@/components/ui/card'
-
-type Professional = {
-  id: string
-  name: string
-  email: string
-  role: string
-  bio: string
-  experience: number
-  specialties: string[] | string
-  certifications: string | any[]
-  education: string | any[]
-  availability: string | string[]
-  imageUrl: string | null
-  location: string | null
-  approvalStatus: string
-  createdAt: string
-  documents: {
-    id: string
-    name: string
-    url: string
-    description: string
-    type: string
-  }[]
-}
+import { Separator } from '@/components/ui/separator'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Progress } from '@/components/ui/progress'
+import { Professional } from '@/types/ProfessionalType'
 
 const getSpecialtiesArray = (
   specialties: string | string[] | null | undefined
 ): string[] => {
   if (!specialties) return []
-
   // If specialties is already an array, return it
   if (Array.isArray(specialties)) {
     return specialties
@@ -116,7 +106,6 @@ export default function AdminProfessionals() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<{
     url: string
-    type: string
   } | null>(null)
   const [documentDialogOpen, setDocumentDialogOpen] = useState(false)
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false)
@@ -131,7 +120,7 @@ export default function AdminProfessionals() {
   const { getProfessionals, approveProfessional, rejectProfessional } = useProfessionals()
 
   const { toast } = useToast()
-
+  console.log(professionals)
   useEffect(() => {
     fetchAllProfessionals()
   }, [])
@@ -140,7 +129,6 @@ export default function AdminProfessionals() {
     try {
       setLoading(true)
       const data = await getProfessionals()
-      console.log(data)
       setProfessionals(data)
     } catch (error) {
       toast({
@@ -154,8 +142,17 @@ export default function AdminProfessionals() {
     }
   }
 
+  if (!professionals) {
+    return <></>
+  }
+
+  // Fixed the flatMap issue by ensuring we're not trying to flatMap null values
   const allSpecialties = Array.from(
-    new Set(professionals.flatMap((p) => getSpecialtiesArray(p.specialties)))
+    new Set(
+      professionals
+        .flatMap((p) => (p.specialties ? getSpecialtiesArray(p.specialties) : []))
+        .filter(Boolean)
+    )
   ).sort()
 
   const allStatuses = Array.from(
@@ -188,7 +185,14 @@ export default function AdminProfessionals() {
 
   const filteredProfessionals = professionals.filter((professional) => {
     // Search filter
-    const searchableText = [professional.name, professional.email, professional.bio]
+    const searchableText = [
+      professional.name,
+      professional.email,
+      professional.bio,
+      professional.city,
+      professional.state,
+      professional.location,
+    ]
       .filter(Boolean)
       .join(' ')
       .toLowerCase()
@@ -220,7 +224,7 @@ export default function AdminProfessionals() {
     (p) => p.approvalStatus === 'APPROVED'
   )
   const pendingProfessionals = filteredProfessionals.filter(
-    (p) => p.approvalStatus === 'PENDING' || p.approvalStatus === 'WAITING'
+    (p) => p.approvalStatus === 'WAITING'
   )
   const rejectedProfessionals = filteredProfessionals.filter(
     (p) => p.approvalStatus === 'REJECTED'
@@ -231,8 +235,8 @@ export default function AdminProfessionals() {
     setDetailsDialogOpen(true)
   }
 
-  const handleViewDocument = (url: string, type: string) => {
-    setSelectedDocument({ url, type })
+  const handleViewDocument = (url: string) => {
+    setSelectedDocument({ url })
     setDocumentDialogOpen(true)
   }
 
@@ -310,6 +314,7 @@ export default function AdminProfessionals() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
+      case 'NOTSOLICITED':
         return (
           <Badge
             variant="outline"
@@ -344,6 +349,23 @@ export default function AdminProfessionals() {
     }
   }
 
+  const formatWorkDays = (workDays?: string) => {
+    if (!workDays) return 'Not specified'
+
+    const days = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ]
+    const workDaysArray = workDays.split(',').map((day) => Number(day.trim()))
+
+    return workDaysArray.map((day) => days[day]).join(', ')
+  }
+
   const renderProfessionalsTable = (professionals: Professional[]) => {
     if (professionals.length === 0) {
       return (
@@ -364,6 +386,7 @@ export default function AdminProfessionals() {
             <TableRow>
               <TableHead className="w-[250px]">Professional</TableHead>
               <TableHead>Type</TableHead>
+              <TableHead>Location</TableHead>
               <TableHead>Experience</TableHead>
               <TableHead>Specialties</TableHead>
               <TableHead>Status</TableHead>
@@ -376,22 +399,58 @@ export default function AdminProfessionals() {
               <TableRow key={professional.id}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-8 w-8">
+                    <Avatar className="h-10 w-10 border-2 border-primary/10">
                       <AvatarImage src={professional.imageUrl || undefined} />
-                      <AvatarFallback>{professional.name.charAt(0)}</AvatarFallback>
+                      <AvatarFallback className="bg-primary/5 text-primary">
+                        {professional.name.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                     <div>
-                      <div>{professional.name}</div>
+                      <div className="font-medium">{professional.name}</div>
                       <div className="text-xs text-muted-foreground">
                         {professional.email}
                       </div>
+                      {professional.phone && (
+                        <div className="text-xs text-muted-foreground flex items-center mt-1">
+                          <Phone className="h-3 w-3 mr-1" />
+                          {professional.phone}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>
-                  {professional.role === 'TRAINER' ? 'Personal Trainer' : 'Nutritionist'}
+                  <Badge variant="outline" className="font-normal">
+                    {professional.role === 'TRAINER'
+                      ? 'Personal Trainer'
+                      : 'Nutritionist'}
+                  </Badge>
                 </TableCell>
-                <TableCell>{professional.experience} years</TableCell>
+                <TableCell>
+                  {professional.city && professional.state ? (
+                    <div className="flex items-center text-sm">
+                      <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      {professional.city}, {professional.state}
+                    </div>
+                  ) : professional.location ? (
+                    <div className="flex items-center text-sm">
+                      <MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      {professional.location}
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground text-sm">Not specified</span>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {professional.experience ? (
+                    <div className="flex items-center">
+                      <Briefcase className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                      <span>{professional.experience} years</span>
+                    </div>
+                  ) : (
+                    <span className="text-muted-foreground">Not specified</span>
+                  )}
+                </TableCell>
                 <TableCell>
                   <div className="flex flex-wrap gap-1 max-w-[200px]">
                     {getSpecialtiesArray(professional.specialties)
@@ -410,7 +469,10 @@ export default function AdminProfessionals() {
                 </TableCell>
                 <TableCell>{getStatusBadge(professional.approvalStatus)}</TableCell>
                 <TableCell>
-                  {new Date(professional.createdAt).toLocaleDateString()}
+                  <div className="flex items-center">
+                    <Calendar className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                    {new Date(professional.createdAt).toLocaleDateString()}
+                  </div>
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
@@ -419,6 +481,7 @@ export default function AdminProfessionals() {
                       size="icon"
                       onClick={() => handleViewDetails(professional)}
                       title="View Details"
+                      className="hover:bg-primary/5"
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -456,14 +519,16 @@ export default function AdminProfessionals() {
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                         <DropdownMenuItem onClick={() => handleViewDetails(professional)}>
+                          <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         {professional.approvalStatus !== 'APPROVED' && (
                           <DropdownMenuItem
-                            className="text-green-600"
+                            className=""
                             onClick={() => handleApproveClick(professional)}
                           >
+                            <CheckCircle className="h-4 w-4 mr-2" />
                             Approve Professional
                           </DropdownMenuItem>
                         )}
@@ -472,6 +537,7 @@ export default function AdminProfessionals() {
                             className="text-red-600"
                             onClick={() => handleRejectClick(professional)}
                           >
+                            <XCircle className="h-4 w-4 mr-2" />
                             Reject Professional
                           </DropdownMenuItem>
                         )}
@@ -490,23 +556,162 @@ export default function AdminProfessionals() {
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="text-center">
+          <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading professionals data...</p>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Professional Management</h1>
-        <Badge variant="outline">{professionals.length} Total Professionals</Badge>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Professional Management</h1>
+          <p className="text-muted-foreground mt-1">
+            Review, approve, and manage professional accounts on the platform
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Badge variant="outline" className="px-3 py-1 text-sm">
+            <User className="h-3.5 w-3.5 mr-1.5" />
+            {professionals.length} Total Professionals
+          </Badge>
+          <Badge
+            variant="outline"
+            className="bg-blue-50 text-blue-600 border-blue-200 px-3 py-1 text-sm"
+          >
+            <Clock className="h-3.5 w-3.5 mr-1.5" />
+            {pendingProfessionals.length} Pending
+          </Badge>
+        </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-gradient-to-br from-amber-50 to-amber-100 border-amber-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg text-amber-800 flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2 text-amber-600" />
+              Pending Approval
+            </CardTitle>
+            <CardDescription className="text-amber-700">
+              Professionals awaiting review
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-amber-900">
+                {pendingProfessionals.length}
+              </div>
+              <div className="p-2 bg-amber-200 rounded-full">
+                <AlertTriangle className="h-6 w-6 text-amber-600" />
+              </div>
+            </div>
+            <Progress
+              value={(pendingProfessionals.length / (professionals.length || 1)) * 100}
+              className="h-2 mt-4 bg-amber-200"
+            />
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button
+              variant="ghost"
+              className="text-amber-700 hover:text-amber-900 hover:bg-amber-200 w-full"
+              onClick={() =>
+                document
+                  .querySelector('[value="pending"]')
+                  ?.dispatchEvent(new MouseEvent('click'))
+              }
+            >
+              View pending professionals
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg text-green-800 flex items-center">
+              <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" />
+              Approved
+            </CardTitle>
+            <CardDescription className="text-green-700">
+              Active professionals
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-green-900">
+                {approvedProfessionals.length}
+              </div>
+              <div className="p-2 bg-green-200 rounded-full">
+                <CheckCircle2 className="h-6 w-6 text-green-600" />
+              </div>
+            </div>
+            <Progress
+              value={(approvedProfessionals.length / (professionals.length || 1)) * 100}
+              className="h-2 mt-4 bg-green-200"
+            />
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button
+              variant="ghost"
+              className="text-green-700 hover:text-green-900 hover:bg-green-200 w-full"
+              onClick={() =>
+                document
+                  .querySelector('[value="approved"]')
+                  ?.dispatchEvent(new MouseEvent('click'))
+              }
+            >
+              View approved professionals
+            </Button>
+          </CardFooter>
+        </Card>
+
+        <Card className="bg-gradient-to-br from-red-50 to-red-100 border-red-200">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-lg text-red-800 flex items-center">
+              <XCircle2 className="h-5 w-5 mr-2 text-red-600" />
+              Rejected
+            </CardTitle>
+            <CardDescription className="text-red-700">
+              Declined applications
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="text-3xl font-bold text-red-900">
+                {rejectedProfessionals.length}
+              </div>
+              <div className="p-2 bg-red-200 rounded-full">
+                <XCircle2 className="h-6 w-6 text-red-600" />
+              </div>
+            </div>
+            <Progress
+              value={(rejectedProfessionals.length / (professionals.length || 1)) * 100}
+              className="h-2 mt-4 bg-red-200"
+            />
+          </CardContent>
+          <CardFooter className="pt-0">
+            <Button
+              variant="ghost"
+              className="text-red-700 hover:text-red-900 hover:bg-red-200 w-full"
+              onClick={() =>
+                document
+                  .querySelector('[value="rejected"]')
+                  ?.dispatchEvent(new MouseEvent('click'))
+              }
+            >
+              View rejected professionals
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-muted/20 p-4 rounded-lg border">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search professionals..."
+            placeholder="Search by name, email, location..."
             className="pl-10"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -620,7 +825,15 @@ export default function AdminProfessionals() {
                               htmlFor={`status-${status}`}
                               className="flex-1 cursor-pointer"
                             >
-                              {status}
+                              {status === 'WAITING'
+                                ? 'Waiting'
+                                : status === 'APPROVED'
+                                  ? 'Approved'
+                                  : status === 'REJECTED'
+                                    ? 'Rejected'
+                                    : status === 'NOTSOLICITED'
+                                      ? 'Not Solicited'
+                                      : status}
                             </Label>
                           </div>
                         ))}
@@ -673,7 +886,10 @@ export default function AdminProfessionals() {
 
       {/* Active filters display */}
       {activeFilterCount > 0 && (
-        <div className="flex flex-wrap gap-2 mt-4">
+        <div className="flex flex-wrap gap-2 mt-4 bg-muted/10 p-3 rounded-md border">
+          <div className="text-sm font-medium mr-2 text-muted-foreground">
+            Active filters:
+          </div>
           {selectedRoles.map((role) => (
             <Badge
               key={`role-${role}`}
@@ -694,7 +910,15 @@ export default function AdminProfessionals() {
               variant="secondary"
               className="flex items-center gap-1"
             >
-              {status}
+              {status === 'WAITING'
+                ? 'Waiting'
+                : status === 'APPROVED'
+                  ? 'Approved'
+                  : status === 'REJECTED'
+                    ? 'Rejected'
+                    : status === 'NOTSOLICITED'
+                      ? 'Not Solicited'
+                      : status}
               <X
                 className="h-3 w-3 cursor-pointer"
                 onClick={() =>
@@ -735,61 +959,13 @@ export default function AdminProfessionals() {
         </div>
       )}
 
-      {/* Dashboard Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Pending Approval</CardTitle>
-            <CardDescription>Professionals awaiting review</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{pendingProfessionals.length}</div>
-              <div className="p-2 bg-orange-100 rounded-full">
-                <AlertTriangle className="h-6 w-6 text-orange-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Approved</CardTitle>
-            <CardDescription>Active professionals</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{approvedProfessionals.length}</div>
-              <div className="p-2 bg-green-100 rounded-full">
-                <CheckCircle2 className="h-6 w-6 text-green-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-lg">Rejected</CardTitle>
-            <CardDescription>Declined applications</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center justify-between">
-              <div className="text-3xl font-bold">{rejectedProfessionals.length}</div>
-              <div className="p-2 bg-red-100 rounded-full">
-                <XCircle2 className="h-6 w-6 text-red-500" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Professionals Tables */}
       <Tabs defaultValue="pending" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="pending" className="relative">
             Pending Approval
             {pendingProfessionals.length > 0 && (
-              <Badge className="ml-2 bg-orange-500">{pendingProfessionals.length}</Badge>
+              <Badge className="ml-2 bg-amber-500">{pendingProfessionals.length}</Badge>
             )}
           </TabsTrigger>
           <TabsTrigger value="approved">
@@ -828,181 +1004,444 @@ export default function AdminProfessionals() {
 
       {/* Professional Details Dialog */}
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
           {selectedProfessional && (
             <>
-              <DialogHeader>
-                <DialogTitle>Professional Profile</DialogTitle>
+              <DialogHeader className="px-6 pt-6 pb-2">
+                <DialogTitle className="text-2xl">Professional Profile</DialogTitle>
                 <DialogDescription>
                   Complete professional information and documents
                 </DialogDescription>
               </DialogHeader>
 
-              <div className="py-4">
-                <Tabs defaultValue="info" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="info">Information</TabsTrigger>
-                    <TabsTrigger value="documents">
-                      Documents
-                      {selectedProfessional.documents?.length > 0 && (
-                        <Badge variant="secondary" className="ml-2">
-                          {selectedProfessional.documents.length}
-                        </Badge>
-                      )}
-                    </TabsTrigger>
-                  </TabsList>
-
-                  <TabsContent value="info" className="space-y-6 pt-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={selectedProfessional.imageUrl || undefined} />
-                        <AvatarFallback>
-                          {selectedProfessional.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h2 className="text-xl font-semibold">
-                          {selectedProfessional.name}
-                        </h2>
-                        <p className="text-muted-foreground">
-                          {selectedProfessional.email}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge>
-                            {selectedProfessional.role === 'TRAINER'
-                              ? 'Personal Trainer'
-                              : 'Nutritionist'}
+              <ScrollArea className="max-h-[calc(90vh-10rem)]">
+                <div className="px-6 py-4">
+                  <Tabs defaultValue="info" className="w-full">
+                    <TabsList className="grid w-full grid-cols-3">
+                      <TabsTrigger value="info">Information</TabsTrigger>
+                      <TabsTrigger value="settings">Settings</TabsTrigger>
+                      <TabsTrigger value="documents">
+                        Documents
+                        {selectedProfessional.documentUrl && (
+                          <Badge variant="secondary" className="ml-2">
+                            1
                           </Badge>
-                          {getStatusBadge(selectedProfessional.approvalStatus)}
+                        )}
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="info" className="space-y-6 pt-4">
+                      <div className="flex flex-col md:flex-row gap-6">
+                        <div className="flex flex-col items-center">
+                          <Avatar className="h-24 w-24 border-4 border-primary/10">
+                            <AvatarImage
+                              src={selectedProfessional.imageUrl || undefined}
+                            />
+                            <AvatarFallback className="text-2xl bg-primary/5 text-primary">
+                              {selectedProfessional.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="mt-3 text-center">
+                            <Badge className="mt-2">
+                              {selectedProfessional.role === 'TRAINER'
+                                ? 'Personal Trainer'
+                                : 'Nutritionist'}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <div className="flex-1">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-2">
+                            <div>
+                              <h2 className="text-2xl font-semibold">
+                                {selectedProfessional.name}
+                              </h2>
+                              <p className="text-muted-foreground">
+                                {selectedProfessional.email}
+                              </p>
+                            </div>
+                            <div>
+                              {getStatusBadge(selectedProfessional.approvalStatus)}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div className="space-y-1">
+                              <div className="text-sm text-muted-foreground">
+                                Location
+                              </div>
+                              <div className="flex items-center">
+                                <MapPin className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                                {selectedProfessional.city && selectedProfessional.state
+                                  ? `${selectedProfessional.city}, ${selectedProfessional.state}`
+                                  : selectedProfessional.location || 'Not specified'}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="text-sm text-muted-foreground">Phone</div>
+                              <div className="flex items-center">
+                                <Phone className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                                {selectedProfessional.phone || 'Not specified'}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="text-sm text-muted-foreground">
+                                Experience
+                              </div>
+                              <div className="flex items-center">
+                                <Briefcase className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                                {selectedProfessional.experience
+                                  ? `${selectedProfessional.experience} years`
+                                  : 'Not specified'}
+                              </div>
+                            </div>
+
+                            <div className="space-y-1">
+                              <div className="text-sm text-muted-foreground">
+                                Registration Date
+                              </div>
+                              <div className="flex items-center">
+                                <Calendar className="h-4 w-4 mr-1.5 text-muted-foreground" />
+                                {new Date(
+                                  selectedProfessional.createdAt
+                                ).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <h3 className="font-medium mb-2">Bio</h3>
-                        <p className="text-sm text-muted-foreground bg-muted/20 p-3 rounded-md">
-                          {selectedProfessional.bio}
-                        </p>
-                      </div>
+                      <Separator />
 
                       <div>
-                        <h3 className="font-medium mb-2">Availability</h3>
-                        <p className="text-sm text-muted-foreground bg-muted/20 p-3 rounded-md">
-                          {Array.isArray(selectedProfessional.availability)
-                            ? selectedProfessional.availability.join(', ')
-                            : selectedProfessional.availability}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium mb-2">Specialties</h3>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedProfessional.specialties &&
-                          getSpecialtiesArray(selectedProfessional.specialties).map(
-                            (specialty, index) => (
-                              <Badge key={index} variant="secondary">
-                                {specialty.trim()}
-                              </Badge>
-                            )
-                          )}
-                      </div>
-                    </div>
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div>
-                        <h3 className="font-medium mb-2">Certifications</h3>
-                        <p className="text-sm text-muted-foreground bg-muted/20 p-3 rounded-md whitespace-pre-line">
-                          {Array.isArray(selectedProfessional.certifications)
-                            ? selectedProfessional.certifications.join(', ')
-                            : selectedProfessional.certifications}
-                        </p>
-                      </div>
-
-                      <div>
-                        <h3 className="font-medium mb-2">Education</h3>
-                        <p className="text-sm text-muted-foreground bg-muted/20 p-3 rounded-md whitespace-pre-line">
-                          {Array.isArray(selectedProfessional.education)
-                            ? selectedProfessional.education.join(', ')
-                            : selectedProfessional.education}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div>
-                      <h3 className="font-medium mb-2">Registration Date</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {new Date(selectedProfessional.createdAt).toLocaleDateString()} at{' '}
-                        {new Date(selectedProfessional.createdAt).toLocaleTimeString()}
-                      </p>
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="documents" className="pt-4">
-                    {!selectedProfessional.documents ||
-                    selectedProfessional.documents.length === 0 ? (
-                      <div className="text-center py-8 border rounded-lg bg-muted/20">
-                        <FileText className="mx-auto h-12 w-12 text-muted-foreground/60" />
-                        <h3 className="mt-4 text-lg font-medium">
-                          No documents uploaded
+                        <h3 className="font-medium mb-2 flex items-center">
+                          <Award className="h-4 w-4 mr-1.5 text-primary" />
+                          Specialties
                         </h3>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                          This professional has not uploaded any documents
-                        </p>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          {selectedProfessional.specialties &&
+                          getSpecialtiesArray(selectedProfessional.specialties).length >
+                            0 ? (
+                            getSpecialtiesArray(selectedProfessional.specialties).map(
+                              (specialty, index) => (
+                                <Badge key={index} variant="secondary">
+                                  {specialty.trim()}
+                                </Badge>
+                              )
+                            )
+                          ) : (
+                            <p className="text-sm text-muted-foreground">
+                              No specialties specified
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    ) : (
-                      <div className="space-y-4">
-                        {selectedProfessional.documents?.map((doc) => (
-                          <div
-                            key={doc.id}
-                            className="flex items-center justify-between p-4 border rounded-md"
-                          >
-                            <div className="flex items-center">
-                              <FileText className="h-8 w-8 mr-4 text-primary" />
-                              <div>
-                                <h4 className="font-medium">{doc.name}</h4>
-                                {doc.description && (
-                                  <p className="text-sm text-muted-foreground">
-                                    {doc.description}
-                                  </p>
+
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div>
+                          <h3 className="font-medium mb-2 flex items-center">
+                            <Award className="h-4 w-4 mr-1.5 text-primary" />
+                            Bio
+                          </h3>
+                          <div className="bg-muted/20 p-4 rounded-md border">
+                            {selectedProfessional.bio ? (
+                              <p className="text-sm whitespace-pre-line">
+                                {selectedProfessional.bio}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No bio provided
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="font-medium mb-2 flex items-center">
+                            <Clock className="h-4 w-4 mr-1.5 text-primary" />
+                            Availability
+                          </h3>
+                          <div className="bg-muted/20 p-4 rounded-md border">
+                            {Array.isArray(selectedProfessional.availability) &&
+                            selectedProfessional.availability.length > 0 ? (
+                              <ul className="text-sm space-y-1 list-disc list-inside">
+                                {selectedProfessional.availability.map((item, index) => (
+                                  <li key={index}>{item}</li>
+                                ))}
+                              </ul>
+                            ) : selectedProfessional.availability ? (
+                              <p className="text-sm">
+                                {selectedProfessional.availability}
+                              </p>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No availability information provided
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="grid gap-6 md:grid-cols-2">
+                        <div>
+                          <h3 className="font-medium mb-2 flex items-center">
+                            <Award className="h-4 w-4 mr-1.5 text-primary" />
+                            Certifications
+                          </h3>
+                          <div className="bg-muted/20 p-4 rounded-md border">
+                            {selectedProfessional.certifications &&
+                            selectedProfessional.certifications.length > 0 ? (
+                              <div className="space-y-3">
+                                {selectedProfessional.certifications.map(
+                                  (cert, index) => (
+                                    <div
+                                      key={index}
+                                      className="border-b pb-2 last:border-0 last:pb-0"
+                                    >
+                                      <p className="font-medium">{cert.name}</p>
+                                      {(cert.organization || cert.year) && (
+                                        <p className="text-sm text-muted-foreground">
+                                          {cert.organization}
+                                          {cert.organization && cert.year ? ' • ' : ''}
+                                          {cert.year}
+                                        </p>
+                                      )}
+                                    </div>
+                                  )
                                 )}
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No certifications provided
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div>
+                          <h3 className="font-medium mb-2 flex items-center">
+                            <GraduationCap className="h-4 w-4 mr-1.5 text-primary" />
+                            Education
+                          </h3>
+                          <div className="bg-muted/20 p-4 rounded-md border">
+                            {selectedProfessional.education &&
+                            selectedProfessional.education.length > 0 ? (
+                              <ul className="text-sm space-y-1 list-disc list-inside">
+                                {selectedProfessional.education.map(
+                                  (education, index) => (
+                                    <li key={index}>{education.degree}</li>
+                                  )
+                                )}
+                              </ul>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No education information provided
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {selectedProfessional.reviews &&
+                        selectedProfessional.reviews.length > 0 && (
+                          <div>
+                            <h3 className="font-medium mb-2 flex items-center">
+                              <Star className="h-4 w-4 mr-1.5 text-primary" />
+                              Reviews ({selectedProfessional.reviews.length})
+                            </h3>
+                            <div className="space-y-3">
+                              {selectedProfessional.reviews.slice(0, 3).map((review) => (
+                                <Card key={review.id}>
+                                  <CardContent className="p-4">
+                                    <div className="flex justify-between items-start">
+                                      <div className="flex items-center">
+                                        <Avatar className="h-8 w-8 mr-2">
+                                          <AvatarFallback>
+                                            {review.author.initials}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <div>
+                                          <p className="font-medium">
+                                            {review.author.name}
+                                          </p>
+                                          <p className="text-xs text-muted-foreground">
+                                            {new Date(review.date).toLocaleDateString()}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center">
+                                        {Array.from({ length: 5 }).map((_, i) => (
+                                          <Star
+                                            key={i}
+                                            className={`h-4 w-4 ${
+                                              i < review.rating
+                                                ? 'text-yellow-400 fill-yellow-400'
+                                                : 'text-muted-foreground'
+                                            }`}
+                                          />
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <p className="mt-2 text-sm">{review.content}</p>
+                                  </CardContent>
+                                </Card>
+                              ))}
+                              {selectedProfessional.reviews.length > 3 && (
+                                <Button variant="outline" className="w-full">
+                                  View all {selectedProfessional.reviews.length} reviews
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </TabsContent>
+
+                    <TabsContent value="settings" className="space-y-6 pt-4">
+                      <div className="bg-muted/10 p-4 rounded-md border">
+                        <h3 className="font-medium mb-4 flex items-center">
+                          <Settings className="h-4 w-4 mr-1.5 text-primary" />
+                          Professional Settings
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Working Hours
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings.workStartHour &&
+                              selectedProfessional.ProfessionalSettings.workEndHour !==
+                                undefined
+                                ? `${selectedProfessional.ProfessionalSettings.workStartHour}:00 - ${selectedProfessional.ProfessionalSettings.workEndHour}:00`
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Appointment Duration
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings
+                                .appointmentDuration
+                                ? `${selectedProfessional.ProfessionalSettings.appointmentDuration} minutes`
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Working Days
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings.workDays
+                                ? formatWorkDays(
+                                    selectedProfessional.ProfessionalSettings.workDays
+                                  )
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Buffer Between Appointments
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings
+                                .bufferBetweenSlots !== undefined
+                                ? `${selectedProfessional.ProfessionalSettings.bufferBetweenSlots} minutes`
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Maximum Advance Booking
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings.maxAdvanceBooking
+                                ? `${selectedProfessional.ProfessionalSettings.maxAdvanceBooking} days`
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">
+                              Auto-Accept Meetings
+                            </div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings
+                                .autoAcceptMeetings !== undefined
+                                ? selectedProfessional.ProfessionalSettings
+                                    .autoAcceptMeetings
+                                  ? 'Yes'
+                                  : 'No'
+                                : 'Not specified'}
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <div className="text-sm text-muted-foreground">Time Zone</div>
+                            <div className="font-medium">
+                              {selectedProfessional.ProfessionalSettings.timeZone ||
+                                'Not specified'}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="documents" className="pt-4">
+                      {!selectedProfessional.documentUrl ? (
+                        <div className="text-center py-8 border rounded-lg bg-muted/20">
+                          <FileText className="mx-auto h-12 w-12 text-muted-foreground/60" />
+                          <h3 className="mt-4 text-lg font-medium">
+                            No documents uploaded
+                          </h3>
+                          <p className="mt-2 text-sm text-muted-foreground">
+                            This professional has not uploaded any documents
+                          </p>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="flex items-center justify-between p-4 border rounded-md bg-muted/10">
+                            <div className="flex items-center">
+                              <div className="p-3 bg-primary/10 rounded-md mr-4">
+                                <FileText className="h-8 w-8 text-primary" />
+                              </div>
+                              <div>
+                                <h4 className="font-medium">Professional Document</h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Certification or qualification document
+                                </p>
                               </div>
                             </div>
                             <Button
                               variant="outline"
                               size="sm"
-                              onClick={() => handleViewDocument(doc.url, doc.type)}
+                              onClick={() =>
+                                handleViewDocument(selectedProfessional.documentUrl!)
+                              }
+                              className="flex items-center"
                             >
-                              View
+                              <Eye className="h-4 w-4 mr-1.5" />
+                              View Document
                             </Button>
                           </div>
-                        ))}
-                      </div>
-                    )}
-                  </TabsContent>
-                </Tabs>
-              </div>
+                        </div>
+                      )}
+                    </TabsContent>
+                  </Tabs>
+                </div>
+              </ScrollArea>
 
-              <DialogFooter>
-                {selectedProfessional.approvalStatus !== 'APPROVED' && (
-                  <Button
-                    variant="default"
-                    className="bg-green-600 hover:bg-green-700"
-                    onClick={() => {
-                      setDetailsDialogOpen(false)
-                      handleApproveClick(selectedProfessional)
-                    }}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    Approve Professional
-                  </Button>
-                )}
-
+              <DialogFooter className="px-6 py-4 border-t">
                 {selectedProfessional.approvalStatus !== 'REJECTED' && (
                   <Button
                     variant="outline"
-                    className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                    className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                     onClick={() => {
                       setDetailsDialogOpen(false)
                       handleRejectClick(selectedProfessional)
@@ -1010,6 +1449,20 @@ export default function AdminProfessionals() {
                   >
                     <XCircle className="mr-2 h-4 w-4" />
                     Reject Professional
+                  </Button>
+                )}
+
+                {selectedProfessional.approvalStatus !== 'APPROVED' && (
+                  <Button
+                    variant="default"
+                    className=""
+                    onClick={() => {
+                      setDetailsDialogOpen(false)
+                      handleApproveClick(selectedProfessional)
+                    }}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    Approve Professional
                   </Button>
                 )}
               </DialogFooter>
@@ -1026,20 +1479,12 @@ export default function AdminProfessionals() {
           </DialogHeader>
 
           {selectedDocument && (
-            <div className="h-[70vh] w-full">
-              {selectedDocument.type.includes('pdf') ? (
-                <iframe
-                  src={selectedDocument.url}
-                  className="w-full h-full border rounded-md"
-                  title="PDF Document"
-                />
-              ) : (
-                <img
-                  src={selectedDocument.url || '/placeholder.svg'}
-                  alt="Document"
-                  className="max-w-full max-h-full mx-auto object-contain"
-                />
-              )}
+            <div className="h-[70vh] w-full bg-muted/10 rounded-md flex items-center justify-center">
+              <img
+                src={selectedDocument.url || '/placeholder.svg'}
+                alt="Document"
+                className="max-w-full max-h-full object-contain"
+              />
             </div>
           )}
         </DialogContent>
@@ -1058,10 +1503,12 @@ export default function AdminProfessionals() {
 
           {selectedProfessional && (
             <div className="py-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-md">
-                <Avatar className="h-10 w-10">
+              <div className="flex items-center gap-3 p-4 bg-muted/10 rounded-md border">
+                <Avatar className="h-12 w-12 border-2 border-primary/10">
                   <AvatarImage src={selectedProfessional.imageUrl || undefined} />
-                  <AvatarFallback>{selectedProfessional.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/5 text-primary">
+                    {selectedProfessional.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <h4 className="font-medium">{selectedProfessional.name}</h4>
@@ -1070,6 +1517,12 @@ export default function AdminProfessionals() {
                       ? 'Personal Trainer'
                       : 'Nutritionist'}
                   </p>
+                  {selectedProfessional.location && (
+                    <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {selectedProfessional.location}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -1083,11 +1536,7 @@ export default function AdminProfessionals() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleApprove}
-              className="bg-green-600 hover:bg-green-700"
-              disabled={processingAction}
-            >
+            <Button onClick={handleApprove} className="" disabled={processingAction}>
               {processingAction ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1116,10 +1565,12 @@ export default function AdminProfessionals() {
 
           {selectedProfessional && (
             <div className="py-4">
-              <div className="flex items-center gap-3 p-3 bg-muted/20 rounded-md mb-4">
-                <Avatar className="h-10 w-10">
+              <div className="flex items-center gap-3 p-4 bg-muted/10 rounded-md border mb-4">
+                <Avatar className="h-12 w-12 border-2 border-primary/10">
                   <AvatarImage src={selectedProfessional.imageUrl || undefined} />
-                  <AvatarFallback>{selectedProfessional.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="bg-primary/5 text-primary">
+                    {selectedProfessional.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
                   <h4 className="font-medium">{selectedProfessional.name}</h4>
@@ -1128,6 +1579,12 @@ export default function AdminProfessionals() {
                       ? 'Personal Trainer'
                       : 'Nutritionist'}
                   </p>
+                  {selectedProfessional.location && (
+                    <div className="flex items-center mt-1 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {selectedProfessional.location}
+                    </div>
+                  )}
                 </div>
               </div>
 

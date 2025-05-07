@@ -322,11 +322,11 @@ export default function ProfessionalsList() {
                                         setSelectedLocations
                                       )
                                     }
-                                    disabled={isRemoteOnly === true}
+                                    disabled={isRemoteOnly}
                                   />
                                   <Label
                                     htmlFor={`location-${location}`}
-                                    className={`flex-1 cursor-pointer ${isRemoteOnly === true ? 'text-muted-foreground' : ''}`}
+                                    className={`flex-1 cursor-pointer ${isRemoteOnly ? 'text-muted-foreground' : ''}`}
                                   >
                                     {location}
                                   </Label>
@@ -561,7 +561,7 @@ export default function ProfessionalsList() {
             ))}
           </section>
         )}
-        {user && (
+        {user && user.approvalStatus === 'NOTSOLICITED' && (
           <section className="mt-16 rounded-lg bg-primary/10 p-8 text-center">
             <h2 className="mb-4 text-3xl font-bold text-primary">
               Join Our Professional Team
@@ -571,9 +571,7 @@ export default function ProfessionalsList() {
               platform and connect with motivated clients.
             </p>
             <Button asChild size="lg">
-              <Link to="/professional/register-professional">
-                Apply as a Professional
-              </Link>
+              <Link to="/professional/register">Apply as a Professional</Link>
             </Button>
           </section>
         )}

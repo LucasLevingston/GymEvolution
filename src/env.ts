@@ -1,21 +1,22 @@
-import { z } from 'zod';
+import { z } from 'zod'
 
 const envSchema = z.object({
   VITE_API_URL: z.string().url(),
-});
+  VITE_RAPIDAPI_KEY: z.string(),
+})
 
-type Env = z.infer<typeof envSchema>;
+type Env = z.infer<typeof envSchema>
 
-let env: Env;
+let env: Env
 
 try {
-  env = envSchema.parse(import.meta.env);
+  env = envSchema.parse(import.meta.env)
 } catch (error) {
   if (error instanceof z.ZodError) {
-    console.error('Error validating environment variables:', error.errors);
-    throw new Error('Invalid configuration. Please check the environment variables.');
+    console.error('Error validating environment variables:', error.errors)
+    throw new Error('Invalid configuration. Please check the environment variables.')
   }
-  throw error;
+  throw error
 }
 
-export { env };
+export { env }

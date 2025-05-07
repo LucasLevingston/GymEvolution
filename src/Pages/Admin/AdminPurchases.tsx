@@ -190,7 +190,7 @@ export default function AdminPurchases() {
             Esta área é exclusiva para nutricionistas e personal trainers.
           </p>
           <Button asChild>
-            <Link to="/register-professional">Cadastrar como Profissional</Link>
+            <Link to="/professional/register">Cadastrar como Profissional</Link>
           </Button>
         </div>
       </>

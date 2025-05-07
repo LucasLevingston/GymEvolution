@@ -34,12 +34,12 @@ import { useNavigate } from 'react-router-dom'
 import { useDiets } from '@/hooks/use-diets'
 import { useProfessionals } from '@/hooks/professional-hooks'
 import { IsProfessionalComponentCard } from '../professional/is-professional-card'
-import { usePurchases } from '@/hooks/purchase-hooks'
-import { Purchase } from '@/types/PurchaseType'
-import { BsBack } from 'react-icons/bs'
+import { ClientTasksCard } from '../purchase-workflow/clients-needing-training-card'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
+import useUser from '@/hooks/user-hooks'
 
 interface DietComponentProps {
-  diet?: any
+  diet?: DietType
   readOnly?: boolean
   isCreating?: boolean
 }
@@ -64,11 +64,10 @@ export function DietComponent({
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [showAddMealForm, setShowAddMealForm] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [purchase, setPurchase] = useState<Purchase | null>(null)
+  const { user } = useUser()
 
   const navigate = useNavigate()
   const { createDiet, updateDiet } = useDiets()
-  const { getPurchaseById } = usePurchases()
   const { createDietForClient } = useProfessionals()
   const searchParams = new URLSearchParams(location.search)
 
@@ -78,20 +77,6 @@ export function DietComponent({
   const professionalId = searchParams.get('professionalId')
 
   const isProfessionalMode = !!clientId && !!featureId && !!purchaseId && !!professionalId
-
-  useEffect(() => {
-    if (isCreating) {
-      setIsEditing(true)
-    }
-
-    if (purchaseId) {
-      const fetchPurchase = async () => {
-        const data = await getPurchaseById(purchaseId)
-        setPurchase(data)
-      }
-      fetchPurchase()
-    }
-  }, [isCreating])
 
   useEffect(() => {
     setDiet(diet)
@@ -289,7 +274,12 @@ export function DietComponent({
   return (
     <>
       <Card className="bg-gradient-to-r from-primary/10 to-primary/5">
-        <IsProfessionalComponentCard feature={diet.Feature} client={diet.User} />
+        {checkIsProfessional(user) && user?.tasks && (
+          <ClientTasksCard tasks={user?.tasks} taskType="DIET" />
+        )}
+        {isProfessionalMode && (
+          <IsProfessionalComponentCard featureId={featureId} clientId={clientId} />
+        )}
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>

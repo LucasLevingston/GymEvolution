@@ -3,6 +3,7 @@ import { Meeting } from './MeetingType'
 import { Notification } from './NotificationType'
 import { Plan } from './PlanType'
 import { Task } from './ProfessionalType'
+import { Purchase } from './PurchaseType'
 import { TrainingWeekType } from './TrainingType'
 
 export type UserType = {
@@ -22,8 +23,10 @@ export type UserType = {
   height?: string
   profilePictureFile: File
   useGooglePicture?: boolean
+  approvalStatus: 'NOTSOLICITED' | 'APPROVED' | 'REJECTED' | 'WAITING'
 
-  // Professional fields
+  purchases: Purchase[]
+
   bio?: string
   experience?: number
   rating?: number
@@ -126,11 +129,11 @@ export type UserType = {
     }
   }[]
 
-  clients: Client[]
+  clients?: Client[]
 
-  tasks: Task[]
+  tasks?: Task[]
 }
-interface Client {
+export interface Client {
   id: string
   name: string
   email: string
@@ -161,14 +164,14 @@ export type WeightType = {
 export interface ProfessionalSettings {
   id?: string
   userId?: string
-  workStartHour: number
-  workEndHour: number
-  appointmentDuration: number
-  workDays: string
-  bufferBetweenSlots: number
-  timeZone: string
-  maxAdvanceBooking: number
-  autoAcceptMeetings: boolean
+  workStartHour?: number
+  workEndHour?: number
+  appointmentDuration?: number
+  workDays?: string
+  bufferBetweenSlots?: number
+  timeZone?: string
+  maxAdvanceBooking?: number
+  autoAcceptMeetings?: boolean
   createdAt?: string
   updatedAt?: string
 }

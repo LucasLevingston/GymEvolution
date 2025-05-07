@@ -26,7 +26,7 @@ export type WeightType = {
 
 export type TrainingDayType = {
   id?: string
-  group: string
+  muscleGroups: string[]
   dayOfWeek: string
   day: Date
   isCompleted: boolean
@@ -42,6 +42,7 @@ export type ExerciseType = {
   id?: string
   name: string
   variation?: string
+  group: string
   repetitions: number
   sets: number
   isCompleted: boolean

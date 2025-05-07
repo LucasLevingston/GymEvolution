@@ -11,7 +11,7 @@ export interface CreatePlanDto {
   description?: string
   price: number
   duration: number
-  features: string[]
+  features: Feature[]
   professionalId: string
 }
 
@@ -30,28 +30,32 @@ export const usePlans = () => {
   const { token, user } = useUserStore()
 
   const createPlan = useCallback(
-    async (data: CreatePlanDto): Promise<Plan | null> => {
+    async (plan: CreatePlanDto): Promise<Plan> => {
       try {
         setIsLoading(true)
         setError(null)
 
-        const response = await api.post('/plans', data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const { data } = await api.post(
+          '/plans',
+          { plan },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
 
-        if (!response.data) {
+        if (!data) {
           throw new Error('Falha ao criar plano')
         }
 
         toast.success('Plano criado com sucesso')
-        return response.data
+        return data
       } catch (err: any) {
         const errorMessage = err.response?.data?.message || 'Falha ao criar plano'
         setError(errorMessage)
         toast.error(errorMessage)
-        return null
+        return err
       } finally {
         setIsLoading(false)
       }
@@ -142,28 +146,32 @@ export const usePlans = () => {
   }, [token, user?.id])
 
   const updatePlan = useCallback(
-    async (id: string, data: UpdatePlanDto): Promise<Plan | null> => {
+    async (id: string, plan: UpdatePlanDto): Promise<Plan> => {
       try {
         setIsLoading(true)
         setError(null)
 
-        const response = await api.patch(`/plans/${id}`, data, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
+        const { data } = await api.patch(
+          `/plans/${id}`,
+          { plan },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        )
 
-        if (!response.data) {
+        if (!data) {
           throw new Error('Falha ao atualizar plano')
         }
 
         toast.success('Plano atualizado com sucesso')
-        return response.data
+        return data
       } catch (err: any) {
         const errorMessage = err.response?.data?.message || 'Falha ao atualizar plano'
         setError(errorMessage)
         toast.error(errorMessage)
-        return null
+        return err
       } finally {
         setIsLoading(false)
       }

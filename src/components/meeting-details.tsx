@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import { Calendar, ExternalLink, User, Video } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react'
+import { Calendar, ExternalLink, User, Video } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -10,106 +10,103 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useGoogleCalendar } from '@/hooks/use-google-calendar';
-import { format, isToday, isTomorrow } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+} from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { useGoogleCalendar } from '@/hooks/use-google-calendar'
+import { format, isToday, isTomorrow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
+import { getInitials } from '@/lib/utils/getInitias'
+import LoadingSpinner from './LoadingSpinner'
 
 interface MeetingDetailsProps {
-  meetingId: string;
-  onEdit?: () => void;
-  onCancel?: () => void;
+  meetingId: string
+  onEdit?: () => void
+  onCancel?: () => void
 }
 
 export function MeetingDetails({ meetingId, onEdit, onCancel }: MeetingDetailsProps) {
-  const { isLoading, getMeetingDetails, deleteMeeting } = useGoogleCalendar();
-  const [meeting, setMeeting] = useState<any>(null);
-  const [cancelLoading, setCancelLoading] = useState(false);
+  const { isLoading, getMeetingDetails, deleteMeeting } = useGoogleCalendar()
+  const [meeting, setMeeting] = useState<any>(null)
+  const [cancelLoading, setCancelLoading] = useState(false)
 
   useEffect(() => {
     const fetchMeetingDetails = async () => {
-      if (!meetingId) return;
+      if (!meetingId) return
 
-      const data = await getMeetingDetails(meetingId);
+      const data = await getMeetingDetails(meetingId)
       if (data) {
-        setMeeting(data);
+        setMeeting(data)
       }
-    };
+    }
 
-    fetchMeetingDetails();
-  }, [meetingId, getMeetingDetails]);
+    fetchMeetingDetails()
+  }, [meetingId, getMeetingDetails])
 
   const handleCancelMeeting = async () => {
     if (!meetingId || !window.confirm('Tem certeza que deseja cancelar esta reunião?'))
-      return;
+      return
 
-    setCancelLoading(true);
-    const success = await deleteMeeting(meetingId);
-    setCancelLoading(false);
+    setCancelLoading(true)
+    const success = await deleteMeeting(meetingId)
+    setCancelLoading(false)
 
     if (success && onCancel) {
-      onCancel();
+      onCancel()
     }
-  };
+  }
 
   const formatMeetingDate = (dateString: string) => {
-    const date = new Date(dateString);
+    const date = new Date(dateString)
 
     if (isToday(date)) {
-      return `Hoje, ${format(date, 'HH:mm', { locale: ptBR })}`;
+      return `Hoje, ${format(date, 'HH:mm', { locale: ptBR })}`
     } else if (isTomorrow(date)) {
-      return `Amanhã, ${format(date, 'HH:mm', { locale: ptBR })}`;
+      return `Amanhã, ${format(date, 'HH:mm', { locale: ptBR })}`
     } else {
-      return format(date, "dd 'de' MMMM', às 'HH:mm", { locale: ptBR });
+      return format(date, "dd 'de' MMMM', às 'HH:mm", { locale: ptBR })
     }
-  };
+  }
 
   const getMeetingDuration = (startTime: string, endTime: string) => {
-    const start = new Date(startTime);
-    const end = new Date(endTime);
-    const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+    const start = new Date(startTime)
+    const end = new Date(endTime)
+    const durationMinutes = Math.round((end.getTime() - start.getTime()) / 60000)
 
     if (durationMinutes < 60) {
-      return `${durationMinutes} minutos`;
+      return `${durationMinutes} minutos`
     } else {
-      const hours = Math.floor(durationMinutes / 60);
-      const minutes = durationMinutes % 60;
+      const hours = Math.floor(durationMinutes / 60)
+      const minutes = durationMinutes % 60
       return minutes > 0
         ? `${hours} hora${hours > 1 ? 's' : ''} e ${minutes} minutos`
-        : `${hours} hora${hours > 1 ? 's' : ''}`;
+        : `${hours} hora${hours > 1 ? 's' : ''}`
     }
-  };
+  }
 
   const isMeetingActive = (startTime: string, endTime: string) => {
-    const now = new Date();
-    const start = new Date(startTime);
-    const end = new Date(endTime);
+    const now = new Date()
+    const start = new Date(startTime)
+    const end = new Date(endTime)
 
-    return now >= start && now <= end;
-  };
+    return now >= start && now <= end
+  }
 
   const isMeetingUpcoming = (startTime: string) => {
-    const now = new Date();
-    const start = new Date(startTime);
+    const now = new Date()
+    const start = new Date(startTime)
 
-    return start > now;
-  };
+    return start > now
+  }
 
   if (isLoading) {
     return (
       <Card>
         <CardContent className="flex justify-center items-center py-10">
-          <div className="flex flex-col items-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Carregando detalhes da reunião...
-            </p>
-          </div>
+          <LoadingSpinner />
         </CardContent>
       </Card>
-    );
+    )
   }
 
   if (!meeting) {
@@ -125,11 +122,11 @@ export function MeetingDetails({ meetingId, onEdit, onCancel }: MeetingDetailsPr
           </div>
         </CardContent>
       </Card>
-    );
+    )
   }
 
-  const isActive = isMeetingActive(meeting.startTime, meeting.endTime);
-  const isUpcoming = isMeetingUpcoming(meeting.startTime);
+  const isActive = isMeetingActive(meeting.startTime, meeting.endTime)
+  const isUpcoming = isMeetingUpcoming(meeting.startTime)
 
   return (
     <Card>
@@ -207,7 +204,7 @@ export function MeetingDetails({ meetingId, onEdit, onCancel }: MeetingDetailsPr
                   <Avatar className="h-8 w-8 mr-2">
                     <AvatarImage src={meeting.professional.imageUrl} />
                     <AvatarFallback>
-                      {meeting.professional.name?.substring(0, 2).toUpperCase() || 'PR'}
+                      {getInitials(meeting.professional.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div>
@@ -248,8 +245,7 @@ export function MeetingDetails({ meetingId, onEdit, onCancel }: MeetingDetailsPr
             >
               {cancelLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Cancelando...
+                  <LoadingSpinner /> Cancelando...
                 </>
               ) : (
                 'Cancelar Reunião'
@@ -259,5 +255,5 @@ export function MeetingDetails({ meetingId, onEdit, onCancel }: MeetingDetailsPr
         </CardFooter>
       )}
     </Card>
-  );
+  )
 }

@@ -137,7 +137,7 @@ export default function MyInformations() {
         console.log(userData.id)
         await updateUser(userData)
       }
-      toast.success('success')
+      toast.success('Informations updated succesfully!')
     } catch (error) {
       console.error(error)
       toast.error('Failed to update your information.')

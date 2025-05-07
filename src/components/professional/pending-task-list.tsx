@@ -25,12 +25,14 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Task } from '@/types/ProfessionalType'
+import { twMerge } from 'tailwind-merge'
 
 interface PendingTasksListProps {
   tasks?: Task[]
   loading?: boolean
   limit?: number
   showViewAll?: boolean
+  className?: string
 }
 
 export function PendingTasksList({
@@ -38,14 +40,17 @@ export function PendingTasksList({
   loading = false,
   limit = 3,
   showViewAll = true,
+  className,
 }: PendingTasksListProps) {
   const [filter, setFilter] = useState<'all' | 'PENDING' | 'COMPLETED'>('PENDING')
 
-  let filteredTasks
+  let filteredTasks: Task[]
 
   filteredTasks = tasks
-  if (filter !== 'all') {
-    filteredTasks = tasks.filter((task) => task.status === filter).slice(0, limit)
+  if (tasks) {
+    if (filter !== 'all') {
+      filteredTasks = tasks.filter((task) => task.status === filter).slice(0, limit)
+    }
   }
 
   const getTaskTypeIcon = (type: string) => {
@@ -161,7 +166,7 @@ export function PendingTasksList({
   }
 
   return (
-    <Card>
+    <Card className={twMerge(className, '')}>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>

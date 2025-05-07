@@ -20,6 +20,7 @@ import {
   FileText,
   Heart,
 } from 'lucide-react'
+import { getInitials } from '@/lib/utils/getInitias'
 
 export default function Profile() {
   const { user } = useUser()
@@ -49,7 +50,7 @@ export default function Profile() {
         <div className="mb-8 flex flex-col items-center md:flex-row md:items-start md:space-x-6">
           <Avatar className="h-24 w-24 border-2 border-primary">
             <AvatarImage src={user.imageUrl} alt={user.name} />
-            <AvatarFallback>{user.name?.substring(0, 2).toUpperCase()}</AvatarFallback>
+            <AvatarFallback>{getInitials(user?.name)}</AvatarFallback>
           </Avatar>
           <div className="mt-4 text-center md:mt-0 md:text-left">
             <h2 className="text-2xl font-bold">{user.name}</h2>

@@ -1,8 +1,8 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Progress } from '@/components/ui/progress'
+import { Separator } from '@/components/ui/separator'
+import { Badge } from '@/components/ui/badge'
 import {
   Calendar,
   Clock,
@@ -10,24 +10,24 @@ import {
   ListChecks,
   BarChart3,
   StopCircle,
-} from 'lucide-react';
-import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema';
-import { format } from 'date-fns';
+} from 'lucide-react'
+import type { TrainingWeekFormData } from '@/schemas/trainingWeekSchema'
+import { format } from 'date-fns'
 
 interface TrainingSidebarProps {
   stats: {
-    totalDays: number;
-    completedDays: number;
-    totalExercises: number;
-    completedExercises: number;
-  };
-  trainingWeek: TrainingWeekFormData;
-  onStartTraining: (dayIndex: number) => void;
-  onEndTraining: () => void;
-  isTrainingNow: boolean;
-  activeDayIndex: number | null;
-  isCurrentWeek: boolean;
-  isCreating?: boolean;
+    totalDays: number
+    completedDays: number
+    totalExercises: number
+    completedExercises: number
+  }
+  trainingWeek: TrainingWeekFormData
+  onStartTraining: (dayIndex: number) => void
+  onEndTraining: () => void
+  isTrainingNow: boolean
+  activeDayIndex: number | null
+  isCurrentWeek: boolean
+  isCreating?: boolean
 }
 
 export function TrainingSidebar({
@@ -41,22 +41,22 @@ export function TrainingSidebar({
   isCreating = false,
 }: TrainingSidebarProps) {
   const daysProgress =
-    stats.totalDays > 0 ? Math.round((stats.completedDays / stats.totalDays) * 100) : 0;
+    stats.totalDays > 0 ? Math.round((stats.completedDays / stats.totalDays) * 100) : 0
 
   const exercisesProgress =
     stats.totalExercises > 0
       ? Math.round((stats.completedExercises / stats.totalExercises) * 100)
-      : 0;
+      : 0
 
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const today = new Date().toLocaleDateString('en-US', { weekday: 'long' })
   const todayTrainingDay = trainingWeek.trainingDays
     .map((day, index) => ({ ...day, index }))
-    .find((day) => day.dayOfWeek === today);
+    .find((day) => day.dayOfWeek === today)
 
   // Get incomplete days
   const incompleteDays = trainingWeek.trainingDays
     .map((day, index) => ({ ...day, index }))
-    .filter((day) => !day.isCompleted);
+    .filter((day) => !day.isCompleted)
 
   return (
     <div className="w-full lg:w-80 space-y-4">
@@ -130,7 +130,7 @@ export function TrainingSidebar({
               <ListChecks className="h-4 w-4 text-muted-foreground" />
               <span className="text-sm">
                 {activeDayIndex !== null &&
-                  trainingWeek.trainingDays[activeDayIndex]?.group}
+                  trainingWeek.trainingDays[activeDayIndex]?.muscleGroup}
               </span>
             </div>
 
@@ -168,7 +168,7 @@ export function TrainingSidebar({
                       {todayTrainingDay.dayOfWeek}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {todayTrainingDay.group}
+                      {todayTrainingDay.muscleGroup}
                     </span>
                   </div>
 
@@ -196,7 +196,7 @@ export function TrainingSidebar({
                       <div className="flex flex-col">
                         <span className="text-sm font-medium">{day.dayOfWeek}</span>
                         <span className="text-xs text-muted-foreground">
-                          {day.dayOfWeek} - {day.group}
+                          {day.dayOfWeek} - {day.muscleGroup}
                         </span>
                       </div>
                       {!isCreating && (
@@ -224,5 +224,5 @@ export function TrainingSidebar({
         </Card>
       )}
     </div>
-  );
+  )
 }

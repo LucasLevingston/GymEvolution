@@ -27,11 +27,18 @@ export interface Professional {
   experience?: number
   available: boolean
   specialties?: string[]
-  certifications?: string[]
-  education?: string[]
+  certifications?: {
+    name: string
+    organization: string
+    year: string
+  }[]
+  documentUrl?: string
+  education?: { degree: string; institution: string; year: string }[]
   availability?: string[]
   reviews?: Review[]
-  professionalSettings: ProfessionalSettings
+  approvalStatus: 'NOTSOLICITED' | 'APPROVED' | 'REJECTED' | 'WAITING'
+  ProfessionalSettings: ProfessionalSettings
+  createdAt: Date
 }
 
 export interface Task {

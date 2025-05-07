@@ -151,26 +151,22 @@ export default function Header() {
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem asChild>
-                    <Link
-                      to="/settings/my-informations"
-                      className="flex cursor-pointer items-center"
-                    >
-                      <Settings className="mr-2 h-4 w-4" />
-                      <span>Settings</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
 
-                  <DropdownMenuItem asChild>
-                    <Link to="/purchases" className="flex cursor-pointer items-center">
-                      <DollarSign className="mr-2 h-4 w-4" />
-                      <span>Purchases</span>
-                    </Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {user.role === 'STUDENT' && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link
+                          to="/purchases"
+                          className="flex cursor-pointer items-center"
+                        >
+                          <DollarSign className="mr-2 h-4 w-4" />
+                          <span>Purchases</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
 
-                  <DropdownMenuSeparator />
                   {user.role === 'ADMIN' && (
                     <>
                       <DropdownMenuItem asChild>
@@ -196,6 +192,16 @@ export default function Header() {
                       <DropdownMenuSeparator />
                     </>
                   )}
+                  <DropdownMenuItem asChild>
+                    <Link
+                      to="/settings/my-informations"
+                      className="flex cursor-pointer items-center"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={handleLogout}
                     className="flex cursor-pointer items-center"

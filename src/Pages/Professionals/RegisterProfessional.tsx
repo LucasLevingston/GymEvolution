@@ -1,5 +1,3 @@
-'use client'
-
 import type { ChangeEvent } from 'react'
 
 import { useState, useReducer } from 'react'
@@ -70,9 +68,7 @@ const professionalFormSchema = z.object({
   experience: z.coerce.number().min(0, {
     message: 'Experience must be a positive number',
   }),
-  // Changed to string array
   specialties: z.array(z.string()).min(1, 'Add at least one specialty'),
-  // Updated certification schema
   certifications: z
     .array(
       z.object({
@@ -82,7 +78,6 @@ const professionalFormSchema = z.object({
       })
     )
     .min(1, 'Add at least one certification'),
-  // Updated education schema
   education: z
     .array(
       z.object({
@@ -98,7 +93,6 @@ const professionalFormSchema = z.object({
   acceptTerms: z.boolean().refine((value) => value === true, {
     message: 'You must accept the terms and conditions',
   }),
-  // Professional settings fields
   workStartHour: z.coerce.number().min(0).max(23),
   workEndHour: z.coerce.number().min(0).max(23),
   appointmentDuration: z.coerce.number().min(15),
@@ -107,18 +101,12 @@ const professionalFormSchema = z.object({
   maxAdvanceBooking: z.coerce.number().min(1).max(365),
   autoAcceptMeetings: z.boolean(),
   timeZone: z.string(),
+  documentName: z.string().min(1, 'Document name is required'),
+  documentDescription: z.string().optional(),
 })
 
 type ProfessionalFormValues = z.infer<typeof professionalFormSchema>
 
-type DocumentFile = {
-  file: File
-  name: string
-  description: string
-  type: string
-}
-
-// Define a reducer for form inputs to reduce the number of useState hooks
 type FormInputState = {
   newSpecialty: string
   newCertName: string
@@ -127,8 +115,6 @@ type FormInputState = {
   newEduDegree: string
   newEduInstitution: string
   newEduYear: string
-  documentName: string
-  documentDescription: string
 }
 
 type FormInputAction =
@@ -142,9 +128,6 @@ type FormInputAction =
     }
   | {
       type: 'RESET_EDUCATION'
-    }
-  | {
-      type: 'RESET_DOCUMENT'
     }
 
 const formInputReducer = (
@@ -168,12 +151,6 @@ const formInputReducer = (
         newEduInstitution: '',
         newEduYear: '',
       }
-    case 'RESET_DOCUMENT':
-      return {
-        ...state,
-        documentName: '',
-        documentDescription: '',
-      }
     default:
       return state
   }
@@ -189,27 +166,14 @@ export default function ProfessionalRegistrationForm() {
     newEduDegree: '',
     newEduInstitution: '',
     newEduYear: '',
-    documentName: '',
-    documentDescription: '',
   })
 
   // Remaining useState hooks for more complex state
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [documents, setDocuments] = useState<DocumentFile[]>([])
+  const [documentFile, setDocumentFile] = useState<File | null>(null)
   const [documentError, setDocumentError] = useState<string | null>(null)
-
-  // State for qualification items
-  // const [newSpecialty, setNewSpecialty] = useState("")
-  // const [newCertName, setNewCertName] = useState("")
-  // const [newCertOrg, setNewCertOrg] = useState("")
-  // const [newCertYear, setNewCertYear] = useState("")
-  // const [newEduDegree, setNewEduDegree] = useState("")
-  // const [newEduInstitution, setNewEduInstitution] = useState("")
-  // const [newEduYear, setNewEduYear] = useState("")
-  // const [documentName, setDocumentName] = useState("")
-  // const [documentDescription, setDocumentDescription] = useState("")
 
   const navigate = useNavigate()
   const { toast } = useToast()
@@ -234,6 +198,8 @@ export default function ProfessionalRegistrationForm() {
       maxAdvanceBooking: 30,
       autoAcceptMeetings: false,
       timeZone: 'America/Sao_Paulo',
+      documentName: '',
+      documentDescription: '',
     },
   })
 
@@ -272,31 +238,15 @@ export default function ProfessionalRegistrationForm() {
     }
 
     setDocumentError(null)
+    setDocumentFile(file)
 
-    // If no name is provided, use the file name
-    const name = formInputs.documentName.trim() || file.name
-
-    setDocuments([
-      ...documents,
-      {
-        file,
-        name,
-        description: formInputs.documentDescription,
-        type: file.type,
-      },
-    ])
-
-    // Reset form fields
-    dispatch({ type: 'RESET_DOCUMENT' })
+    // Update form values
+    form.setValue('documentName', file.name)
 
     // Reset file input
     if (e.target) {
       e.target.value = ''
     }
-  }
-
-  const removeDocument = (index: number) => {
-    setDocuments(documents.filter((_, i) => i !== index))
   }
 
   // Add specialty - now using string array
@@ -410,11 +360,9 @@ export default function ProfessionalRegistrationForm() {
         formData.append('profileImage', imageFile)
       }
 
-      documents.forEach((doc, index) => {
-        formData.append(`document_${index}`, doc.file)
-      })
-
-      formData.append('documentCount', documents.length.toString())
+      if (documentFile) {
+        formData.append('document', documentFile)
+      }
 
       const result = await registerProfessional(formData)
 
@@ -810,90 +758,55 @@ export default function ProfessionalRegistrationForm() {
           </div>
         </section>
 
-        {/* Documents Section */}
+        {/* Document Section - Modified for single document */}
         <section>
-          <h2 className="text-2xl font-bold mb-6">Documents</h2>
+          <h2 className="text-2xl font-bold mb-6">Document Upload</h2>
           <div className="space-y-4">
             <div>
-              <h3 className="text-lg font-medium mb-2">Upload Documents</h3>
+              <h3 className="text-lg font-medium mb-2">Upload Document</h3>
               <p className="text-sm text-muted-foreground mb-4">
-                Please upload your professional documents, certifications, diplomas, or
-                any other relevant documentation.
+                Please upload your professional document, certification, diploma, or any
+                other relevant documentation.
               </p>
             </div>
-
-            {/* Document list */}
-            {documents.length > 0 && (
-              <div className="space-y-3 mb-4">
-                <h4 className="text-sm font-medium">Uploaded Documents</h4>
-                {documents.map((doc, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 border rounded-md bg-muted/20"
-                  >
-                    <div className="flex items-center">
-                      <FileText className="h-5 w-5 mr-3 text-primary" />
-                      <div>
-                        <p className="font-medium text-sm">{doc.name}</p>
-                        {doc.description && (
-                          <p className="text-xs text-muted-foreground">
-                            {doc.description}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeDocument(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {/* Document upload form */}
             <Card>
               <CardContent className="p-4 space-y-4">
-                <div className="grid gap-2">
-                  <FormLabel htmlFor="document-name">Document Name</FormLabel>
-                  <Input
-                    id="document-name"
-                    placeholder="e.g., Personal Trainer Certification"
-                    value={formInputs.documentName}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_FIELD',
-                        field: 'documentName',
-                        value: e.target.value,
-                      })
-                    }
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="documentName"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <FormLabel>Document Name*</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g., Personal Trainer Certification"
+                          className={cn(fieldState.error && 'border-red-500')}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="documentDescription"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description (Optional)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Issued by ACE in 2022" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div className="grid gap-2">
-                  <FormLabel htmlFor="document-description">
-                    Description (Optional)
-                  </FormLabel>
-                  <Input
-                    id="document-description"
-                    placeholder="e.g., Issued by ACE in 2022"
-                    value={formInputs.documentDescription}
-                    onChange={(e) =>
-                      dispatch({
-                        type: 'SET_FIELD',
-                        field: 'documentDescription',
-                        value: e.target.value,
-                      })
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <FormLabel htmlFor="document-file">Document File</FormLabel>
+                  <FormLabel htmlFor="document-file">Document File*</FormLabel>
                   <div className="flex items-center gap-2">
                     <Input
                       id="document-file"
@@ -902,14 +815,6 @@ export default function ProfessionalRegistrationForm() {
                       onChange={handleDocumentChange}
                       className="flex-1"
                     />
-                    <Button
-                      type="button"
-                      onClick={() => document.getElementById('document-file')?.click()}
-                      className="flex items-center"
-                    >
-                      <Plus className="h-4 w-4 mr-1" />
-                      Add
-                    </Button>
                   </div>
                   <FormDescription>
                     Accepted formats: PDF, JPEG, PNG. Max size: 5MB.
@@ -920,6 +825,32 @@ export default function ProfessionalRegistrationForm() {
                   <Alert variant="destructive">
                     <AlertDescription>{documentError}</AlertDescription>
                   </Alert>
+                )}
+
+                {documentFile && (
+                  <div className="flex items-center justify-between p-3 border rounded-md bg-muted/20">
+                    <div className="flex items-center">
+                      <FileText className="h-5 w-5 mr-3 text-primary" />
+                      <div>
+                        <p className="font-medium text-sm">
+                          {form.getValues('documentName') || documentFile.name}
+                        </p>
+                        {form.getValues('documentDescription') && (
+                          <p className="text-xs text-muted-foreground">
+                            {form.getValues('documentDescription')}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setDocumentFile(null)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </CardContent>
             </Card>

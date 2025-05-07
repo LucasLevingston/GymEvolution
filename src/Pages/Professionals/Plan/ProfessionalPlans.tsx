@@ -49,11 +49,11 @@ import { ContainerRoot } from '@/components/Container'
 import { usePlans } from '@/hooks/use-plans'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import { useNotifications } from '@/components/notifications/NotificationProvider'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
-import { Label } from '@/components/ui/label'
+
 import { usePurchases } from '@/hooks/purchase-hooks'
 import useUser from '@/hooks/user-hooks'
-import type { Feature, Plan } from '@/types/PlanType'
+import { FeatureType, type Feature, type Plan } from '@/types/PlanType'
+import { checkIsProfessional } from '@/lib/utils/checkIsProfessional'
 
 export default function ProfessionalPlans() {
   const navigate = useNavigate()
@@ -67,20 +67,20 @@ export default function ProfessionalPlans() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [planToDeactivate, setPlanToDeactivate] = useState<string | null>(null)
 
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false)
   const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null)
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('pix')
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null)
 
   const isOwner =
-    user?.id === id || (plans.length > 0 && plans[0].professionalId === user?.id)
+    user?.id === id ||
+    (plans.length > 0 && plans[0].professionalId === user?.id) ||
+    (checkIsProfessional(user) && !id)
 
   useEffect(() => {
     const fetchPlans = async () => {
       try {
         let data: Plan[]
         if (!id && user?.id) {
-          data = await getPlansByProfessionalId(user.id)
+          data = user.plans
           setPlans(data)
         } else if (id) {
           data = await getPlansByProfessionalId(id)
@@ -126,22 +126,6 @@ export default function ProfessionalPlans() {
     setPlanToDeactivate(null)
   }
 
-  const handlePurchase = async (planId: string) => {
-    if (!user) {
-      toast.error('Por favor, faça login para contratar um profissional')
-      addNotification({
-        title: 'Autenticação Necessária',
-        message: 'Por favor, faça login para contratar um profissional',
-        type: 'info',
-      })
-      navigate('/login')
-      return
-    }
-
-    setSelectedPlanId(planId)
-    setPaymentDialogOpen(true)
-  }
-
   const processPayment = async () => {
     if (!selectedPlanId) return
 
@@ -155,7 +139,7 @@ export default function ProfessionalPlans() {
         planId: selectedPlanId,
         successUrl,
         cancelUrl,
-        paymentMethod: selectedPaymentMethod,
+        paymentMethod: 'mercadopago',
         amount: selectedPlan?.price!,
         professonalId: selectedPlan?.professionalId!,
       })
@@ -174,21 +158,23 @@ export default function ProfessionalPlans() {
           'Ocorreu um erro ao processar seu pagamento. Por favor, tente novamente.',
         type: 'error',
       })
-      setPaymentDialogOpen(false)
     } finally {
       setLoading(false)
     }
   }
 
   const getFeatureIcon = (feature: Feature) => {
-    if (feature.isTrainingWeek)
+    if (feature.type === FeatureType.TRAINING_WEEK)
       return <Dumbbell className="h-4 w-4 text-green-500 mt-0.5" />
-    if (feature.isDiet) return <Utensils className="h-4 w-4 text-green-500 mt-0.5" />
-    if (feature.isFeedback)
+    if (feature.type === FeatureType.DIET)
+      return <Utensils className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.type === FeatureType.FEEDBACK)
       return <MessageSquare className="h-4 w-4 text-green-500 mt-0.5" />
-    if (feature.isConsultation) return <Video className="h-4 w-4 text-green-500 mt-0.5" />
-    if (feature.isReturn) return <RotateCcw className="h-4 w-4 text-green-500 mt-0.5" />
-    if (feature.linkToResolve)
+    if (feature.type === FeatureType.CONSULTATION)
+      return <Video className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.type === FeatureType.RETURN)
+      return <RotateCcw className="h-4 w-4 text-green-500 mt-0.5" />
+    if (feature.type === FeatureType.MATERIALS)
       return <LinkIcon className="h-4 w-4 text-green-500 mt-0.5" />
     return <CheckCircle className="h-4 w-4 text-green-500 mt-0.5" />
   }
@@ -267,7 +253,7 @@ export default function ProfessionalPlans() {
             </p>
             {isOwner && (
               <Button asChild>
-                <Link to="/create-plan">Criar Meu Primeiro Plano</Link>
+                <Link to="/professional/create-plan">Criar Meu Primeiro Plano</Link>
               </Button>
             )}
           </CardContent>
@@ -341,7 +327,7 @@ export default function ProfessionalPlans() {
                 ) : (
                   <Button
                     className="w-full"
-                    onClick={() => handlePurchase(plan.id)}
+                    onClick={processPayment}
                     disabled={loading || isLoadingPayment || !plan.isActive}
                   >
                     {loading || isLoadingPayment ? (
@@ -379,141 +365,6 @@ export default function ProfessionalPlans() {
             </Button>
             <Button variant="destructive" onClick={confirmDeactivation}>
               Sim, Desativar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Payment Options Dialog */}
-      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Escolha a forma de pagamento</DialogTitle>
-            <DialogDescription>
-              {selectedPlan && (
-                <div className="mt-2">
-                  <p className="font-medium">{selectedPlan.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPlan.description}
-                  </p>
-                  <p className="text-lg font-bold mt-2">
-                    R$ {selectedPlan.price.toFixed(2)}
-                  </p>
-                </div>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="py-4">
-            <RadioGroup
-              value={selectedPaymentMethod}
-              onValueChange={setSelectedPaymentMethod}
-              className="space-y-3"
-            >
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="credit_card" id="credit_card" />
-                <Label htmlFor="credit_card" className="flex items-center cursor-pointer">
-                  <CreditCard className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">Cartão de Crédito</p>
-                    <p className="text-xs text-muted-foreground">
-                      Visa, Mastercard, Elo, American Express
-                    </p>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="debit_card" id="debit_card" />
-                <Label htmlFor="debit_card" className="flex items-center cursor-pointer">
-                  <CreditCard className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">Cartão de Débito</p>
-                    <p className="text-xs text-muted-foreground">Visa, Mastercard, Elo</p>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="pix" id="pix" />
-                <Label htmlFor="pix" className="flex items-center cursor-pointer">
-                  <QrCode className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">PIX</p>
-                    <p className="text-xs text-muted-foreground">Pagamento instantâneo</p>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="bank_transfer" id="bank_transfer" />
-                <Label
-                  htmlFor="bank_transfer"
-                  className="flex items-center cursor-pointer"
-                >
-                  <Landmark className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">Transferência Bancária</p>
-                    <p className="text-xs text-muted-foreground">TED, DOC</p>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="mobile_payment" id="mobile_payment" />
-                <Label
-                  htmlFor="mobile_payment"
-                  className="flex items-center cursor-pointer"
-                >
-                  <Smartphone className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">Pagamento por Celular</p>
-                    <p className="text-xs text-muted-foreground">
-                      Google Pay, Apple Pay, Samsung Pay
-                    </p>
-                  </div>
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 border rounded-md p-3 hover:bg-muted/50 cursor-pointer">
-                <RadioGroupItem value="wallet" id="wallet" />
-                <Label htmlFor="wallet" className="flex items-center cursor-pointer">
-                  <Wallet className="h-5 w-5 mr-3 text-primary" />
-                  <div>
-                    <p className="font-medium">Carteira Digital</p>
-                    <p className="text-xs text-muted-foreground">
-                      PicPay, Mercado Pago, PagBank
-                    </p>
-                  </div>
-                </Label>
-              </div>
-            </RadioGroup>
-          </div>
-
-          <DialogFooter className="flex flex-col sm:flex-row sm:justify-between sm:space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setPaymentDialogOpen(false)}
-              className="mb-2 sm:mb-0"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={processPayment}
-              disabled={loading || isLoadingPayment}
-              className="w-full sm:w-auto"
-            >
-              {loading || isLoadingPayment ? (
-                <>
-                  <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  Processando...
-                </>
-              ) : (
-                <>
-                  {getPaymentMethodIcon(selectedPaymentMethod)}
-                  <span className="ml-2">Continuar para Pagamento</span>
-                </>
-              )}
             </Button>
           </DialogFooter>
         </DialogContent>

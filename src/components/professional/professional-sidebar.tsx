@@ -3,14 +3,12 @@ import { Link, useLocation } from 'react-router-dom'
 import {
   BarChart3,
   Users,
-  Calendar,
   FileText,
   Settings,
   ChevronLeft,
   LogOut,
   Menu,
   CreditCard,
-  MessageSquare,
   ClipboardList,
   Home,
   LucideIcon,
@@ -24,6 +22,7 @@ import { Badge } from '@/components/ui/badge'
 import useUser from '@/hooks/user-hooks'
 import { useProfessionals } from '@/hooks/professional-hooks'
 import { Task } from '@/types/ProfessionalType'
+import { getInitials } from '@/lib/utils/getInitias'
 
 interface professionalRouteType {
   title: string
@@ -43,11 +42,11 @@ const professionalRoutes: professionalRouteType[] = [
     href: '/professional/clients',
     icon: Users,
   },
-  {
-    title: 'Agenda',
-    href: '/professional/meetings',
-    icon: Calendar,
-  },
+  // {
+  //   title: 'Agenda',
+  //   href: '/professional/meetings',
+  //   icon: Calendar,
+  // },
   {
     title: 'Planos',
     href: '/professional/professional-plans',
@@ -63,11 +62,11 @@ const professionalRoutes: professionalRouteType[] = [
     href: '/professional/metrics',
     icon: BarChart3,
   },
-  {
-    title: 'Mensagens',
-    href: '/professional/messages',
-    icon: MessageSquare,
-  },
+  // {
+  //   title: 'Mensagens',
+  //   href: '/professional/messages',
+  //   icon: MessageSquare,
+  // },
   {
     title: 'Tarefas',
     href: '/professional/tasks',
@@ -106,15 +105,6 @@ export function ProfessionalSidebar() {
 
     fetchPendingTasks()
   }, [user?.id])
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2)
-  }
 
   return (
     <>

@@ -1,6 +1,4 @@
-'use client'
-
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   Search,
@@ -8,7 +6,6 @@ import {
   MoreHorizontal,
   Calendar,
   MessageSquare,
-  Loader2,
   AlertCircle,
   DollarSign,
   Phone,
@@ -53,28 +50,8 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import useUser from '@/hooks/user-hooks'
-import { useProfessionals } from '@/hooks/professional-hooks'
-
-interface Task {
-  id: string
-  type: string
-  title: string
-  description: string
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED'
-  dueDate?: string | null
-}
-
-interface Client {
-  id: string
-  name: string
-  email: string
-  phone?: string
-  imageUrl?: string
-  totalSpent: number
-  tasks: Task[]
-  isActive: boolean
-  latestPlanName?: string
-}
+import { Task } from '@/types/ProfessionalType'
+import { getInitials } from '@/lib/utils/getInitias'
 
 type SortField = 'name' | 'email' | 'totalSpent' | 'taskCount'
 type SortDirection = 'asc' | 'desc'
@@ -83,37 +60,16 @@ export default function ClientManagement() {
   const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
-  const [clients, setClients] = useState<Client[]>([])
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [sortField, setSortField] = useState<SortField>('name')
   const [sortDirection, setSortDirection] = useState<SortDirection>('asc')
-  const { getClientsByProfessionalId } = useProfessionals()
+  const clients = user?.clients
 
-  useEffect(() => {
-    const fetchClients = async () => {
-      if (!user?.id) return
+  if (!clients) {
+    setError('Not Have Clients')
+  }
 
-      setIsLoading(true)
-      setError(null)
-
-      try {
-        // Fetch clients with purchase data and tasks
-        const clientsData = await getClientsByProfessionalId(user.id)
-        setClients(clientsData)
-      } catch (err) {
-        console.error('Error fetching clients:', err)
-        setError('Não foi possível carregar os clientes. Tente novamente mais tarde.')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchClients()
-  }, [user?.id])
-
-  // Sort clients based on selected field and direction
-  const sortedClients = [...clients].sort((a, b) => {
+  const sortedClients = clients?.sort((a, b) => {
     if (sortField === 'name') {
       return sortDirection === 'asc'
         ? a.name.localeCompare(b.name)
@@ -134,9 +90,9 @@ export default function ClientManagement() {
 
     if (sortField === 'taskCount') {
       const pendingTasksA =
-        a.tasks?.filter((task) => task.status !== 'COMPLETED').length || 0
+        a.tasks?.filter((task: Task) => task.status !== 'COMPLETED').length || 0
       const pendingTasksB =
-        b.tasks?.filter((task) => task.status !== 'COMPLETED').length || 0
+        b.tasks?.filter((task: Task) => task.status !== 'COMPLETED').length || 0
       return sortDirection === 'asc'
         ? pendingTasksA - pendingTasksB
         : pendingTasksB - pendingTasksA
@@ -146,14 +102,14 @@ export default function ClientManagement() {
   })
 
   // Filter clients based on search term and status filter
-  const filteredClients = sortedClients.filter((client) => {
+  const filteredClients = sortedClients?.filter((client) => {
     const matchesSearch =
       client.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       client.phone?.toLowerCase().includes(searchTerm.toLowerCase())
 
     const hasPendingTasks =
-      client.tasks?.some((task) => task.status !== 'COMPLETED') || false
+      client.tasks?.some((task: Task) => task.status !== 'COMPLETED') || false
 
     if (statusFilter === 'all') return matchesSearch
     if (statusFilter === 'withTasks') return matchesSearch && hasPendingTasks
@@ -182,16 +138,6 @@ export default function ClientManagement() {
     }).format(value)
   }
 
-  const getInitials = (name?: string) => {
-    if (!name) return '?'
-    return name
-      .split(' ')
-      .map((n) => n[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2)
-  }
-
   const getPendingTaskCount = (tasks?: Task[]) => {
     if (!tasks || !Array.isArray(tasks)) return 0
     return tasks.filter((task) => task.status !== 'COMPLETED').length
@@ -205,12 +151,6 @@ export default function ClientManagement() {
       <ArrowUpDown className="ml-2 h-4 w-4 text-primary rotate-180" />
     )
   }
-
-  const renderLoadingState = () => (
-    <div className="flex items-center justify-center py-12">
-      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-    </div>
-  )
 
   const renderErrorState = () => (
     <Card>
@@ -300,9 +240,7 @@ export default function ClientManagement() {
                 </div>
               </CardHeader>
               <CardContent>
-                {isLoading ? (
-                  renderLoadingState()
-                ) : filteredClients.length === 0 ? (
+                {filteredClients?.length === 0 ? (
                   renderEmptyState()
                 ) : (
                   <div className="overflow-x-auto">
@@ -355,7 +293,7 @@ export default function ClientManagement() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredClients.map((client) => (
+                        {filteredClients?.map((client) => (
                           <TableRow key={client.id}>
                             <TableCell>
                               <div className="flex items-center gap-3">
@@ -420,7 +358,7 @@ export default function ClientManagement() {
                             </TableCell>
                             <TableCell>
                               <Badge
-                                variant={client.isActive ? 'success' : 'secondary'}
+                                variant={client.isActive ? 'outline' : 'secondary'}
                                 className={
                                   client.isActive
                                     ? 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -470,13 +408,11 @@ export default function ClientManagement() {
           </TabsContent>
 
           <TabsContent value="grid" className="mt-6">
-            {isLoading ? (
-              renderLoadingState()
-            ) : filteredClients.length === 0 ? (
+            {filteredClients?.length === 0 ? (
               renderEmptyState()
             ) : (
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {filteredClients.map((client) => (
+                {filteredClients?.map((client) => (
                   <Card key={client.id} className="overflow-hidden">
                     <CardContent className="p-0">
                       <div className="p-6">
@@ -504,7 +440,7 @@ export default function ClientManagement() {
                             </div>
                           </div>
                           <Badge
-                            variant={client.isActive ? 'success' : 'secondary'}
+                            variant={client.isActive ? 'outline' : 'secondary'}
                             className={
                               client.isActive
                                 ? 'bg-green-100 text-green-800 hover:bg-green-200'
@@ -535,7 +471,7 @@ export default function ClientManagement() {
                               {client.tasks &&
                                 Array.isArray(client.tasks) &&
                                 client.tasks
-                                  .filter((task) => task.status !== 'COMPLETED')
+                                  .filter((task: Task) => task.status !== 'COMPLETED')
                                   .slice(0, 2)
                                   .map((task) => (
                                     <div

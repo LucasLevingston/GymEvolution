@@ -1,5 +1,3 @@
-'use client'
-
 import { useState } from 'react'
 import { Check, Award, Zap, Shield, Users, Calendar } from 'lucide-react'
 import { Button } from '@/components/ui/button'

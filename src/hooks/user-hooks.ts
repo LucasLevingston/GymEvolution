@@ -27,7 +27,7 @@ export const useUser = () => {
         const isValid = await validateToken()
         if (isValid) {
           if (user?.id) {
-            const userData = await getUser(user.id)
+            const userData = await getUser()
             setUser(userData)
           }
         } else {
@@ -90,8 +90,8 @@ export const useUser = () => {
     }
   }
 
-  const getUser = async (id: string): Promise<UserType> => {
-    const { data } = await api.get<UserType>(`/users/${id}`, {
+  const getUser = async (id?: string): Promise<UserType> => {
+    const { data } = await api.get<UserType>(`/users/${id || user?.id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

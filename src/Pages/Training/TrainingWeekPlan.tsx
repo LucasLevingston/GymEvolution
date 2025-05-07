@@ -27,8 +27,10 @@ export default function TrainingWeekPlan() {
   useEffect(() => {
     const fetchTrainingWeek = async () => {
       if (trainingWeekId) {
-        const data = await getTrainingWeek(trainingWeekId)
-        setTrainingWeek(data)
+        const data = user?.trainingWeeks.find(({ id }) => id === trainingWeekId)
+        if (data) {
+          setTrainingWeek(data)
+        }
 
         return
       }
@@ -104,7 +106,7 @@ export default function TrainingWeekPlan() {
                 <div className="flex items-center gap-2">
                   <Badge>{currentTrainingDay.dayOfWeek}</Badge>
                   <span className="text-muted-foreground">
-                    {currentTrainingDay.group}
+                    {currentTrainingDay.muscleGroups}
                   </span>
                 </div>
                 <Button
@@ -120,6 +122,7 @@ export default function TrainingWeekPlan() {
                 </Button>
               </div>
             )}
+
             <TrainingWeekCard initialData={trainingWeek} />
           </>
         ) : (

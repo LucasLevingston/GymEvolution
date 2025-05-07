@@ -48,6 +48,9 @@ import ProfessionalTasks from './Pages/Professionals/ProfessionalTasks'
 import { ListDiets } from './Pages/Diet/ListDiets'
 import { SubscriptionPlans } from './Pages/subscription-plans'
 import { SubscriptionStatus } from './Pages/subscription-status'
+import ProfessionalSettings from './Pages/Professionals/professionalSettings'
+import ClientDetails from './Pages/Professionals/Client/ClientDetails'
+import CreateFeedback from './Pages/Feedback/create-feedback'
 
 interface PrivateRouteProps {
   element: JSX.Element
@@ -97,8 +100,12 @@ const ProfessionalRoutes = [
       { path: 'payments', element: <ProfessionalPayments /> },
       { path: 'edit-plan/:id', element: <EditPlan /> },
       { path: 'tasks', element: <ProfessionalTasks /> },
-      // { path: 'settings', element: <ProfessionalSettings /> },
+      { path: 'settings', element: <ProfessionalSettings /> },
     ],
+  },
+  {
+    path: '/client',
+    children: [{ path: ':clientId', element: <ClientDetails /> }],
   },
   {
     path: '/professional/register',
@@ -107,6 +114,17 @@ const ProfessionalRoutes = [
   { path: '/professional/list', element: <ProfessionalsList /> },
   { path: '/professional/:id', element: <ProfessionalDetail /> },
   { path: '/professional/hiring-flow', element: <HiringFlow /> },
+]
+
+const FeedbackRoutes = [
+  {
+    path: '/feedback/',
+    children: [
+      { path: 'create', element: <CreateFeedback /> },
+      // { path: ':featureId', element: <FeedbackDetails /> },
+      // { path: 'list', element: <FeedbackList /> }
+    ],
+  },
 ]
 
 const SettingsRoutes = [
@@ -244,6 +262,7 @@ export const router = createBrowserRouter([
       ...DietRoutes,
       ...PurchaseRoutes,
       ...GeneralRoutes,
+      ...FeedbackRoutes,
       ...AdminRoutes,
     ],
   },

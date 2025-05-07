@@ -5,7 +5,7 @@ import api from '@/lib/api'
 import { useUserStore } from '@/store/user-store'
 import type { Professional, Task } from '@/types/ProfessionalType'
 import { TrainingWeekFormData } from '@/schemas/trainingWeekSchema'
-import { RequiredTask } from '@/components/purchase-workflow/purchase-status-analyzer'
+import { ProfessionalSettings } from '@/types/userType'
 
 export const useProfessionals = () => {
   const [isLoading, setIsLoading] = useState(false)
@@ -32,6 +32,65 @@ export const useProfessionals = () => {
       const errorMessage = err.response?.data?.error || 'Falha ao buscar nutricionistas'
       setError(errorMessage)
       return []
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const updateProfessionalSettings = async (
+    professionalSettings: ProfessionalSettings
+  ) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data } = await api.put(
+        `/professionals/${professionalSettings.userId}`,
+        { professionalSettings },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message
+      setError(errorMessage)
+      return {
+        success: false,
+        message: errorMessage,
+      }
+    } finally {
+      setIsLoading(false)
+    }
+  }
+  const createProfessionalSettings = async (
+    professionalSettings: ProfessionalSettings
+  ) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const { data } = await api.post(
+        '/professionals',
+        { professionalSettings },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+
+      return data
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.message
+      setError(errorMessage)
+      return {
+        success: false,
+        message: errorMessage,
+      }
     } finally {
       setIsLoading(false)
     }
@@ -264,7 +323,7 @@ export const useProfessionals = () => {
         purchaseId: newTrainingWeekData.purchaseId,
         featureId: newTrainingWeekData.featureId,
         trainingDays: newTrainingWeekData.trainingDays.map((day) => ({
-          group: day.group,
+          muscleGroup: day.muscleGroup,
           dayOfWeek: day.dayOfWeek,
           comments: day.comments,
           exercises: day.exercises.map((exercise) => ({
@@ -307,12 +366,6 @@ export const useProfessionals = () => {
   const createDietForClient = async (newDietData: any) => {
     setIsLoading(true)
     try {
-      const formattedData = {
-        clientId: newDietData.clientId,
-        purchaseId: newDietData.purchaseId,
-        featureId: newDietData.featureId,
-      }
-      console.log(newDietData)
       const { data } = await api.post(
         '/professionals/client/diet',
         { diet: newDietData },
@@ -346,6 +399,7 @@ export const useProfessionals = () => {
           },
         }
       )
+      console.log(data)
       return data
     } catch (err: any) {
       const errorMessage = err.response?.data?.error
@@ -371,5 +425,7 @@ export const useProfessionals = () => {
     getMetricsByProfessionalId,
     createTrainingForClient,
     createDietForClient,
+    updateProfessionalSettings,
+    createProfessionalSettings,
   }
 }
